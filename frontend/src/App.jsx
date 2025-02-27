@@ -6,6 +6,7 @@ import './App.css'
 function App() {
   const [count, setCount] = useState(0)
   const [data, setData] = useState(null)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     fetch('http://localhost:3000/api/test')
@@ -13,8 +14,14 @@ function App() {
         if (!res.ok) throw new Error('Network response was not ok');
         return res.json();
       })
-      .then((data) => setData(data))
-      .catch((error) => console.error('Error fetching data:', error));
+      .then((data) => {
+        setData(data);
+        setError(null);
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        setError(error.message);
+      });
   }, []);
 
   return (
@@ -40,8 +47,23 @@ function App() {
         Click on the Vite and React logos to learn more
       </p>
       <p>Data: {data ? data.message : 'Loading...'}</p>
+      <div className="database-status" style={{ marginTop: '2rem' }}>
+        <h2>Database Connection Status</h2>
+        {error ? (
+          <p style={{ color: 'red' }}>Error: {error}</p>
+        ) : (
+          <div>
+            <p style={{ color: data ? 'green' : 'orange' }}>
+              Status: {data ? 'Connected' : 'Connecting...'}
+            </p>
+            {data && (
+              <p>Server Time: {data.timestamp}</p>
+            )}
+          </div>
+        )}
+      </div>
     </>
-  )
+  );
 }
 
 export default App
