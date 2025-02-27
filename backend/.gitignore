@@ -10,18 +10,17 @@ lerna-debug.log*
 # Dependencies
 node_modules
 
-# Build output
-dist
-dist-ssr
-
 # Environment variables
 .env
 .env.*
 *.local
 
+# Build output (if applicable)
+dist/
+build/
+
 # Cache directories
 .cache/
-.parcel-cache/
 
 # Editor directories and files
 .vscode/*
