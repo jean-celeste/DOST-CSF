@@ -11,9 +11,14 @@ app.use(cors());
 app.use(express.json());
 
 //Test
-app.get('/', (req, res) => {
-  res.send('Hello World!');
+app.get('/api/test', (req, res) => {
+  res.json({message: "TESTING 123//asdas"});
 });
+
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ message: 'Something went wrong!' });
+  });
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
