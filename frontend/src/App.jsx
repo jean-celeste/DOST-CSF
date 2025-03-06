@@ -33,43 +33,49 @@ export default function CustomerFeedbackForm() {
     <div className="min-h-screen bg-[url('/diamond-pattern.svg')] bg-repeat">
       {/* Data Privacy Consent Dialog */}
       <Dialog open={showPrivacyDialog} onOpenChange={setShowPrivacyDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Data Privacy Consent</DialogTitle>
-            <DialogDescription className="pt-4">
-              <div className="space-y-4 text-sm">
-                <p>
-                  This Client Satisfaction Measurement (CSM) tracks the customer experience of government offices. Your feedback on your recently concluded transaction will help this office provide a better service.
-                </p>
-                <p>
-                  Personal information shared will be kept confidential and you always
-                  have the option to not answer this form.
-                </p>
-                <p>
-                  By filling out this form, you authorize the Department of Science and Technology - V to collect and process the data provided for products and services improvement.
-                </p>
-                <p>
-                  All personal information is protected under Republic Act No. 10173, the Data Privacy Act of 2012.
-                </p>
-
-                <div className="flex items-center space-x-2 pt-2">
-                  <Checkbox
-                    id="privacy-consent"
-                    checked={privacyConsent}
-                    onCheckedChange={(checked) => setPrivacyConsent(checked === true)}
-                  />
-                  <Label htmlFor="privacy-consent" className="text-sm font-medium">
-                    I have read and agree to the Data Privacy terms
-                  </Label>
-                </div>
-              </div>
-            </DialogDescription>
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="mb-3 pt-4">
+            <DialogTitle className="text-2xl font-bold text-blue-600">Data Privacy Consent</DialogTitle>
           </DialogHeader>
-          <DialogFooter className="flex flex-col sm:flex-row sm:justify-between sm:space-x-2">
+          
+          <div className="space-y-4 text-sm py-2">
+            <p className="leading-relaxed">
+              This Client Satisfaction Measurement (CSM) tracks the customer experience of government offices. Your feedback on your recently concluded transaction will help this office provide a better service.
+            </p>
+            <p className="leading-relaxed">
+              Personal information shared will be kept confidential and you always
+              have the option to not answer this form.
+            </p>
+            <p className="leading-relaxed">
+              By filling out this form, you authorize the Department of Science and Technology - V to collect and process the data provided for products and services improvement.
+            </p>
+            <p className="leading-relaxed">
+              All personal information is protected under Republic Act No. 10173, the Data Privacy Act of 2012.
+            </p>
+
+            <div className="flex items-center space-x-3 pt-4 border-t border-gray-200 mt-6">
+              <Checkbox
+                id="privacy-consent"
+                checked={privacyConsent}
+                onCheckedChange={(checked) => setPrivacyConsent(checked === true)}
+              />
+              <Label htmlFor="privacy-consent" className="text-sm font-medium">
+                I have read and agree to the Data Privacy terms
+              </Label>
+            </div>
+          </div>
+          
+          <DialogFooter className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:justify-between sm:space-x-2 pt-4 mt-2">
             <Button type="button" variant="outline" onClick={handleDecline}>
               Decline
             </Button>
-            <Button type="button" onClick={handleConsent} disabled={!privacyConsent}>
+            <Button 
+              type="button" 
+              variant="gradient" 
+              onClick={handleConsent} 
+              disabled={!privacyConsent} 
+              className="font-bold"
+            >
               Accept and Continue
             </Button>
           </DialogFooter>
@@ -261,7 +267,7 @@ export default function CustomerFeedbackForm() {
               </div>
 
               <div className="pt-4 text-right">
-                <Button>Next</Button>
+                <Button type="button" variant="gradient">Next</Button>
               </div>
             </div>
           </div>
