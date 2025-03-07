@@ -1,18 +1,6 @@
 import { useState } from "react"
-import { Button } from "./components/ui/button"
-import { Checkbox } from "./components/ui/checkbox"
-import { Input } from "./components/ui/input"
-import { Label } from "./components/ui/label"
-import { RadioGroup, RadioGroupItem } from "./components/ui/radio-group"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./components/ui/select"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "./components/ui/dialog"
+import PersonalDetailsForm from "./components/forms/PersonalDetailsForm"
+import DataPrivacyDialog from "./components/prompts/DataPrivacyDialog"
 import { UserIcon, CheckSquareIcon, SmileIcon, ClipboardListIcon } from "lucide-react"
 
 export default function CustomerFeedbackForm() {
@@ -29,58 +17,21 @@ export default function CustomerFeedbackForm() {
     alert("You need to accept the Data Privacy terms to proceed with the survey.")
   }
 
+  const handleNextStep = () => {
+    setCurrentStep(prev => prev + 1)
+  }
+
   return (
     <div className="min-h-screen bg-[url('/diamond-pattern.svg')] bg-repeat">
       {/* Data Privacy Consent Dialog */}
-      <Dialog open={showPrivacyDialog} onOpenChange={setShowPrivacyDialog}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader className="mb-3 pt-4">
-            <DialogTitle className="text-2xl font-bold text-blue-600">Data Privacy Consent</DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4 text-sm py-2">
-            <p className="leading-relaxed">
-              This Client Satisfaction Measurement (CSM) tracks the customer experience of government offices. Your feedback on your recently concluded transaction will help this office provide a better service.
-            </p>
-            <p className="leading-relaxed">
-              Personal information shared will be kept confidential and you always
-              have the option to not answer this form.
-            </p>
-            <p className="leading-relaxed">
-              By filling out this form, you authorize the Department of Science and Technology - V to collect and process the data provided for products and services improvement.
-            </p>
-            <p className="leading-relaxed">
-              All personal information is protected under Republic Act No. 10173, the Data Privacy Act of 2012.
-            </p>
-
-            <div className="flex items-center space-x-3 pt-4 border-t border-gray-200 mt-6">
-              <Checkbox
-                id="privacy-consent"
-                checked={privacyConsent}
-                onCheckedChange={(checked) => setPrivacyConsent(checked === true)}
-              />
-              <Label htmlFor="privacy-consent" className="text-sm font-medium">
-                I have read and agree to the Data Privacy terms
-              </Label>
-            </div>
-          </div>
-          
-          <DialogFooter className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:justify-between sm:space-x-2 pt-4 mt-2">
-            <Button type="button" variant="outline" onClick={handleDecline}>
-              Decline
-            </Button>
-            <Button 
-              type="button" 
-              variant="gradient" 
-              onClick={handleConsent} 
-              disabled={!privacyConsent} 
-              className="font-bold"
-            >
-              Accept and Continue
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <DataPrivacyDialog
+        open={showPrivacyDialog}
+        onOpenChange={setShowPrivacyDialog}
+        privacyConsent={privacyConsent}
+        setPrivacyConsent={setPrivacyConsent}
+        onConsent={handleConsent}
+        onDecline={handleDecline}
+      />
 
       {/* Main Form Content */}
       <div className="container mx-auto p-4">
@@ -160,116 +111,24 @@ export default function CustomerFeedbackForm() {
           {/* Right Side - Form Content */}
           <div className="rounded-lg bg-white p-6 shadow-md md:col-span-3">
             <div className="mb-6">
-              <h2 className="text-sm font-medium text-gray-500">Step 1 of 4</h2>
-              <h1 className="text-2xl font-bold">Personal Details</h1>
-              <p className="text-gray-600">All these details are needed to accomplish the appointments.</p>
+              <h2 className="text-sm font-medium text-gray-500">Step {currentStep} of 4</h2>
+              <h1 className="text-2xl font-bold">
+                {currentStep === 1 && "Personal Details"}
+                {currentStep === 2 && "Checkmarks"}
+                {currentStep === 3 && "Ratings"}
+                {currentStep === 4 && "Review"}
+              </h1>
+              <p className="text-gray-600">
+                {currentStep === 1 && "All these details are needed to accomplish the appointments."}
+                {currentStep === 2 && "Please check what applies to your experience."}
+                {currentStep === 3 && "Rate your satisfaction with our services."}
+                {currentStep === 4 && "Review your answers before submission."}
+              </p>
             </div>
 
-            <div className="space-y-6">
-              {/* Email Address */}
-              <div>
-                <Label htmlFor="email">Email Address(optional)</Label>
-                <Input id="email" placeholder="jamilcervano@gmail.com" className="mt-1" />
-              </div>
-
-              {/* Customer Type */}
-              <div>
-                <Label htmlFor="customer-type">Customer Type</Label>
-                <Select>
-                  <SelectTrigger id="customer-type" className="mt-1">
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="individual">Individual</SelectItem>
-                    <SelectItem value="business">Business</SelectItem>
-                    <SelectItem value="government">Government</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Services Availed */}
-              <div>
-                <Label htmlFor="services">Services Availed</Label>
-                <Select>
-                  <SelectTrigger id="services" className="mt-1">
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="service1">Service 1</SelectItem>
-                    <SelectItem value="service2">Service 2</SelectItem>
-                    <SelectItem value="service3">Service 3</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Contact Number */}
-              <div>
-                <Label htmlFor="contact">Contact Number</Label>
-                <Input id="contact" placeholder="+639 -XXXX-XXXX" className="mt-1" />
-              </div>
-
-              {/* Region/Province */}
-              <div>
-                <Label htmlFor="region">Region/Province</Label>
-                <Select>
-                  <SelectTrigger id="region" className="mt-1">
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ncr">NCR</SelectItem>
-                    <SelectItem value="region1">Region I</SelectItem>
-                    <SelectItem value="region2">Region II</SelectItem>
-                    <SelectItem value="region3">Region III</SelectItem>
-                    <SelectItem value="region4a">Region IV-A</SelectItem>
-                    <SelectItem value="region4b">Region IV-B</SelectItem>
-                    <SelectItem value="region5">Region V</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Sex */}
-              <div>
-                <Label>Sex</Label>
-                <RadioGroup defaultValue="male" className="mt-2 flex space-x-6">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="male" id="male" />
-                    <Label htmlFor="male">Male</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="female" id="female" />
-                    <Label htmlFor="female">Female</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="prefer-not" id="prefer-not" />
-                    <Label htmlFor="prefer-not">Prefer not to indicate</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-
-              {/* Age Group */}
-              <div>
-                <Label>Age Group</Label>
-                <RadioGroup defaultValue="18-38" className="mt-2 space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="below-18" id="below-18" />
-                    <Label htmlFor="below-18">Below 18 years old</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="18-38" id="18-38" />
-                    <Label htmlFor="18-38">18-38 years old</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="39-59" id="39-59" />
-                    <Label htmlFor="39-59">39-59 years old</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-
-              <div className="pt-4 text-right">
-                <Button type="button" variant="gradient">Next</Button>
-              </div>
-            </div>
+            {/* Render the form component based on current step */}
+            {currentStep === 1 && <PersonalDetailsForm onNextStep={handleNextStep} />}
+            {/* Add other form components for steps 2, 3, and 4 */}
           </div>
         </div>
       </div>
