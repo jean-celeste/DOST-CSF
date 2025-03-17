@@ -30,9 +30,9 @@ export default function CustomerFeedbackForm() {
     <div className="min-h-screen bg-[url('/diamond-pattern.svg')] bg-repeat">
       {/* Main Form Content */}
       <div className="w-full">
-        <div className="grid grid-cols-1 md:grid-cols-4">
+        <div className="grid grid-cols-1 md:grid-cols-7">
           {/* Left Side - Progress Indicator */}
-          <div className="bg-gray-50 p-10 md:col-span-1">
+          <div className="bg-gray-50 p-10 md:col-span-2">
             <div className="mb-8 flex items-center">
               <div className="mr-2 h-16 w-16">
                 <img src="/dost-logo.png" alt="DOST Logo" className="h-16 w-16" />
@@ -104,8 +104,8 @@ export default function CustomerFeedbackForm() {
           </div>
 
           {/* Right Side - Form Content */}
-          <div className="bg-white p-20 md:col-span-3">
-            <div className="mb-6">
+          <div className="bg-white p-20 md:col-span-5">
+            <div className="mb-15">
               <h2 className="text-sm font-medium text-gray-500">Step {currentStep} of 4</h2>
               <h1 className="text-2xl font-bold">
                 {currentStep === 1 && "Personal Details"}
@@ -114,7 +114,7 @@ export default function CustomerFeedbackForm() {
                 {currentStep === 4 && "Review"}
               </h1>
               <p className="text-gray-600">
-                {currentStep === 1 && "All these details are needed to accomplish the appointments."}
+                {currentStep === 1 && "All these details are needed to be accomplished."}
                 {currentStep === 2 && "Please check what applies to your experience."}
                 {currentStep === 3 && "Rate your satisfaction with our services."}
                 {currentStep === 4 && "Review your answers before submission."}
