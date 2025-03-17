@@ -1,16 +1,15 @@
 import { useState } from "react"
 import PersonalDetailsForm from "./components/forms/PersonalDetailsForm"
-import DataPrivacyDialog from "./components/prompts/DataPrivacyDialog"
+import Ratings from "./components/forms/Ratings"
 import { UserIcon, CheckSquareIcon, SmileIcon, ClipboardListIcon } from "lucide-react"
+import DataPrivacyConsent from "./components/prompts/DataPrivacyConsent"
 
 export default function CustomerFeedbackForm() {
-  const [privacyConsent, setPrivacyConsent] = useState(false)
-  const [showPrivacyDialog, setShowPrivacyDialog] = useState(true)
+  const [showMainForm, setShowMainForm] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
 
   const handleConsent = () => {
-    setPrivacyConsent(true)
-    setShowPrivacyDialog(false)
+    setShowMainForm(true)
   }
 
   const handleDecline = () => {
@@ -21,23 +20,19 @@ export default function CustomerFeedbackForm() {
     setCurrentStep(prev => prev + 1)
   }
 
+  // Render the data privacy page if consent hasn't been given
+  if (!showMainForm) {
+    return <DataPrivacyConsent onConsent={handleConsent} onDecline={handleDecline} />
+  }
+
+  // Main form content (only shown after consent)
   return (
     <div className="min-h-screen bg-[url('/diamond-pattern.svg')] bg-repeat">
-      {/* Data Privacy Consent Dialog */}
-      <DataPrivacyDialog
-        open={showPrivacyDialog}
-        onOpenChange={setShowPrivacyDialog}
-        privacyConsent={privacyConsent}
-        setPrivacyConsent={setPrivacyConsent}
-        onConsent={handleConsent}
-        onDecline={handleDecline}
-      />
-
       {/* Main Form Content */}
-      <div className="container mx-auto p-4">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-5">
+      <div className="w-full">
+        <div className="grid grid-cols-1 md:grid-cols-7">
           {/* Left Side - Progress Indicator */}
-          <div className="md:col-span-2">
+          <div className="bg-gray-50 p-10 md:col-span-2">
             <div className="mb-8 flex items-center">
               <div className="mr-2 h-16 w-16">
                 <img src="/dost-logo.png" alt="DOST Logo" className="h-16 w-16" />
@@ -63,7 +58,7 @@ export default function CustomerFeedbackForm() {
                   <h3 className={`font-medium ${currentStep === 1 ? "text-blue-500" : "text-gray-700"}`}>
                     Personal Details
                   </h3>
-                  <p className="text-sm text-gray-500">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                  <p className="text-sm text-gray-500">Please provide your basic information</p>
                 </div>
               </div>
 
@@ -76,7 +71,7 @@ export default function CustomerFeedbackForm() {
                 </div>
                 <div className="ml-4">
                   <h3 className={`font-medium ${currentStep === 2 ? "text-blue-500" : "text-gray-700"}`}>Checkmarks</h3>
-                  <p className="text-sm text-gray-500">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                  <p className="text-sm text-gray-500">Select all that apply to your experience</p>
                 </div>
               </div>
 
@@ -89,7 +84,7 @@ export default function CustomerFeedbackForm() {
                 </div>
                 <div className="ml-4">
                   <h3 className={`font-medium ${currentStep === 3 ? "text-blue-500" : "text-gray-700"}`}>Ratings</h3>
-                  <p className="text-sm text-gray-500">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                  <p className="text-sm text-gray-500">Rate your satisfaction with our services</p>
                 </div>
               </div>
 
@@ -102,15 +97,15 @@ export default function CustomerFeedbackForm() {
                 </div>
                 <div className="ml-4">
                   <h3 className={`font-medium ${currentStep === 4 ? "text-blue-500" : "text-gray-700"}`}>Review</h3>
-                  <p className="text-sm text-gray-500">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                  <p className="text-sm text-gray-500">Review your answers before submission</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Right Side - Form Content */}
-          <div className="rounded-lg bg-white p-6 shadow-md md:col-span-3">
-            <div className="mb-6">
+          <div className="bg-white p-20 md:col-span-5">
+            <div className="mb-15">
               <h2 className="text-sm font-medium text-gray-500">Step {currentStep} of 4</h2>
               <h1 className="text-2xl font-bold">
                 {currentStep === 1 && "Personal Details"}
@@ -119,7 +114,7 @@ export default function CustomerFeedbackForm() {
                 {currentStep === 4 && "Review"}
               </h1>
               <p className="text-gray-600">
-                {currentStep === 1 && "All these details are needed to accomplish the appointments."}
+                {currentStep === 1 && "All these details are needed to be accomplished."}
                 {currentStep === 2 && "Please check what applies to your experience."}
                 {currentStep === 3 && "Rate your satisfaction with our services."}
                 {currentStep === 4 && "Review your answers before submission."}
@@ -128,6 +123,8 @@ export default function CustomerFeedbackForm() {
 
             {/* Render the form component based on current step */}
             {currentStep === 1 && <PersonalDetailsForm onNextStep={handleNextStep} />}
+            {currentStep === 2 && <Ratings onNextStep={handleNextStep} />}
+            
             {/* Add other form components for steps 2, 3, and 4 */}
           </div>
         </div>
