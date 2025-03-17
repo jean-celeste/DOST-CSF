@@ -10,15 +10,15 @@ export default function PersonalDetailsForm({ onNextStep }) {
     <div className="space-y-6">
       {/* Email Address */}
       <div>
-        <Label htmlFor="email">Email Address(optional)</Label>
-        <Input id="email" placeholder="Email" className="mt-1" />
+        <Label htmlFor="email">Email Address (optional)</Label>
+        <Input id="email" placeholder="Email" className="mt-1 rounded-none w-full" />
       </div>
 
       {/* Customer Type */}
       <div>
         <Label htmlFor="customer-type">Customer Type</Label>
         <Select>
-          <SelectTrigger id="customer-type" className="mt-1">
+          <SelectTrigger id="customer-type" className="mt-1 rounded-none w-full">
             <SelectValue placeholder="Select" />
           </SelectTrigger>
           <SelectContent>
@@ -34,7 +34,7 @@ export default function PersonalDetailsForm({ onNextStep }) {
       <div>
         <Label htmlFor="services">Services Availed</Label>
         <Select>
-          <SelectTrigger id="services" className="mt-1">
+          <SelectTrigger id="services" className="mt-1 rounded-none w-full">
             <SelectValue placeholder="Select" />
           </SelectTrigger>
           <SelectContent>
@@ -48,14 +48,14 @@ export default function PersonalDetailsForm({ onNextStep }) {
       {/* Contact Number */}
       <div>
         <Label htmlFor="contact">Contact Number</Label>
-        <Input id="contact" placeholder="+639 -XXXX-XXXX" className="mt-1" />
+        <Input id="contact" placeholder="+639 -XXXX-XXXX" className="mt-1 rounded-none w-full" />
       </div>
 
       {/* Region/Province */}
       <div>
         <Label htmlFor="region">Region/Province</Label>
         <Select>
-          <SelectTrigger id="region" className="mt-1">
+          <SelectTrigger id="region" className="mt-1 rounded-none w-full">
             <SelectValue placeholder="Select" />
           </SelectTrigger>
           <SelectContent>
@@ -109,7 +109,7 @@ export default function PersonalDetailsForm({ onNextStep }) {
       </div>
 
       <div className="pt-4 text-right">
-        <Button type="button" variant="gradient" onClick={onNextStep}>Next</Button>
+        <Button type="button" variant="gradient" onClick={onNextStep} className="rounded-none">Next</Button>
       </div>
     </div>
   )
