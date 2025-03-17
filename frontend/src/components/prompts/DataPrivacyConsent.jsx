@@ -1,0 +1,83 @@
+import { useState } from "react"
+import { Button } from "../ui/button"
+import { Checkbox } from "../ui/checkbox"
+import { Label } from "../ui/label"
+import PropTypes from "prop-types"
+import { ShieldCheck } from "lucide-react"
+
+export default function DataPrivacyConsent({ onConsent, onDecline }) {
+  const [isChecked, setIsChecked] = useState(false)
+
+  return (
+    <div className="min-h-screen bg-[url('/diamond-pattern.svg')] bg-repeat flex justify-center items-center p-4">
+      <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-8">
+        <div className="flex flex-col sm:flex-row justify-center items-center mb-8">
+          <div className="mr-4 h-16 w-16 flex-shrink-0">
+            <img src="/DOST_Logo.png" alt="DOST Logo" className="h-full w-full object-contain" />
+          </div>
+          <div className="text-center sm:text-left">
+            <h1 className="text-xl font-bold text-gray-800">Department of Science and Technology V</h1>
+            <p className="text-lg text-gray-600">Customer Satisfaction Feedback</p>
+          </div>
+        </div>
+        
+        <div className="flex justify-center items-center mb-6">
+          <ShieldCheck className="mr-4 h-10 w-10 text-gray-800" />
+          <h2 className="text-3xl font-bold text-gray-800">Data Privacy Consent</h2>
+        </div>
+        
+        <div className="space-y-4 text-base text-gray-700 py-4">
+          <p className="leading-relaxed">
+            This Client Satisfaction Measurement (CSM) tracks the customer experience of government offices. Your feedback on your recent transaction will help us improve our services.
+          </p>
+          <p className="leading-relaxed">
+            Providing personal information is optional, and all shared details will be kept confidential.
+          </p>
+          <p className="leading-relaxed">
+            By completing this form, you authorize the Department of Science and Technology - V to collect and process the provided data to enhance our products and services.
+          </p>
+          <p className="leading-relaxed">
+            All personal information is protected under Republic Act No. 10173, the Data Privacy Act of 2012.
+          </p>
+
+          <div className="flex items-center space-x-3 pt-4 border-t border-gray-200 mt-6">
+            <Checkbox
+              id="privacy-consent"
+              checked={isChecked}
+              onCheckedChange={(checked) => setIsChecked(checked === true)}
+            />
+            <Label htmlFor="privacy-consent" className="text-base font-medium">
+              I have read and agree to the Data Privacy terms
+            </Label>
+          </div>
+        </div>
+        
+        <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:justify-between sm:space-x-2 pt-6 mt-4">
+          <Button type="button" variant="outline" onClick={onDecline} className="px-6 py-2">
+            Go Back
+          </Button>
+          <Button 
+            type="button" 
+            variant="gradient" 
+            onClick={onConsent} 
+            disabled={!isChecked} 
+            className="px-6 py-2 font-bold"
+          >
+            Accept and Continue
+          </Button>
+        </div>
+
+        <div className="flex justify-center mt-8 space-x-4">
+          <img src="/ARTA_Logo.png" alt="ARTA logo" className="h-12 w-auto" />
+          <img src="/CC_Logo.png" alt="CC Logo" className="h-12 w-auto" />
+          <img src="/BP_logo.png" alt="Bagong Pilipinas logo" className="h-12 w-auto" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+DataPrivacyConsent.propTypes = {
+  onConsent: PropTypes.func.isRequired,
+  onDecline: PropTypes.func.isRequired
+}
