@@ -11,22 +11,22 @@ export default function DataPrivacyConsent({ onConsent, onDecline }) {
   return (
     <div className="min-h-screen bg-[url('/diamond-pattern.svg')] bg-repeat flex justify-center items-center p-4">
       <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-8">
-        <div className="flex flex-col sm:flex-row justify-center items-center mb-8">
-          <div className="mr-4 h-16 w-16 flex-shrink-0">
+        <div className="flex flex-row justify-center sm:justify-start items-center mb-8">
+          <div className="mr-4 h-12 w-12 sm:h-16 sm:w-16 flex-shrink-0">
             <img src="/DOST_Logo.png" alt="DOST Logo" className="h-full w-full object-contain" />
           </div>
-          <div className="text-center sm:text-left">
-            <h1 className="text-xl font-bold text-gray-800">Department of Science and Technology V</h1>
-            <p className="text-lg text-gray-600">Customer Satisfaction Feedback</p>
+          <div className="text-left">
+            <h1 className="text-sm sm:text-xl font-bold text-gray-800">Department of Science and Technology V</h1>
+            <p className="text-xs sm:text-lg text-gray-600">Customer Satisfaction Feedback</p>
           </div>
         </div>
         
         <div className="flex justify-center items-center mb-6">
           <ShieldCheck className="mr-4 h-10 w-10 text-gray-800" />
-          <h2 className="text-3xl font-bold text-gray-800">Data Privacy Consent</h2>
+          <h2 className="text-lg sm:text-2xl md:text-3xl font-bold text-gray-800">Data Privacy Consent</h2>
         </div>
         
-        <div className="space-y-4 text-base text-gray-700 py-4">
+        <div className="space-y-2 sm:space-y-4 text-sm sm:text-base text-gray-700 py-4">
           <p className="leading-relaxed">
             This Client Satisfaction Measurement (CSM) tracks the customer experience of government offices. Your feedback on your recent transaction will help us improve our services.
           </p>
@@ -46,7 +46,7 @@ export default function DataPrivacyConsent({ onConsent, onDecline }) {
               checked={isChecked}
               onCheckedChange={(checked) => setIsChecked(checked === true)}
             />
-            <Label htmlFor="privacy-consent" className="text-base font-medium">
+            <Label htmlFor="privacy-consent" className="text-sm sm:text-base font-medium">
               I have read and agree to the Data Privacy terms
             </Label>
           </div>
@@ -68,9 +68,9 @@ export default function DataPrivacyConsent({ onConsent, onDecline }) {
         </div>
 
         <div className="flex justify-center mt-8 space-x-4">
-          <img src="/ARTA_Logo.png" alt="ARTA logo" className="h-12 w-auto" />
-          <img src="/CC_Logo.png" alt="CC Logo" className="h-12 w-auto" />
-          <img src="/BP_logo.png" alt="Bagong Pilipinas logo" className="h-12 w-auto" />
+          <img src="/ARTA_Logo.png" alt="ARTA logo" className="h-10 sm:h-12 w-auto" />
+          <img src="/CC_Logo.png" alt="CC Logo" className="h-10 sm:h-12 w-auto" />
+          <img src="/BP_logo.png" alt="Bagong Pilipinas logo" className="h-10 sm:h-12 w-auto" />
         </div>
       </div>
     </div>
