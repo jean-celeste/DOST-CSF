@@ -23,7 +23,7 @@ const EmojiRatingOption = ({
       {isNA ? (
         <div className="text-4xl font-bold text-gray-400 mb-1">N/A</div>
       ) : (
-        <div className="w-16 h-16 mb-2 relative">
+        <div className="w-12 h-12 sm:w-16 sm:h-16 mb-2 relative">
           {/* Animated image shown only when selected */}
           <img 
             src={imageSource} 
@@ -35,11 +35,11 @@ const EmojiRatingOption = ({
           <img 
             src={staticImageSource} 
             alt={`${label} emoji`} 
-            className={`w-full h-full object-contain transition-opacity duration-300 ${isSelected ? 'opacity-0' : 'opacity-100 grayscale opacity-70'}`} 
+            className={`w-full h-full object-contain transition-opacity duration-300 ${isSelected ? 'opacity-0' : 'opacity-50'}`} 
           />
         </div>
       )}
-      <div className={`text-sm font-medium text-center ${isSelected ? "text-purple-600" : "text-gray-400"}`}>
+      <div className={`text-xs sm:text-sm font-medium text-center ${isSelected ? "text-purple-600" : "text-gray-400"}`}>
         {label}
       </div>
     </div>

@@ -10,7 +10,7 @@ const RatingQuestion = ({
   emojiOptions
 }) => {
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm">
+    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
       <div className="flex justify-between items-center mb-4">
         <p className="font-medium text-gray-900">{question}</p>
         <div className="text-sm text-gray-500">
@@ -23,14 +23,14 @@ const RatingQuestion = ({
         </div>
       </div>
       
-      <div className="grid grid-cols-6 gap-2">
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
         {emojiOptions.map((option) => (
           <EmojiRatingOption
             key={option.value}
             value={option.value}
             label={option.label}
             imageSource={option.imageSource}
-            staticImageSource={option.imageSourceStatic} // Corrected prop name
+            staticImageSource={option.imageSourceStatic}
             isSelected={selectedRating === option.value}
             onSelect={onRatingSelect}
             isNA={option.value === 'na'}

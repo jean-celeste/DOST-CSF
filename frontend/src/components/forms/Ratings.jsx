@@ -108,7 +108,16 @@ export default function Ratings({ onNextStep, onPrevStep }) {
         emojiOptions={emojiOptions}
       />
 
-      <div className="flex justify-between gap-4 w-full">
+      <RatingQuestion
+        question="The office followed the transaction's requirements and steps based on the information provided."
+        questionId={2}
+        totalQuestions={8}
+        selectedRating={ratings.question3}
+        onRatingSelect={(value) => handleRatingSelect("question3", value)}
+        emojiOptions={emojiOptions}
+      />
+
+      <div className="flex flex-col sm:flex-row justify-between gap-4 w-full">
         <Button 
           variant="outline" 
           className="px-6 py-2 bg-gray-100 text-gray-700"
