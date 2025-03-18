@@ -25,6 +25,8 @@ export default function Ratings({ onNextStep, onPrevStep }) {
     question3: ""
   });
 
+  const [currentPage, setCurrentPage] = useState(0);
+
   const handleRatingSelect = (questionKey, value) => {
     setRatings({
       ...ratings,
@@ -35,6 +37,14 @@ export default function Ratings({ onNextStep, onPrevStep }) {
   const handleContinue = () => {
     // You could add validation here if needed
     onNextStep();
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((prevPage) => prevPage + 1);
+  };
+
+  const handlePrevPage = () => {
+    setCurrentPage((prevPage) => prevPage - 1);
   };
 
   // Define emoji options once to reuse
@@ -75,71 +85,84 @@ export default function Ratings({ onNextStep, onPrevStep }) {
       imageSource: null
     }
   ];
-  
-  return (
-    <div className="space-y-8 max-w-4xl mx-auto p-4">  
-      {/* First question */}
-      <RatingQuestion
-        question="I am satisfied with the service that I availed."
-        questionId={0}
-        totalQuestions={8}
-        selectedRating={ratings.question1}
-        onRatingSelect={(value) => handleRatingSelect("question1", value)}
-        emojiOptions={emojiOptions}
-      />
-      
-      {/* Second question */}
-      <RatingQuestion
-        question="I spent a reasonable amount of time for my transaction."
-        questionId={1}
-        totalQuestions={8}
-        selectedRating={ratings.question2}
-        onRatingSelect={(value) => handleRatingSelect("question2", value)}
-        emojiOptions={emojiOptions}
-      />
-      
-      {/* Third question */}
-      <RatingQuestion
-        question="The office followed the transaction's requirements and steps based on the information provided."
-        questionId={2}
-        totalQuestions={8}
-        selectedRating={ratings.question3}
-        onRatingSelect={(value) => handleRatingSelect("question3", value)}
-        emojiOptions={emojiOptions}
-      />
 
-      <RatingQuestion
-        question="The office followed the transaction's requirements and steps based on the information provided."
-        questionId={2}
-        totalQuestions={8}
-        selectedRating={ratings.question3}
-        onRatingSelect={(value) => handleRatingSelect("question3", value)}
-        emojiOptions={emojiOptions}
-      />
+  // Define the questions and divide them into pages
+  const questions = [
+    {
+      question: "I am satisfied with the service that I availed.",
+      questionKey: "question1"
+    },
+    {
+      question: "I spent a reasonable amount of time for my transaction.",
+      questionKey: "question2"
+    },
+    {
+      question: "The office followed the transaction's requirements and steps based on the information provided.",
+      questionKey: "question3"
+    },
+    {
+      question: "I am satisfied with the service that I availed.",
+      questionKey: "question1"
+    },
+    {
+      question: "I spent a reasonable amount of time for my transaction.",
+      questionKey: "question2"
+    },
+    {
+      question: "I am satisfied with the service that I availed.",
+      questionKey: "question1"
+    }
+  ];
+
+  const questionsPerPage = 3;
+  const totalPages = Math.ceil(questions.length / questionsPerPage);
+
+  const currentQuestions = questions.slice(
+    currentPage * questionsPerPage,
+    (currentPage + 1) * questionsPerPage
+  );
+
+  return (
+    <div className="space-y-8 max-w-4xl mx-auto p-4">
+      {currentQuestions.map((q, index) => (
+        <RatingQuestion
+          key={index}
+          question={q.question}
+          questionId={currentPage * questionsPerPage + index}
+          totalQuestions={questions.length}
+          selectedRating={ratings[q.questionKey]}
+          onRatingSelect={(value) => handleRatingSelect(q.questionKey, value)}
+          emojiOptions={emojiOptions}
+        />
+      ))}
 
       <div className="flex flex-col sm:flex-row justify-between gap-4 w-full">
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="px-6 py-2 bg-gray-100 text-gray-700"
-          onClick={onPrevStep}
+          onClick={currentPage === 0 ? onPrevStep : handlePrevPage}
+          disabled={currentPage === 0}
         >
-          Go Back
+          {currentPage === 0 ? "Go Back" : "Previous"}
         </Button>
-        
+
         <div className="flex-1 flex justify-center items-center">
           <div className="flex space-x-2">
-            <div className="w-8 h-2 bg-blue-600 rounded"></div>
-            <div className="w-8 h-2 bg-gray-300 rounded"></div>
-            <div className="w-8 h-2 bg-gray-300 rounded"></div>
+            {Array.from({ length: totalPages }).map((_, index) => (
+              <div
+                key={index}
+                className={`w-8 h-2 rounded ${index === currentPage ? "bg-blue-600" : "bg-gray-300"}`}
+              ></div>
+            ))}
           </div>
         </div>
-        
-        <Button 
+
+        <Button
           className="px-6 py-2 bg-blue-600 text-white"
-          onClick={handleContinue}
-          disabled={!ratings.question1 && !ratings.question2 && !ratings.question3}
+          onClick={currentPage === totalPages - 1 ? handleContinue : handleNextPage}
+          disabled={!ratings[questions[currentPage * questionsPerPage].questionKey]}
         >
-          Continue
+          {currentPage === totalPages - 1 ? "Continue" : "Next"}
         </Button>
       </div>
     </div>
