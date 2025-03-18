@@ -101,6 +101,13 @@ export default function CustomerFeedbackForm() {
                 </div>
               </div>
             </div>
+
+            {/* Logos at the bottom */}
+            <div className="mt-15 flex justify-center space-x-4">
+              <img src="/ARTA_Logo.png" alt="ARTA Logo" className="h-12 w-12" />
+              <img src="/CC_Logo.png" alt="CC Logo" className="h-12 w-12" />
+              <img src="/BP_logo.png" alt="BP Logo" className="h-12 w-12" />
+            </div>
           </div>
 
           {/* Right Side - Form Content */}
