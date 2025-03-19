@@ -6,7 +6,7 @@ import { Label } from "../ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { Check } from 'lucide-react'
 
-export default function PersonalDetailsForm({ onNextStep }) {
+export default function PersonalDetailsForm({ onNextStep, onPrevStep }) {
   const [email, setEmail] = useState('')
   const [contact, setContact] = useState('')
   const [services, setServices] = useState('')
@@ -130,8 +130,23 @@ export default function PersonalDetailsForm({ onNextStep }) {
         </Select>
       </div>
 
-      <div className="pt-4 text-right">
-        <Button type="button" variant="gradient" onClick={onNextStep} className="rounded-lg">Next</Button>
+      <div className="pt-4 flex justify-between">
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={onPrevStep}
+          className="px-6 py-2 bg-gray-100 text-gray-700"
+        >
+          Go Back
+        </Button>
+        <Button 
+          type="button" 
+          variant="gradient" 
+          onClick={onNextStep} 
+          className="px-6 py-2"
+        >
+          Next
+        </Button>
       </div>
     </div>
   )
@@ -139,5 +154,6 @@ export default function PersonalDetailsForm({ onNextStep }) {
 
 // Props validation
 PersonalDetailsForm.propTypes = {
-  onNextStep: PropTypes.func.isRequired
+  onNextStep: PropTypes.func.isRequired,
+  onPrevStep: PropTypes.func.isRequired
 }
