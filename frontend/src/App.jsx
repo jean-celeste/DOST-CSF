@@ -21,6 +21,10 @@ export default function CustomerFeedbackForm() {
     setCurrentStep(prev => prev + 1)
   }
 
+  const handlePrevStep = () => {
+    setCurrentStep(prev => prev - 1)
+  }
+
   // Render the data privacy page if consent hasn't been given
   if (!showMainForm) {
     return <DataPrivacyConsent onConsent={handleConsent} onDecline={handleDecline} />
@@ -130,9 +134,9 @@ export default function CustomerFeedbackForm() {
             </div>
 
             {/* Render the form component based on current step */}
-            {currentStep === 1 && <PersonalDetailsForm onNextStep={handleNextStep} />}
-            {currentStep === 2 && <Checkmark onNextStep={handleNextStep} />}
-            {currentStep === 3 && <Ratings onNextStep={handleNextStep} />}
+            {currentStep === 1 && <PersonalDetailsForm onNextStep={handleNextStep} onPrevStep={handlePrevStep} />}
+            {currentStep === 2 && <Checkmark onNextStep={handleNextStep} onPrevStep={handlePrevStep} />}
+            {currentStep === 3 && <Ratings onNextStep={handleNextStep} onPrevStep={handlePrevStep} />}
             
             {/* Add other form components for steps 2, 3, and 4 */}
           </div>

@@ -144,7 +144,6 @@ export default function Ratings({ onNextStep, onPrevStep }) {
           variant="outline"
           className="px-6 py-2 bg-gray-100 text-gray-700"
           onClick={currentPage === 0 ? onPrevStep : handlePrevPage}
-          disabled={currentPage === 0}
         >
           {currentPage === 0 ? "Go Back" : "Previous"}
         </Button>

@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { Button } from '@/components/ui/button';
 
-const Checkmark = ({ onNextStep }) => {
+const Checkmark = ({ onNextStep, onPrevStep }) => {
   const [selectedOption, setSelectedOption] = useState(null);
 
   const options = [
@@ -37,19 +38,29 @@ const Checkmark = ({ onNextStep }) => {
           </button>
         ))}
       </div>
-      <button
-        onClick={handleSubmit}
-        disabled={!selectedOption}
-        className={`mt-6 w-full py-3 rounded-lg text-white ${!selectedOption ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'}`}
-      >
-        Continue
-      </button>
+      <div className="flex justify-between mt-6">
+        <Button
+          variant="outline"
+          className="px-6 py-2 bg-gray-100 text-gray-700"
+          onClick={onPrevStep}
+        >
+          Go Back
+        </Button>
+        <Button
+          onClick={handleSubmit}
+          disabled={!selectedOption}
+          className={`px-6 py-2 ${!selectedOption ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'} text-white`}
+        >
+          Continue
+        </Button>
+      </div>
     </div>
   );
 };
 
 Checkmark.propTypes = {
   onNextStep: PropTypes.func.isRequired,
+  onPrevStep: PropTypes.func.isRequired
 };
 
 export default Checkmark;
