@@ -22,7 +22,10 @@ export default function Ratings({ onNextStep, onPrevStep }) {
   const [ratings, setRatings] = useState({
     question1: "",
     question2: "",
-    question3: ""
+    question3: "",
+    question4: "",
+    question5: "",
+    question6: ""
   });
 
   const [currentPage, setCurrentPage] = useState(0);
@@ -102,15 +105,15 @@ export default function Ratings({ onNextStep, onPrevStep }) {
     },
     {
       question: "I am satisfied with the service that I availed.",
-      questionKey: "question1"
+      questionKey: "question4"
     },
     {
       question: "I spent a reasonable amount of time for my transaction.",
-      questionKey: "question2"
+      questionKey: "question5"
     },
     {
       question: "I am satisfied with the service that I availed.",
-      questionKey: "question1"
+      questionKey: "question6"
     }
   ];
 
