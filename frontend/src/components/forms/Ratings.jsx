@@ -126,7 +126,7 @@ export default function Ratings({ onNextStep, onPrevStep }) {
   );
 
   return (
-    <div className="space-y-8 max-w-4xl mx-auto p-4">
+    <div className="space-y-8 w-full mx-auto p-2">
       {currentQuestions.map((q, index) => (
         <RatingQuestion
           key={index}
