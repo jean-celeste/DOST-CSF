@@ -1,14 +1,14 @@
 import PropTypes from 'prop-types';
 import EmojiRatingOption from './EmojiRatingOption';
 
-const RatingQuestion = ({ 
+export default function RatingQuestion({ 
   question, 
   questionId, 
   totalQuestions, 
   selectedRating, 
   onRatingSelect,
   emojiOptions
-}) => {
+}) {
   return (
     <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm w-full">
       <div className="flex justify-between items-center mb-6">
@@ -39,7 +39,7 @@ const RatingQuestion = ({
       </div>
     </div>
   );
-};
+}
 
 RatingQuestion.propTypes = {
   question: PropTypes.string.isRequired,
@@ -56,5 +56,3 @@ RatingQuestion.propTypes = {
     })
   ).isRequired
 };
-
-export default RatingQuestion;
