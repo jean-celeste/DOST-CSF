@@ -3,6 +3,7 @@ import PersonalDetailsForm from "./components/forms/PersonalDetailsForm"
 import Ratings from "./components/forms/Ratings"
 import { UserIcon, CheckSquareIcon, SmileIcon, ClipboardListIcon } from "lucide-react"
 import DataPrivacyConsent from "./components/prompts/DataPrivacyConsent"
+import Checkmark from './components/forms/Checkmark'
 
 export default function CustomerFeedbackForm() {
   const [showMainForm, setShowMainForm] = useState(false)
@@ -130,7 +131,8 @@ export default function CustomerFeedbackForm() {
 
             {/* Render the form component based on current step */}
             {currentStep === 1 && <PersonalDetailsForm onNextStep={handleNextStep} />}
-            {currentStep === 2 && <Ratings onNextStep={handleNextStep} />}
+            {currentStep === 2 && <Checkmark onNextStep={handleNextStep} />}
+            {currentStep === 3 && <Ratings onNextStep={handleNextStep} />}
             
             {/* Add other form components for steps 2, 3, and 4 */}
           </div>
