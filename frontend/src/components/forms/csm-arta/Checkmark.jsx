@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import PropTypes from 'prop-types'
-import { Button } from '../ui/button'
+import { Button } from '@/components/ui/button'
 
 export default function Checkmark({ 
   onNextStep, 

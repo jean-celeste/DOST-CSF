@@ -2,9 +2,9 @@ import { useState } from 'react'
 import PropTypes from 'prop-types'
 import { UserIcon, CheckSquareIcon, SmileIcon, ClipboardListIcon } from 'lucide-react'
 import PersonalDetailsForm from './components/forms/PersonalDetailsForm'
-import Ratings from './components/forms/Ratings'
+import Ratings from './components/forms/csm-arta/Ratings'
 import DataPrivacyConsent from './components/prompts/DataPrivacyConsent'
-import Checkmark from './components/forms/Checkmark'
+import Checkmark from './components/forms/csm-arta/Checkmark'
 
 export default function CustomerFeedbackForm() {
   const [formState, setFormState] = useState({
