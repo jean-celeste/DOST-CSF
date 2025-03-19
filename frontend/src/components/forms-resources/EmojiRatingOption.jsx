@@ -1,7 +1,6 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import PropTypes from 'prop-types'
 
-const EmojiRatingOption = ({ 
+export default function EmojiRatingOption({ 
   value, 
   label, 
   imageSource,
@@ -9,7 +8,7 @@ const EmojiRatingOption = ({
   isSelected, 
   onSelect,
   isNA = false
-}) => {
+}) {
   return (
     <div 
       className={`flex flex-col items-center border rounded-lg p-3 
@@ -24,7 +23,7 @@ const EmojiRatingOption = ({
         {isNA ? (
           <div className="text-4xl font-bold text-gray-400 mb-1">N/A</div>
         ) : (
-          <div className="w-16 h-16 sm:w-25 sm:h-25 mb-2 relative">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 mb-2 relative">
             {/* Animated image shown only when selected */}
             <img 
               src={imageSource} 
@@ -45,8 +44,8 @@ const EmojiRatingOption = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
 EmojiRatingOption.propTypes = {
   value: PropTypes.string.isRequired,
@@ -56,6 +55,4 @@ EmojiRatingOption.propTypes = {
   isSelected: PropTypes.bool.isRequired,
   onSelect: PropTypes.func.isRequired,
   isNA: PropTypes.bool
-};
-
-export default EmojiRatingOption;
+}

@@ -19,22 +19,26 @@ import frowningFaceStatic from "../../assets/emojis/frowning_face_color.svg";
 import poutingFaceStatic from "../../assets/emojis/pouting_face_color.svg";
 
 export default function Ratings({ onNextStep, onPrevStep }) {
-  const [ratings, setRatings] = useState({
-    question1: "",
-    question2: "",
-    question3: "",
-    question4: "",
-    question5: "",
-    question6: ""
+  const [formState, setFormState] = useState({
+    ratings: {
+      question1: "",
+      question2: "",
+      question3: "",
+      question4: "",
+      question5: "",
+      question6: ""
+    },
+    currentPage: 0
   });
 
-  const [currentPage, setCurrentPage] = useState(0);
-
   const handleRatingSelect = (questionKey, value) => {
-    setRatings({
-      ...ratings,
-      [questionKey]: value
-    });
+    setFormState(prev => ({
+      ...prev,
+      ratings: {
+        ...prev.ratings,
+        [questionKey]: value
+      }
+    }));
   };
 
   const handleContinue = () => {
@@ -43,11 +47,17 @@ export default function Ratings({ onNextStep, onPrevStep }) {
   };
 
   const handleNextPage = () => {
-    setCurrentPage((prevPage) => prevPage + 1);
+    setFormState(prev => ({
+      ...prev,
+      currentPage: prev.currentPage + 1
+    }));
   };
 
   const handlePrevPage = () => {
-    setCurrentPage((prevPage) => prevPage - 1);
+    setFormState(prev => ({
+      ...prev,
+      currentPage: prev.currentPage - 1
+    }));
   };
 
   // Define emoji options once to reuse
@@ -121,8 +131,8 @@ export default function Ratings({ onNextStep, onPrevStep }) {
   const totalPages = Math.ceil(questions.length / questionsPerPage);
 
   const currentQuestions = questions.slice(
-    currentPage * questionsPerPage,
-    (currentPage + 1) * questionsPerPage
+    formState.currentPage * questionsPerPage,
+    (formState.currentPage + 1) * questionsPerPage
   );
 
   return (
@@ -131,9 +141,9 @@ export default function Ratings({ onNextStep, onPrevStep }) {
         <RatingQuestion
           key={index}
           question={q.question}
-          questionId={currentPage * questionsPerPage + index}
+          questionId={formState.currentPage * questionsPerPage + index}
           totalQuestions={questions.length}
-          selectedRating={ratings[q.questionKey]}
+          selectedRating={formState.ratings[q.questionKey]}
           onRatingSelect={(value) => handleRatingSelect(q.questionKey, value)}
           emojiOptions={emojiOptions}
         />
@@ -143,9 +153,9 @@ export default function Ratings({ onNextStep, onPrevStep }) {
         <Button
           variant="outline"
           className="px-6 py-2 bg-gray-100 text-gray-700"
-          onClick={currentPage === 0 ? onPrevStep : handlePrevPage}
+          onClick={formState.currentPage === 0 ? onPrevStep : handlePrevPage}
         >
-          {currentPage === 0 ? "Go Back" : "Previous"}
+          {formState.currentPage === 0 ? "Go Back" : "Previous"}
         </Button>
 
         <div className="flex-1 flex justify-center items-center">
@@ -153,7 +163,7 @@ export default function Ratings({ onNextStep, onPrevStep }) {
             {Array.from({ length: totalPages }).map((_, index) => (
               <div
                 key={index}
-                className={`w-8 h-2 rounded ${index === currentPage ? "bg-blue-600" : "bg-gray-300"}`}
+                className={`w-8 h-2 rounded ${index === formState.currentPage ? "bg-blue-600" : "bg-gray-300"}`}
               ></div>
             ))}
           </div>
@@ -161,10 +171,10 @@ export default function Ratings({ onNextStep, onPrevStep }) {
 
         <Button
           className="px-6 py-2 bg-blue-600 text-white"
-          onClick={currentPage === totalPages - 1 ? handleContinue : handleNextPage}
-          disabled={!ratings[questions[currentPage * questionsPerPage].questionKey]}
+          onClick={formState.currentPage === totalPages - 1 ? handleContinue : handleNextPage}
+          disabled={!formState.ratings[questions[formState.currentPage * questionsPerPage].questionKey]}
         >
-          {currentPage === totalPages - 1 ? "Continue" : "Next"}
+          {formState.currentPage === totalPages - 1 ? "Continue" : "Next"}
         </Button>
       </div>
     </div>

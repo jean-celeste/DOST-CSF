@@ -1,10 +1,10 @@
 // frontend/src/components/forms/Checkmark.jsx
 
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { Button } from '../ui/button';
+import { useState } from 'react'
+import PropTypes from 'prop-types'
+import { Button } from '../ui/button'
 
-const Checkmark = ({ 
+export default function Checkmark({ 
   onNextStep, 
   onPrevStep,
   mainQuestion = "Which of the following best describes your awareness of a CC?",
@@ -22,64 +22,73 @@ const Checkmark = ({
     },
     {
       id: 2,
-      question: "How much did the CC helpe you in your transaction?",
+      question: "How much did the CC help you in your transaction?",
       options: ["Helped very much", "Somewhat helped", "Did not help"]
     }
   ]
-}) => {
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [additionalAnswers, setAdditionalAnswers] = useState({});
+}) {
+  const [formState, setFormState] = useState({
+    selectedOption: null,
+    additionalAnswers: {}
+  })
 
   const handleOptionChange = (option) => {
-    setSelectedOption(option);
-    // Reset additional answers when changing main option
-    if (option === mainOptions[3]) { // If last option selected
-      setAdditionalAnswers({});
-    } else if (option === mainOptions[2]) { // If third option selected
-      // Reset question1 answer but keep question2
-      setAdditionalAnswers(prev => {
-        const newAnswers = { ...prev };
-        delete newAnswers[1];
-        return newAnswers;
-      });
-    }
-  };
+    setFormState(prev => {
+      const newState = {
+        ...prev,
+        selectedOption: option,
+        additionalAnswers: { ...prev.additionalAnswers }
+      }
+
+      // Reset additional answers when changing main option
+      if (option === mainOptions[3]) { // If last option selected
+        newState.additionalAnswers = {}
+      } else if (option === mainOptions[2]) { // If third option selected
+        delete newState.additionalAnswers[1] // Reset question1 answer but keep question2
+      }
+
+      return newState
+    })
+  }
 
   const handleAdditionalOptionChange = (questionId, answer) => {
-    setAdditionalAnswers(prev => ({
+    setFormState(prev => ({
       ...prev,
-      [questionId]: answer
-    }));
-  };
+      additionalAnswers: {
+        ...prev.additionalAnswers,
+        [questionId]: answer
+      }
+    }))
+  }
 
   const handleSubmit = () => {
-    if (selectedOption) {
+    if (formState.selectedOption) {
       // Here you can prepare the data to be sent to the database
       const formData = {
-        mainAnswer: selectedOption,
-        additionalAnswers: additionalAnswers
-      };
-      console.log('Form data to be saved:', formData);
-      onNextStep();
+        mainAnswer: formState.selectedOption,
+        additionalAnswers: formState.additionalAnswers
+      }
+      console.log('Form data to be saved:', formData)
+      onNextStep()
     }
-  };
+  }
 
-  const shouldShowAdditionalQuestions = selectedOption && selectedOption !== mainOptions[3];
+  const shouldShowAdditionalQuestions = formState.selectedOption && formState.selectedOption !== mainOptions[3]
 
   // Filter questions based on selected option
   const getVisibleQuestions = () => {
-    if (!shouldShowAdditionalQuestions) return [];
-    if (selectedOption === mainOptions[2]) { // If third option selected
-      return additionalQuestions.filter(q => q.id !== 1);
+    if (!shouldShowAdditionalQuestions) return []
+    if (formState.selectedOption === mainOptions[2]) { // If third option selected
+      return additionalQuestions.filter(q => q.id !== 1)
     }
-    return additionalQuestions;
-  };
+    return additionalQuestions
+  }
 
   const areAllQuestionsAnswered = () => {
-    if (!shouldShowAdditionalQuestions) return true;
-    const visibleQuestions = getVisibleQuestions();
-    return visibleQuestions.every(q => additionalAnswers[q.id]);
-  };
+    if (!shouldShowAdditionalQuestions) return true
+    const visibleQuestions = getVisibleQuestions()
+    return visibleQuestions.every(q => formState.additionalAnswers[q.id])
+  }
 
   return (
     <div className="space-y-8">
@@ -92,7 +101,7 @@ const Checkmark = ({
           <button
             key={index}
             className={`w-full p-4 rounded-xl text-left transition-all
-              ${selectedOption === option 
+              ${formState.selectedOption === option 
                 ? 'bg-blue-100 border border-blue-500' 
                 : 'bg-white border border-gray-200'
               } hover:border-blue-400`}
@@ -113,7 +122,7 @@ const Checkmark = ({
                   <button
                     key={optionIndex}
                     className={`w-full p-4 rounded-xl text-left transition-all
-                      ${additionalAnswers[q.id] === option 
+                      ${formState.additionalAnswers[q.id] === option 
                         ? 'bg-blue-100 border border-blue-500' 
                         : 'bg-white border border-gray-200'
                       } hover:border-blue-400`}
@@ -140,14 +149,14 @@ const Checkmark = ({
           variant="gradient"
           className="px-6 py-2 rounded-lg"
           onClick={handleSubmit}
-          disabled={!selectedOption || !areAllQuestionsAnswered()}
+          disabled={!formState.selectedOption || !areAllQuestionsAnswered()}
         >
           Continue
         </Button>
       </div>
     </div>
-  );
-};
+  )
+}
 
 Checkmark.propTypes = {
   onNextStep: PropTypes.func.isRequired,
@@ -159,6 +168,4 @@ Checkmark.propTypes = {
     question: PropTypes.string.isRequired,
     options: PropTypes.arrayOf(PropTypes.string).isRequired
   }))
-};
-
-export default Checkmark;
+}
