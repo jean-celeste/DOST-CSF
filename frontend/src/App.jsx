@@ -40,7 +40,7 @@ export default function CustomerFeedbackForm() {
           <div className="bg-gray-50 p-10 md:col-span-2">
             <div className="mb-8 flex items-center">
               <div className="mr-2 h-16 w-16">
-                <img src="/dost-logo.png" alt="DOST Logo" className="h-16 w-16" />
+                <img src="/DOST_Logo.png" alt="DOST Logo" className="h-16 w-16" />
               </div>
               <div>
                 <h1 className="text-lg font-bold">Department of Science and Technology V</h1>
