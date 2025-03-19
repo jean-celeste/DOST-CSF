@@ -25,31 +25,40 @@ const Checkmark = ({ onNextStep, onPrevStep }) => {
   };
 
   return (
-    <div className="p-8 bg-white rounded-lg max-w-md mx-auto">
-      <h2 className="text-2xl font-semibold mb-6 text-center">Which of the following best describes your awareness of a CC?</h2>
+    <div className="space-y-8">
+      <h2 className="text-2xl font-bold mb-6">
+        Which of the following best describes your awareness of a CC?
+      </h2>
+      
       <div className="space-y-4">
         {options.map((option, index) => (
           <button
             key={index}
-            className={`w-full p-4 rounded-lg text-left ${selectedOption === option ? 'bg-blue-100 border border-blue-500' : 'bg-gray-100'} hover:bg-blue-50`}
+            className={`w-full p-4 rounded-xl text-left transition-all
+              ${selectedOption === option 
+                ? 'bg-blue-100 border border-blue-500' 
+                : 'bg-white border border-gray-200'
+              } hover:border-blue-400`}
             onClick={() => handleOptionChange(option)}
           >
-            <span className="text-gray-800">{option}</span>
+            <span className="text-base">{option}</span>
           </button>
         ))}
       </div>
-      <div className="flex justify-between mt-6">
+
+      <div className="flex justify-between mt-20">
         <Button
           variant="outline"
-          className="px-6 py-2 bg-gray-100 text-gray-700"
+          className="px-6 py-2 bg-gray-100 rounded-lg"
           onClick={onPrevStep}
         >
           Go Back
         </Button>
         <Button
+          variant="gradient"
+          className="px-6 py-2 rounded-lg"
           onClick={handleSubmit}
           disabled={!selectedOption}
-          className={`px-6 py-2 ${!selectedOption ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'} text-white`}
         >
           Continue
         </Button>
