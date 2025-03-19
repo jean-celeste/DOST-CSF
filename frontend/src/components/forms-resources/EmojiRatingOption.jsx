@@ -13,34 +13,36 @@ const EmojiRatingOption = ({
   return (
     <div 
       className={`flex flex-col items-center border rounded-lg p-3 
-        ${isSelected ? "border-purple-500" : "border-gray-200"} 
+        ${isSelected ? "border-[transparent] bg-gradient-to-b from-[#A25CCB] to-[#FF6161] p-[1px]" : "border-gray-200"} 
         cursor-pointer`}
       onClick={() => onSelect(value)}
       role="radio"
       aria-checked={isSelected}
       tabIndex={0}
     >
-      {isNA ? (
-        <div className="text-4xl font-bold text-gray-400 mb-1">N/A</div>
-      ) : (
-        <div className="w-12 h-12 sm:w-16 sm:h-16 mb-2 relative">
-          {/* Animated image shown only when selected */}
-          <img 
-            src={imageSource} 
-            alt={`${label} emoji`} 
-            className={`w-full h-full object-contain absolute top-0 left-0 z-10 transition-opacity duration-300 ${isSelected ? 'opacity-100' : 'opacity-0'}`} 
-          />
-          
-          {/* Static image shown when not selected */}
-          <img 
-            src={staticImageSource} 
-            alt={`${label} emoji`} 
-            className={`w-full h-full object-contain transition-opacity duration-300 ${isSelected ? 'opacity-0' : 'opacity-50'}`} 
-          />
+      <div className={`flex flex-col items-center w-full h-full rounded-lg bg-white ${isSelected ? "p-[10px]" : "p-0"}`}>
+        {isNA ? (
+          <div className="text-4xl font-bold text-gray-400 mb-1">N/A</div>
+        ) : (
+          <div className="w-16 h-16 sm:w-25 sm:h-25 mb-2 relative">
+            {/* Animated image shown only when selected */}
+            <img 
+              src={imageSource} 
+              alt={`${label} emoji`} 
+              className={`w-full h-full object-contain absolute top-0 left-0 z-10 transition-opacity duration-300 ${isSelected ? 'opacity-100' : 'opacity-0'}`} 
+            />
+            
+            {/* Static image shown when not selected */}
+            <img 
+              src={staticImageSource} 
+              alt={`${label} emoji`} 
+              className={`w-full h-full object-contain transition-opacity duration-300 ${isSelected ? 'opacity-0' : 'opacity-50'}`} 
+            />
+          </div>
+        )}
+        <div className={`text-xs sm:text-sm font-medium text-center ${isSelected ? "text-purple-600" : "text-gray-400"}`}>
+          {label}
         </div>
-      )}
-      <div className={`text-xs sm:text-sm font-medium text-center ${isSelected ? "text-purple-600" : "text-gray-400"}`}>
-        {label}
       </div>
     </div>
   );
