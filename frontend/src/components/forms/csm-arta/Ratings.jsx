@@ -2,21 +2,21 @@
 
 import { useState } from "react";
 import PropTypes from 'prop-types';
-import { Button } from "../ui/button";
-import RatingQuestion from '../forms-resources/RatingQuestion';
+import { Button } from "@/components/ui/button";
+import RatingQuestion from '@/components/forms-resources/RatingQuestion';
 
 // Import the emoji images
-import heartEyesFace from "../../assets/emojis/smiling_face_with_heart-eyes_animated.png";
-import smilingFace from "../../assets/emojis/smiling_face_with_smiling_eyes_animated.png";
-import neutralFace from "../../assets/emojis/face_without_mouth_animated.png";
-import frowningFace from "../../assets/emojis/frowning_face_animated.png";
-import poutingFace from "../../assets/emojis/pouting_face_animated.png";
+import heartEyesFace from "@/assets/emojis/smiling_face_with_heart-eyes_animated.png";
+import smilingFace from "@/assets/emojis/smiling_face_with_smiling_eyes_animated.png";
+import neutralFace from "@/assets/emojis/face_without_mouth_animated.png";
+import frowningFace from "@/assets/emojis/frowning_face_animated.png";
+import poutingFace from "@/assets/emojis/pouting_face_animated.png";
 
-import heartEyesFaceStatic from "../../assets/emojis/smiling_face_with_heart-eyes_color.svg";
-import smilingFaceStatic from "../../assets/emojis/smiling_face_with_smiling_eyes_color.svg";
-import neutralFaceStatic from "../../assets/emojis/face_without_mouth_color.svg";
-import frowningFaceStatic from "../../assets/emojis/frowning_face_color.svg";
-import poutingFaceStatic from "../../assets/emojis/pouting_face_color.svg";
+import heartEyesFaceStatic from "@/assets/emojis/smiling_face_with_heart-eyes_color.svg";
+import smilingFaceStatic from "@/assets/emojis/smiling_face_with_smiling_eyes_color.svg";
+import neutralFaceStatic from "@/assets/emojis/face_without_mouth_color.svg";
+import frowningFaceStatic from "@/assets/emojis/frowning_face_color.svg";
+import poutingFaceStatic from "@/assets/emojis/pouting_face_color.svg";
 
 export default function Ratings({ onNextStep, onPrevStep }) {
   const [formState, setFormState] = useState({
