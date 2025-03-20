@@ -1,12 +1,21 @@
-import { useState } from "react"
-import { Button } from "../ui/button"
-import { Checkbox } from "../ui/checkbox"
-import { Label } from "../ui/label"
-import PropTypes from "prop-types"
-import { ShieldCheck } from "lucide-react"
+import { useState } from 'react'
+import PropTypes from 'prop-types'
+import { Button } from '../ui/button'
+import { Checkbox } from '../ui/checkbox'
+import { Label } from '../ui/label'
+import { ShieldCheck } from 'lucide-react'
 
 export default function DataPrivacyConsent({ onConsent, onDecline }) {
-  const [isChecked, setIsChecked] = useState(false)
+  const [formState, setFormState] = useState({
+    isChecked: false
+  })
+
+  const handleCheckChange = (checked) => {
+    setFormState(prev => ({
+      ...prev,
+      isChecked: checked === true
+    }))
+  }
 
   return (
     <div className="min-h-screen bg-[url('/diamond-pattern.svg')] bg-repeat flex justify-center items-center p-4">
@@ -43,8 +52,8 @@ export default function DataPrivacyConsent({ onConsent, onDecline }) {
           <div className="flex items-center space-x-3 pt-4 border-t border-gray-200 mt-6">
             <Checkbox
               id="privacy-consent"
-              checked={isChecked}
-              onCheckedChange={(checked) => setIsChecked(checked === true)}
+              checked={formState.isChecked}
+              onCheckedChange={handleCheckChange}
             />
             <Label htmlFor="privacy-consent" className="text-sm sm:text-base font-medium">
               I have read and agree to the Data Privacy terms
@@ -60,7 +69,7 @@ export default function DataPrivacyConsent({ onConsent, onDecline }) {
             type="button" 
             variant="gradient" 
             onClick={onConsent} 
-            disabled={!isChecked} 
+            disabled={!formState.isChecked} 
             className="px-6 py-2 font-bold"
           >
             Accept and Continue
