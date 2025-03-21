@@ -171,7 +171,7 @@ export default function CustomerFeedbackForm() {
               <img src="/ARTA_Logo.png" alt="ARTA Logo" className="h-12 w-12" />
               <img src="/CC_Logo.png" alt="CC Logo" className="h-12 w-12" />
               <img src="/BP_logo.png" alt="BP Logo" className="h-12 w-12" />
-              <img src="/QMS_Logo.png" alt="QMS Logo" className="h-12 w-12" />
+              {/* <img src="/QMS_Logo.png" alt="QMS Logo" className="h-12 w-12" /> */}
             </div>
           </div>
 
