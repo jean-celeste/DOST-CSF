@@ -1,16 +1,18 @@
+'use client'
+
 import { useState } from 'react'
 import PropTypes from 'prop-types'
 import { UserIcon, CheckSquareIcon, SmileIcon, ClipboardListIcon, QrCodeIcon } from 'lucide-react'
-import PersonalDetailsForm from './components/forms/PersonalDetailsForm'
-import DataPrivacyConsent from './components/prompts/DataPrivacyConsent'
+import PersonalDetailsForm from '@/components/forms/PersonalDetailsForm'
+import DataPrivacyConsent from '@/components/prompts/DataPrivacyConsent'
 
 // CSM-ARTA components
-import CSMARTACheckmark from './components/forms/csm-arta/Checkmark'
-import CSMARTARatings from './components/forms/csm-arta/Ratings'
+import CSMARTACheckmark from '@/components/forms/csm-arta/Checkmark'
+import CSMARTARatings from '@/components/forms/csm-arta/Ratings'
 
 // QMS components
-import QMSCheckmark from './components/forms/qms-f4/Checkmark'
-import QMSRatings from './components/forms/qms-f4/Ratings'
+import QMSCheckmark from '@/components/forms/qms-f4/Checkmark'
+import QMSRatings from '@/components/forms/qms-f4/Ratings'
 
 export default function CustomerFeedbackForm() {
   const [formState, setFormState] = useState({
