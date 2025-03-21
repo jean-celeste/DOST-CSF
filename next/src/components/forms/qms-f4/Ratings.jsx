@@ -1,22 +1,23 @@
-// "use client"
+"use client"
 
 import { useState } from "react";
 import PropTypes from 'prop-types';
 import { Button } from "@/components/ui/button";
 import RatingQuestion from '@/components/forms-resources/RatingQuestion';
 
-// Import the emoji images
-import heartEyesFace from "@/assets/emojis/smiling_face_with_heart-eyes_animated.png";
-import smilingFace from "@/assets/emojis/smiling_face_with_smiling_eyes_animated.png";
-import neutralFace from "@/assets/emojis/face_without_mouth_animated.png";
-import frowningFace from "@/assets/emojis/frowning_face_animated.png";
-import poutingFace from "@/assets/emojis/pouting_face_animated.png";
+//Animated emojis
+const heartEyesFace = "/assets/emojis/smiling_face_with_heart-eyes_animated.png";
+const smilingFace = "/assets/emojis/smiling_face_with_smiling_eyes_animated.png";
+const neutralFace = "/assets/emojis/face_without_mouth_animated.png";
+const frowningFace = "/assets/emojis/frowning_face_animated.png";
+const poutingFace = "/assets/emojis/pouting_face_animated.png";
 
-import heartEyesFaceStatic from "@/assets/emojis/smiling_face_with_heart-eyes_color.svg";
-import smilingFaceStatic from "@/assets/emojis/smiling_face_with_smiling_eyes_color.svg";
-import neutralFaceStatic from "@/assets/emojis/face_without_mouth_color.svg";
-import frowningFaceStatic from "@/assets/emojis/frowning_face_color.svg";
-import poutingFaceStatic from "@/assets/emojis/pouting_face_color.svg";
+//STatic emojis
+const heartEyesFaceStatic = "/assets/emojis/smiling_face_with_heart-eyes_color.svg";
+const smilingFaceStatic = "/assets/emojis/smiling_face_with_smiling_eyes_color.svg";
+const neutralFaceStatic = "/assets/emojis/face_without_mouth_color.svg";
+const frowningFaceStatic = "/assets/emojis/frowning_face_color.svg";
+const poutingFaceStatic = "/assets/emojis/pouting_face_color.svg";
 
 export default function Ratings({ onNextStep, onPrevStep }) {
   const [formState, setFormState] = useState({
