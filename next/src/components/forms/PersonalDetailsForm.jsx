@@ -8,20 +8,12 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Check } from 'lucide-react'
 
-export default function PersonalDetailsForm({ onNextStep, onPrevStep }) {
-  const [formState, setFormState] = useState({
-    email: '',
-    contact: '',
-    services: '',
-    sex: 'male',
-    ageGroup: '18-38'
-  })
-
+export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, onFormDataChange }) {
   const handleInputChange = (field, value) => {
-    setFormState(prev => ({
-      ...prev,
+    onFormDataChange({
+      ...formData,
       [field]: value
-    }))
+    })
   }
 
   return (
@@ -34,10 +26,10 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep }) {
             id="email"
             placeholder="Email"
             className="mt-1 rounded-lg w-full h-12 px-2"
-            value={formState.email}
+            value={formData.email}
             onChange={(e) => handleInputChange('email', e.target.value)}
           />
-          {formState.email && <Check className="absolute right-2 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-500" />}
+          {formData.email && <Check className="absolute right-2 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-500" />}
         </div>
       </div>
 
@@ -49,10 +41,10 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep }) {
             id="contact"
             placeholder="09123456789"
             className="mt-1 rounded-lg w-full h-12 px-2"
-            value={formState.contact}
+            value={formData.contact}
             onChange={(e) => handleInputChange('contact', e.target.value)}
           />
-          {formState.contact && <Check className="absolute right-2 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-500" />}
+          {formData.contact && <Check className="absolute right-2 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-500" />}
         </div>
       </div>
 
@@ -62,7 +54,7 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep }) {
         <div className="mt-2 flex w-1/2 space-x-2">
           <Button
             type="button"
-            variant={formState.sex === 'male' ? 'gradient' : 'outline'}
+            variant={formData.sex === 'male' ? 'gradient' : 'outline'}
             onClick={() => handleInputChange('sex', 'male')}
             className="rounded-lg flex-1"
           >
@@ -70,7 +62,7 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep }) {
           </Button>
           <Button
             type="button"
-            variant={formState.sex === 'female' ? 'gradient' : 'outline'}
+            variant={formData.sex === 'female' ? 'gradient' : 'outline'}
             onClick={() => handleInputChange('sex', 'female')}
             className="rounded-lg flex-1"
           >
@@ -78,7 +70,7 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep }) {
           </Button>
           <Button
             type="button"
-            variant={formState.sex === 'prefer-not' ? 'gradient' : 'outline'}
+            variant={formData.sex === 'prefer-not' ? 'gradient' : 'outline'}
             onClick={() => handleInputChange('sex', 'prefer-not')}
             className="rounded-lg flex-2"
           >
@@ -93,7 +85,7 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep }) {
         <div className="mt-2 grid grid-cols-2 gap-2 w-1/2">
           <Button
             type="button"
-            variant={formState.ageGroup === 'below-18' ? 'gradient' : 'outline'}
+            variant={formData.ageGroup === 'below-18' ? 'gradient' : 'outline'}
             onClick={() => handleInputChange('ageGroup', 'below-18')}
             className="rounded-lg"
           >
@@ -101,7 +93,7 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep }) {
           </Button>
           <Button
             type="button"
-            variant={formState.ageGroup === '18-38' ? 'gradient' : 'outline'}
+            variant={formData.ageGroup === '18-38' ? 'gradient' : 'outline'}
             onClick={() => handleInputChange('ageGroup', '18-38')}
             className="rounded-lg"
           >
@@ -109,7 +101,7 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep }) {
           </Button>
           <Button
             type="button"
-            variant={formState.ageGroup === '39-59' ? 'gradient' : 'outline'}
+            variant={formData.ageGroup === '39-59' ? 'gradient' : 'outline'}
             onClick={() => handleInputChange('ageGroup', '39-59')}
             className="rounded-lg"
           >
@@ -117,7 +109,7 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep }) {
           </Button>
           <Button
             type="button"
-            variant={formState.ageGroup === '60-above' ? 'gradient' : 'outline'}
+            variant={formData.ageGroup === '60-above' ? 'gradient' : 'outline'}
             onClick={() => handleInputChange('ageGroup', '60-above')}
             className="rounded-lg"
           >
@@ -129,7 +121,7 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep }) {
       {/* Services Availed */}
       <div>
         <Label htmlFor="services">Services Availed</Label>
-        <Select value={formState.services} onValueChange={(value) => handleInputChange('services', value)}>
+        <Select value={formData.services} onValueChange={(value) => handleInputChange('services', value)}>
           <SelectTrigger id="services" className="mt-1 rounded-lg w-1/2 h-12 px-2">
             <SelectValue placeholder="Select" />
           </SelectTrigger>
@@ -166,5 +158,13 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep }) {
 // Props validation
 PersonalDetailsForm.propTypes = {
   onNextStep: PropTypes.func.isRequired,
-  onPrevStep: PropTypes.func.isRequired
+  onPrevStep: PropTypes.func.isRequired,
+  formData: PropTypes.shape({
+    email: PropTypes.string,
+    contact: PropTypes.string,
+    services: PropTypes.string,
+    sex: PropTypes.string,
+    ageGroup: PropTypes.string
+  }).isRequired,
+  onFormDataChange: PropTypes.func.isRequired
 }

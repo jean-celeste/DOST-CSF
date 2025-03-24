@@ -1,10 +1,11 @@
-import { useState } from 'react'
 import PropTypes from 'prop-types'
 import { Button } from '@/components/ui/button'
 
 export default function Checkmark({ 
   onNextStep, 
   onPrevStep,
+  formData,
+  onFormDataChange,
   mainQuestion = "Did you notice the (QMS) in this office?",
   mainOptions = [
     "Yes, I noticed and used the QMS.",
@@ -13,23 +14,14 @@ export default function Checkmark({
     "I'm not sure what a QMS is."
   ]
 }) {
-  const [formState, setFormState] = useState({
-    selectedOption: null
-  })
-
   const handleOptionChange = (option) => {
-    setFormState({
+    onFormDataChange({
       selectedOption: option
     })
   }
 
   const handleSubmit = () => {
-    if (formState.selectedOption) {
-      // Here you can prepare the data to be sent to the database
-      const formData = {
-        mainAnswer: formState.selectedOption
-      }
-      console.log('Form data to be saved:', formData)
+    if (formData.selectedOption) {
       onNextStep()
     }
   }
@@ -45,7 +37,7 @@ export default function Checkmark({
           <button
             key={index}
             className={`w-full p-4 rounded-xl text-left transition-all
-              ${formState.selectedOption === option 
+              ${formData.selectedOption === option 
                 ? 'bg-blue-100 border border-blue-500' 
                 : 'bg-white border border-gray-200'
               } hover:border-blue-400`}
@@ -68,7 +60,7 @@ export default function Checkmark({
           variant="gradient"
           className="px-6 py-2 rounded-lg"
           onClick={handleSubmit}
-          disabled={!formState.selectedOption}
+          disabled={!formData.selectedOption}
         >
           Continue
         </Button>
@@ -80,6 +72,10 @@ export default function Checkmark({
 Checkmark.propTypes = {
   onNextStep: PropTypes.func.isRequired,
   onPrevStep: PropTypes.func.isRequired,
+  formData: PropTypes.shape({
+    selectedOption: PropTypes.string
+  }).isRequired,
+  onFormDataChange: PropTypes.func.isRequired,
   mainQuestion: PropTypes.string,
   mainOptions: PropTypes.arrayOf(PropTypes.string)
 }

@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button'
 export default function Checkmark({ 
   onNextStep, 
   onPrevStep,
+  formData,
+  onFormDataChange,
   mainQuestion = "Which of the following best describes your awareness of a CC?",
   mainOptions = [
     "I know what a CC is and I saw this office's CC.",
@@ -27,58 +29,45 @@ export default function Checkmark({
     }
   ]
 }) {
-  const [formState, setFormState] = useState({
-    selectedOption: null,
-    additionalAnswers: {}
-  })
-
   const handleOptionChange = (option) => {
-    setFormState(prev => {
-      const newState = {
-        ...prev,
-        selectedOption: option,
-        additionalAnswers: { ...prev.additionalAnswers }
-      }
+    const newState = {
+      ...formData,
+      selectedOption: option,
+      additionalAnswers: { ...formData.additionalAnswers }
+    }
 
-      // Reset additional answers when changing main option
-      if (option === mainOptions[3]) { // If last option selected
-        newState.additionalAnswers = {}
-      } else if (option === mainOptions[2]) { // If third option selected
-        delete newState.additionalAnswers[1] // Reset question1 answer but keep question2
-      }
+    // Reset additional answers when changing main option
+    if (option === mainOptions[3]) { // If last option selected
+      newState.additionalAnswers = {}
+    } else if (option === mainOptions[2]) { // If third option selected
+      delete newState.additionalAnswers[1] // Reset question1 answer but keep question2
+    }
 
-      return newState
-    })
+    onFormDataChange(newState)
   }
 
   const handleAdditionalOptionChange = (questionId, answer) => {
-    setFormState(prev => ({
-      ...prev,
+    onFormDataChange({
+      ...formData,
       additionalAnswers: {
-        ...prev.additionalAnswers,
+        ...formData.additionalAnswers,
         [questionId]: answer
       }
-    }))
+    })
   }
 
   const handleSubmit = () => {
-    if (formState.selectedOption) {
-      // Here you can prepare the data to be sent to the database
-      const formData = {
-        mainAnswer: formState.selectedOption,
-        additionalAnswers: formState.additionalAnswers
-      }
-      console.log('Form data to be saved:', formData)
+    if (formData.selectedOption) {
       onNextStep()
     }
   }
 
-  const shouldShowAdditionalQuestions = formState.selectedOption && formState.selectedOption !== mainOptions[3]
+  const shouldShowAdditionalQuestions = formData.selectedOption && formData.selectedOption !== mainOptions[3]
 
   // Filter questions based on selected option
   const getVisibleQuestions = () => {
     if (!shouldShowAdditionalQuestions) return []
-    if (formState.selectedOption === mainOptions[2]) { // If third option selected
+    if (formData.selectedOption === mainOptions[2]) { // If third option selected
       return additionalQuestions.filter(q => q.id !== 1)
     }
     return additionalQuestions
@@ -87,7 +76,7 @@ export default function Checkmark({
   const areAllQuestionsAnswered = () => {
     if (!shouldShowAdditionalQuestions) return true
     const visibleQuestions = getVisibleQuestions()
-    return visibleQuestions.every(q => formState.additionalAnswers[q.id])
+    return visibleQuestions.every(q => formData.additionalAnswers[q.id])
   }
 
   return (
@@ -101,7 +90,7 @@ export default function Checkmark({
           <button
             key={index}
             className={`w-full p-4 rounded-xl text-left transition-all
-              ${formState.selectedOption === option 
+              ${formData.selectedOption === option 
                 ? 'bg-blue-100 border border-blue-500' 
                 : 'bg-white border border-gray-200'
               } hover:border-blue-400`}
@@ -122,7 +111,7 @@ export default function Checkmark({
                   <button
                     key={optionIndex}
                     className={`w-full p-4 rounded-xl text-left transition-all
-                      ${formState.additionalAnswers[q.id] === option 
+                      ${formData.additionalAnswers[q.id] === option 
                         ? 'bg-blue-100 border border-blue-500' 
                         : 'bg-white border border-gray-200'
                       } hover:border-blue-400`}
@@ -149,7 +138,7 @@ export default function Checkmark({
           variant="gradient"
           className="px-6 py-2 rounded-lg"
           onClick={handleSubmit}
-          disabled={!formState.selectedOption || !areAllQuestionsAnswered()}
+          disabled={!formData.selectedOption || !areAllQuestionsAnswered()}
         >
           Continue
         </Button>
@@ -161,6 +150,11 @@ export default function Checkmark({
 Checkmark.propTypes = {
   onNextStep: PropTypes.func.isRequired,
   onPrevStep: PropTypes.func.isRequired,
+  formData: PropTypes.shape({
+    selectedOption: PropTypes.string,
+    additionalAnswers: PropTypes.object
+  }).isRequired,
+  onFormDataChange: PropTypes.func.isRequired,
   mainQuestion: PropTypes.string,
   mainOptions: PropTypes.arrayOf(PropTypes.string),
   additionalQuestions: PropTypes.arrayOf(PropTypes.shape({
