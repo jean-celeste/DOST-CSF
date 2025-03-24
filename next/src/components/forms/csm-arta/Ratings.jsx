@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react";
 import PropTypes from 'prop-types';
 import { Button } from "@/components/ui/button";
 import RatingQuestion from '@/components/forms-resources/RatingQuestion';
@@ -19,46 +18,33 @@ const neutralFaceStatic = "/assets/emojis/face_without_mouth_color.svg";
 const frowningFaceStatic = "/assets/emojis/frowning_face_color.svg";
 const poutingFaceStatic = "/assets/emojis/pouting_face_color.svg";
 
-export default function Ratings({ onNextStep, onPrevStep }) {
-  const [formState, setFormState] = useState({
-    ratings: {
-      question1: "",
-      question2: "",
-      question3: "",
-      question4: "",
-      question5: "",
-      question6: ""
-    },
-    currentPage: 0
-  });
-
+export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataChange }) {
   const handleRatingSelect = (questionKey, value) => {
-    setFormState(prev => ({
-      ...prev,
+    onFormDataChange({
+      ...formData,
       ratings: {
-        ...prev.ratings,
+        ...formData.ratings,
         [questionKey]: value
       }
-    }));
+    });
   };
 
   const handleContinue = () => {
-    // You could add validation here if needed
     onNextStep();
   };
 
   const handleNextPage = () => {
-    setFormState(prev => ({
-      ...prev,
-      currentPage: prev.currentPage + 1
-    }));
+    onFormDataChange({
+      ...formData,
+      currentPage: formData.currentPage + 1
+    });
   };
 
   const handlePrevPage = () => {
-    setFormState(prev => ({
-      ...prev,
-      currentPage: prev.currentPage - 1
-    }));
+    onFormDataChange({
+      ...formData,
+      currentPage: formData.currentPage - 1
+    });
   };
 
   // Define emoji options once to reuse
@@ -132,8 +118,8 @@ export default function Ratings({ onNextStep, onPrevStep }) {
   const totalPages = Math.ceil(questions.length / questionsPerPage);
 
   const currentQuestions = questions.slice(
-    formState.currentPage * questionsPerPage,
-    (formState.currentPage + 1) * questionsPerPage
+    formData.currentPage * questionsPerPage,
+    (formData.currentPage + 1) * questionsPerPage
   );
 
   return (
@@ -142,9 +128,9 @@ export default function Ratings({ onNextStep, onPrevStep }) {
         <RatingQuestion
           key={index}
           question={q.question}
-          questionId={formState.currentPage * questionsPerPage + index}
+          questionId={formData.currentPage * questionsPerPage + index}
           totalQuestions={questions.length}
-          selectedRating={formState.ratings[q.questionKey]}
+          selectedRating={formData.ratings[q.questionKey]}
           onRatingSelect={(value) => handleRatingSelect(q.questionKey, value)}
           emojiOptions={emojiOptions}
         />
@@ -154,9 +140,9 @@ export default function Ratings({ onNextStep, onPrevStep }) {
         <Button
           variant="outline"
           className="px-6 py-2 bg-gray-100 text-gray-700"
-          onClick={formState.currentPage === 0 ? onPrevStep : handlePrevPage}
+          onClick={formData.currentPage === 0 ? onPrevStep : handlePrevPage}
         >
-          {formState.currentPage === 0 ? "Go Back" : "Previous"}
+          {formData.currentPage === 0 ? "Go Back" : "Previous"}
         </Button>
 
         <div className="flex-1 flex justify-center items-center">
@@ -164,7 +150,7 @@ export default function Ratings({ onNextStep, onPrevStep }) {
             {Array.from({ length: totalPages }).map((_, index) => (
               <div
                 key={index}
-                className={`w-8 h-2 rounded ${index === formState.currentPage ? "bg-blue-600" : "bg-gray-300"}`}
+                className={`w-8 h-2 rounded ${index === formData.currentPage ? "bg-blue-600" : "bg-gray-300"}`}
               ></div>
             ))}
           </div>
@@ -172,10 +158,10 @@ export default function Ratings({ onNextStep, onPrevStep }) {
 
         <Button
           className="px-6 py-2 bg-blue-600 text-white"
-          onClick={formState.currentPage === totalPages - 1 ? handleContinue : handleNextPage}
-          disabled={!formState.ratings[questions[formState.currentPage * questionsPerPage].questionKey]}
+          onClick={formData.currentPage === totalPages - 1 ? handleContinue : handleNextPage}
+          disabled={!formData.ratings[questions[formData.currentPage * questionsPerPage].questionKey]}
         >
-          {formState.currentPage === totalPages - 1 ? "Continue" : "Next"}
+          {formData.currentPage === totalPages - 1 ? "Continue" : "Next"}
         </Button>
       </div>
     </div>
@@ -184,5 +170,17 @@ export default function Ratings({ onNextStep, onPrevStep }) {
 
 Ratings.propTypes = {
   onNextStep: PropTypes.func.isRequired,
-  onPrevStep: PropTypes.func.isRequired
+  onPrevStep: PropTypes.func.isRequired,
+  formData: PropTypes.shape({
+    ratings: PropTypes.shape({
+      question1: PropTypes.string,
+      question2: PropTypes.string,
+      question3: PropTypes.string,
+      question4: PropTypes.string,
+      question5: PropTypes.string,
+      question6: PropTypes.string
+    }),
+    currentPage: PropTypes.number
+  }).isRequired,
+  onFormDataChange: PropTypes.func.isRequired
 };
