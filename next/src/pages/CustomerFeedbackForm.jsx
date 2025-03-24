@@ -258,6 +258,7 @@ export default function CustomerFeedbackForm() {
                 onFormDataChange={setPersonalDetails}
               />
             )}
+            
             {formState.currentStep === 2 && (
               <CSMARTACheckmark 
                 onNextStep={handleNextStep} 
