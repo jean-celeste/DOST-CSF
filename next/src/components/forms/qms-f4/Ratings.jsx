@@ -64,67 +64,58 @@ export default function Ratings({ onNextStep, onPrevStep }) {
   // Define emoji options once to reuse
   const emojiOptions = [
     {
-      value: "strongly-agree",
-      label: "Strongly Agree",
+      value: "outstanding",
+      label: "Outstanding (Lubos na kasiya-siya)",
       imageSource: heartEyesFace,
       imageSourceStatic: heartEyesFaceStatic
     },
     {
-      value: "agree",
-      label: "Agree",
+      value: "very-satisfactory",
+      label: "Very Satisfactory (Napaka Kasiya-siya)",
       imageSource: smilingFace,
       imageSourceStatic: smilingFaceStatic
     },
     {
-      value: "disagree",
-      label: "Disagree",
+      value: "satisfactory",
+      label: "Satisfactory (Kasiya-siya)",
       imageSource: frowningFace,
       imageSourceStatic: frowningFaceStatic
     },
     {
-      value: "neutral",
-      label: "Neither Agree\nor Disagree",
+      value: "fair",
+      label: "Fair (Katamtaman)",
       imageSource: neutralFace,
       imageSourceStatic: neutralFaceStatic
     },
     {
-      value: "strongly-disagree",
-      label: "Strongly Disagree",
+      value: "unsatisfactory",
+      label: "Unsatisfactory (Hindi Kasiya-siya)",
       imageSource: poutingFace,
       imageSourceStatic: poutingFaceStatic
-    },
-    {
-      value: "na",
-      label: "Not Applicable",
-      imageSource: null
     }
   ];
 
   // Define the questions and divide them into pages
   const questions = [
     {
-      question: "I am satisfied with the service that I availed.",
+      question: "Appropriateness of the Service/Activity (Kaangkupan ng Serbisyo/Aktibidad)",
       questionKey: "question1"
     },
     {
-      question: "I spent a reasonable amount of time for my transaction.",
+      question: "How beneficial is the Service/Activity (Gaano kapaki-pakkinabang ang serbisyo/aktibidad)",
       questionKey: "question2"
     },
     {
-      question: "The office followed the transaction's requirements and steps based on the information provided.",
+      question: "Attitude of Staff (Kagandahang loob at asal ng mga kawani)",
       questionKey: "question3"
     },
     {
-      question: "I am satisfied with the service that I availed.",
+      question: "Gender Fair Treatment (Pantay pantay na pakikitungo)",
       questionKey: "question4"
     },
     {
-      question: "I spent a reasonable amount of time for my transaction.",
+      question: "OVER-ALL SATISFACTION (Pangkalahatang kasiyahan ng serbisyong naibigay)",
       questionKey: "question5"
-    },
-    {
-      question: "I am satisfied with the service that I availed.",
-      questionKey: "question6"
     }
   ];
 
