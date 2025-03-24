@@ -123,3 +123,12 @@
     @apply bg-background text-foreground;
   }
 }
+
+.diamond-pattern {
+  background-color: var(--background);
+  background-image: url('/diamond-pattern.svg');
+  background-repeat: repeat;
+  background-size: 100px 100px;
+  background-position: center;
+  background-attachment: fixed;
+}
