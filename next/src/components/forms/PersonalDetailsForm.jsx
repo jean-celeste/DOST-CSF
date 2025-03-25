@@ -117,42 +117,18 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
         </div>
       </div>
 
-      {/* Age Group */}
-      <div>
-        <Label>Age Group</Label>
-        <div className="mt-2 grid grid-cols-2 gap-2 w-1/2">
-          <Button
-            type="button"
-            variant={formData.ageGroup === 'below-18' ? 'gradient' : 'outline'}
-            onClick={() => handleInputChange('ageGroup', 'below-18')}
-            className="rounded-lg"
-          >
-            Below 18 years old
-          </Button>
-          <Button
-            type="button"
-            variant={formData.ageGroup === '18-38' ? 'gradient' : 'outline'}
-            onClick={() => handleInputChange('ageGroup', '18-38')}
-            className="rounded-lg"
-          >
-            18-38 years old
-          </Button>
-          <Button
-            type="button"
-            variant={formData.ageGroup === '39-59' ? 'gradient' : 'outline'}
-            onClick={() => handleInputChange('ageGroup', '39-59')}
-            className="rounded-lg"
-          >
-            39-59 years old
-          </Button>
-          <Button
-            type="button"
-            variant={formData.ageGroup === '60-above' ? 'gradient' : 'outline'}
-            onClick={() => handleInputChange('ageGroup', '60-above')}
-            className="rounded-lg"
-          >
-            60 years old and above
-          </Button>
+      {/* Age */}
+      <div className="relative">
+        <Label htmlFor="age">Age</Label>
+        <div className="relative w-1/2">
+          <Input
+            id="age"
+            placeholder="Enter your age"
+            className="mt-1 rounded-lg w-full h-12 px-2"
+            value={formData.age}
+            onChange={(e) => handleInputChange('age', e.target.value)}
+          />
+          {formData.age && <Check className="absolute right-2 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-500" />}
         </div>
       </div>
 
@@ -227,7 +203,7 @@ PersonalDetailsForm.propTypes = {
     contact: PropTypes.string,
     services: PropTypes.string,
     sex: PropTypes.string,
-    ageGroup: PropTypes.string
+    age: PropTypes.string
   }).isRequired,
   onFormDataChange: PropTypes.func.isRequired
 }
