@@ -20,6 +20,46 @@ export default function CustomerFeedbackForm() {
     currentStep: 1
   })
 
+  const [personalDetails, setPersonalDetails] = useState({
+    email: '',
+    contact: '',
+    services: '',
+    sex: 'male',
+    age: ''
+  })
+
+  const [csmARTACheckmark, setCSMARTACheckmark] = useState({
+    selectedOption: null,
+    additionalAnswers: {}
+  })
+
+  const [csmARTARatings, setCSMARTARatings] = useState({
+    ratings: {
+      question1: "",
+      question2: "",
+      question3: "",
+      question4: "",
+      question5: "",
+      question6: ""
+    },
+    currentPage: 0
+  })
+
+  const [qmsCheckmark, setQMSCheckmark] = useState({
+    selectedOption: null
+  })
+
+  const [qmsRatings, setQMSRatings] = useState({
+    ratings: {
+      question1: "",
+      question2: "",
+      question3: "",
+      question4: "",
+      question5: ""
+    },
+    currentPage: 0
+  })
+
   const handleConsent = () => {
     setFormState(prev => ({ ...prev, showMainForm: true }))
   }
@@ -210,11 +250,47 @@ export default function CustomerFeedbackForm() {
             </div>
 
             {/* Render the form component based on current step */}
-            {formState.currentStep === 1 && <PersonalDetailsForm onNextStep={handleNextStep} onPrevStep={handlePrevStep} />}
-            {formState.currentStep === 2 && <CSMARTACheckmark onNextStep={handleNextStep} onPrevStep={handlePrevStep} />}
-            {formState.currentStep === 3 && <CSMARTARatings onNextStep={handleNextStep} onPrevStep={handlePrevStep} />}
-            {formState.currentStep === 4 && <QMSCheckmark onNextStep={handleNextStep} onPrevStep={handlePrevStep} />}
-            {formState.currentStep === 5 && <QMSRatings onNextStep={handleNextStep} onPrevStep={handlePrevStep} />}
+            {formState.currentStep === 1 && (
+              <PersonalDetailsForm 
+                onNextStep={handleNextStep} 
+                onPrevStep={handlePrevStep}
+                formData={personalDetails}
+                onFormDataChange={setPersonalDetails}
+              />
+            )}
+            
+            {formState.currentStep === 2 && (
+              <CSMARTACheckmark 
+                onNextStep={handleNextStep} 
+                onPrevStep={handlePrevStep}
+                formData={csmARTACheckmark}
+                onFormDataChange={setCSMARTACheckmark}
+              />
+            )}
+            {formState.currentStep === 3 && (
+              <CSMARTARatings 
+                onNextStep={handleNextStep} 
+                onPrevStep={handlePrevStep}
+                formData={csmARTARatings}
+                onFormDataChange={setCSMARTARatings}
+              />
+            )}
+            {formState.currentStep === 4 && (
+              <QMSCheckmark 
+                onNextStep={handleNextStep} 
+                onPrevStep={handlePrevStep}
+                formData={qmsCheckmark}
+                onFormDataChange={setQMSCheckmark}
+              />
+            )}
+            {formState.currentStep === 5 && (
+              <QMSRatings 
+                onNextStep={handleNextStep} 
+                onPrevStep={handlePrevStep}
+                formData={qmsRatings}
+                onFormDataChange={setQMSRatings}
+              />
+            )}
             {/* You'll need to implement a Review component for step 6 */}
             {/* {formState.currentStep === 6 && <ReviewForm onNextStep={handleNextStep} onPrevStep={handlePrevStep} />} */}
           </div>
