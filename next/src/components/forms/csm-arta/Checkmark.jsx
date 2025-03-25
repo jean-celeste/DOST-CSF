@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import PropTypes from 'prop-types'
 import { Button } from '@/components/ui/button'
+import { Check, ChevronRight } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 export default function Checkmark({ 
   onNextStep, 
@@ -80,68 +82,97 @@ export default function Checkmark({
   }
 
   return (
-    <div className="space-y-8">
-      <h2 className="text-2xl font-bold mb-6">
-        {mainQuestion}
-      </h2>
-      
-      <div className="space-y-4">
-        {mainOptions.map((option, index) => (
-          <button
-            key={index}
-            className={`w-full p-4 rounded-xl text-left transition-all
-              ${formData.selectedOption === option 
-                ? 'bg-blue-100 border border-blue-500' 
-                : 'bg-white border border-gray-200'
-              } hover:border-blue-400`}
-            onClick={() => handleOptionChange(option)}
-          >
-            <span className="text-base">{option}</span>
-          </button>
-        ))}
-      </div>
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+      <div className="p-8">
+        <div className="space-y-8">
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
+              {mainQuestion}
+            </h2>
+            <p className="text-gray-500">Please select the option that best describes your experience.</p>
+          </div>
+          
+          <div className="space-y-4">
+            {mainOptions.map((option, index) => (
+              <motion.button
+                key={index}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                className={`w-full p-6 rounded-xl text-left transition-all border-2
+                  ${formData.selectedOption === option 
+                    ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-500 shadow-md' 
+                    : 'bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50/50'
+                  }`}
+                onClick={() => handleOptionChange(option)}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-base font-medium">{option}</span>
+                  {formData.selectedOption === option && (
+                    <div className="bg-blue-500 rounded-full p-2">
+                      <Check className="h-5 w-5 text-white" />
+                    </div>
+                  )}
+                </div>
+              </motion.button>
+            ))}
+          </div>
 
-      {shouldShowAdditionalQuestions && (
-        <div className="space-y-8 mt-8">
-          {getVisibleQuestions().map((q) => (
-            <div key={q.id} className="space-y-4">
-              <h3 className="text-lg font-semibold">{q.question}</h3>
-              <div className="space-y-3">
-                {q.options.map((option, optionIndex) => (
-                  <button
-                    key={optionIndex}
-                    className={`w-full p-4 rounded-xl text-left transition-all
-                      ${formData.additionalAnswers[q.id] === option 
-                        ? 'bg-blue-100 border border-blue-500' 
-                        : 'bg-white border border-gray-200'
-                      } hover:border-blue-400`}
-                    onClick={() => handleAdditionalOptionChange(q.id, option)}
-                  >
-                    <span className="text-base">{option}</span>
-                  </button>
-                ))}
-              </div>
+          {shouldShowAdditionalQuestions && (
+            <div className="space-y-8 mt-8 pt-8 border-t border-gray-100">
+              {getVisibleQuestions().map((q) => (
+                <div key={q.id} className="space-y-4">
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-semibold text-gray-900">{q.question}</h3>
+                    <p className="text-sm text-gray-500">Please select the most appropriate response.</p>
+                  </div>
+                  <div className="space-y-3">
+                    {q.options.map((option, optionIndex) => (
+                      <motion.button
+                        key={optionIndex}
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
+                        className={`w-full p-6 rounded-xl text-left transition-all border-2
+                          ${formData.additionalAnswers[q.id] === option 
+                            ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-500 shadow-md' 
+                            : 'bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50/50'
+                          }`}
+                        onClick={() => handleAdditionalOptionChange(q.id, option)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-base font-medium">{option}</span>
+                          {formData.additionalAnswers[q.id] === option && (
+                            <div className="bg-blue-500 rounded-full p-2">
+                              <Check className="h-5 w-5 text-white" />
+                            </div>
+                          )}
+                        </div>
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
-      )}
 
-      <div className="flex justify-between mt-20">
-        <Button
-          variant="outline"
-          className="px-6 py-2 bg-gray-100 rounded-lg"
-          onClick={onPrevStep}
-        >
-          Go Back
-        </Button>
-        <Button
-          variant="gradient"
-          className="px-6 py-2 rounded-lg"
-          onClick={handleSubmit}
-          disabled={!formData.selectedOption || !areAllQuestionsAnswered()}
-        >
-          Continue
-        </Button>
+        <div className="flex justify-between mt-20">
+          <Button
+            variant="outline"
+            className="px-6 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            onClick={onPrevStep}
+          >
+            Go Back
+          </Button>
+          <Button
+            variant="gradient"
+            className="px-6 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white shadow-md"
+            onClick={handleSubmit}
+            disabled={!formData.selectedOption || !areAllQuestionsAnswered()}
+          >
+            Continue
+            <ChevronRight className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   )
