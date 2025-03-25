@@ -25,7 +25,7 @@ export default function CustomerFeedbackForm() {
     contact: '',
     services: '',
     sex: 'male',
-    ageGroup: '18-38'
+    age: ''
   })
 
   const [csmARTACheckmark, setCSMARTACheckmark] = useState({
