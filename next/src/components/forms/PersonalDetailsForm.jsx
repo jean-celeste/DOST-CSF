@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Check, ChevronDown, Mail, Phone, Calendar, User } from 'lucide-react'
+import { Check, ChevronDown, Mail, Phone, Calendar, User, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { motion } from 'framer-motion'
 
@@ -217,17 +217,19 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
         <div className="flex justify-between mt-20">
             <Button 
               variant="outline"
-            className="px-6 py-2 bg-gray-100 rounded-lg"
+              className="px-6 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
               onClick={onPrevStep}
             >
+              <ChevronLeft className="mr-2 h-4 w-4" />
               Go Back
             </Button>
             <Button 
-            variant="gradient"
-            className="px-6 py-2 rounded-lg"
+              variant="gradient"
+              className="px-6 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white shadow-md"
               onClick={onNextStep} 
             >
               Continue
+              <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
       </div>
