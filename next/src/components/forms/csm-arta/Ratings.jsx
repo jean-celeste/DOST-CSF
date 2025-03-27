@@ -128,15 +128,6 @@ export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataCh
     <div className="bg-white rounded-xl shadow-meium overflow-hidden">
       <div className="p-8">
         <div className="space-y-8">
-          <div className="space-y-2">
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
-              Service Satisfaction Rating
-            </h2>
-            <p className="text-gray-500">
-              Please rate your satisfaction with our services. Your feedback helps us improve.
-            </p>
-          </div>
-
           <div className="space-y-8">
             {currentQuestions.map((q, index) => (
               <motion.div
@@ -189,7 +180,7 @@ export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataCh
             variant="gradient"
             className="px-6 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white shadow-md"
             onClick={formData.currentPage === totalPages - 1 ? handleContinue : handleNextPage}
-            disabled={!formData.ratings[questions[formData.currentPage * questionsPerPage].questionKey]}
+            disabled={!currentQuestions.every(q => formData.ratings[q.questionKey])}
           >
             {formData.currentPage === totalPages - 1 ? "Continue" : "Next"}
             <ChevronRight className="ml-2 h-4 w-4" />

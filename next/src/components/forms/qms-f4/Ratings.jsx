@@ -177,7 +177,7 @@ export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataCh
           variant="gradient"
           className="px-6 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white shadow-md"
           onClick={formData.currentPage === totalPages - 1 ? handleContinue : handleNextPage}
-          disabled={!formData.ratings[questions[formData.currentPage * questionsPerPage].questionKey]}
+          disabled={!currentQuestions.every(q => formData.ratings[q.questionKey])}
         >
           {formData.currentPage === totalPages - 1 ? "Continue" : "Next"}
           <ChevronRight className="ml-2 h-4 w-4" />

@@ -214,15 +214,7 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
           </div>
 
           {/* Navigation Buttons */}
-        <div className="flex justify-between mt-20">
-            <Button 
-              variant="outline"
-              className="px-6 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-              onClick={onPrevStep}
-            >
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              Go Back
-            </Button>
+        <div className="flex justify-end mt-20">
             <Button 
               variant="gradient"
               className="px-6 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white shadow-md"
