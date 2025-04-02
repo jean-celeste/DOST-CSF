@@ -12,16 +12,46 @@ export default function AdminLogin() {
     password: ''
   });
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Implement proper authentication
-    // For now, we'll use a simple check
-    if (credentials.username === 'admin' && credentials.password === 'admin123') {
-      localStorage.setItem('isAdmin', 'true');
-      router.push('/admin');
-    } else {
-      setError('Invalid credentials');
+    setError('');
+    setIsLoading(true);
+
+    // Debug: Log credentials
+    console.log('Login attempt with credentials:', {
+      username: credentials.username,
+      password: credentials.password
+    });
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+      });
+
+      const data = await response.json();
+
+      // Debug: Log API response
+      console.log('API Response:', data);
+
+      if (data.success) {
+        // Store admin data in localStorage (excluding sensitive info)
+        localStorage.setItem('isAdmin', 'true');
+        localStorage.setItem('adminData', JSON.stringify(data.admin));
+        router.push('/admin');
+      } else {
+        setError(data.message || 'Invalid credentials');
+      }
+    } catch (err) {
+      setError('An error occurred during login');
+      console.error('Login error:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -51,6 +81,7 @@ export default function AdminLogin() {
                 placeholder="Username"
                 value={credentials.username}
                 onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
+                disabled={isLoading}
               />
             </div>
             <div>
@@ -66,6 +97,7 @@ export default function AdminLogin() {
                 placeholder="Password"
                 value={credentials.password}
                 onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
+                disabled={isLoading}
               />
             </div>
           </div>
@@ -74,8 +106,9 @@ export default function AdminLogin() {
             <Button
               type="submit"
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              disabled={isLoading}
             >
-              Sign in
+              {isLoading ? 'Signing in...' : 'Sign in'}
             </Button>
           </div>
         </form>
