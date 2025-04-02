@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Check, ChevronDown, Mail, Phone, Calendar, User, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { motion } from 'framer-motion'
+import ServiceSelectionModal from './ServiceSelectionModal'
 
 // List of available services
 const SERVICES = [
@@ -57,6 +58,11 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
       ...formData,
       [field]: value
     })
+  }
+
+  const handleServiceSelect = (service) => {
+    handleInputChange('services', service.id)
+    setIsServicesDialogOpen(false)
   }
 
   const selectedService = SERVICES.find(service => service.id === formData.services)
@@ -152,64 +158,30 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
 
             {/* Services Availed */}
             <div>
-            <Label className="text-base font-medium flex items-center gap-2 mb-2">
+              <Label className="text-base font-medium flex items-center gap-2 mb-2">
                 <span className="text-blue-500">🛠️</span>
                 Services Availed
               </Label>
-              <Dialog open={isServicesDialogOpen} onOpenChange={setIsServicesDialogOpen}>
-                <DialogTrigger asChild>
-                <button
-                  className={`w-full p-4 rounded-xl text-left transition-all border
-                    ${selectedService 
-                      ? 'bg-blue-100 border-blue-500' 
-                      : 'bg-white border-gray-200 hover:border-blue-400'
-                    }`}
-                >
-                  <div className="flex items-center justify-between">
-                    {selectedService ? (
-                      <span className="flex items-center">
-                        <span className="mr-2">{selectedService.icon}</span>
-                        {selectedService.name}
-                      </span>
-                    ) : (
-                      <span className="text-gray-500">Select a service</span>
-                    )}
-                    <ChevronDown className="h-5 w-5 text-gray-400" />
-                  </div>
-                </button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[600px]">
-                  <DialogHeader>
-                    <DialogTitle className="text-xl font-bold">Select a Service</DialogTitle>
-                  </DialogHeader>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-                    {SERVICES.map((service) => (
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        key={service.id}
-                      className={`p-4 rounded-xl text-left transition-all border
-                        ${formData.services === service.id
-                          ? 'bg-blue-100 border-blue-500'
-                          : 'bg-white border-gray-200 hover:border-blue-400'
-                        }`}
-                        onClick={() => {
-                          handleInputChange('services', service.id)
-                          setIsServicesDialogOpen(false)
-                        }}
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">{service.icon}</span>
-                          <div>
-                            <h3 className="font-medium text-gray-900">{service.name}</h3>
-                            <p className="text-sm text-gray-500 mt-1">{service.description}</p>
-                          </div>
-                        </div>
-                      </motion.button>
-                    ))}
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <button
+                className={`w-full p-4 rounded-xl text-left transition-all border
+                  ${formData.services 
+                    ? 'bg-blue-100 border-blue-500' 
+                    : 'bg-white border-gray-200 hover:border-blue-400'
+                  }`}
+                onClick={() => setIsServicesDialogOpen(true)}
+              >
+                <div className="flex items-center justify-between">
+                  {formData.services ? (
+                    <span className="flex items-center">
+                      <span className="mr-2">🛠️</span>
+                      {formData.services}
+                    </span>
+                  ) : (
+                    <span className="text-gray-500">Select a service</span>
+                  )}
+                  <ChevronDown className="h-5 w-5 text-gray-400" />
+                </div>
+              </button>
             </div>
           </div>
 
@@ -236,6 +208,14 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
           <p className="text-gray-600">Customer Feedback Form</p>
         </div>
       </div>
+
+      {/* Service Selection Modal */}
+      <ServiceSelectionModal
+        isOpen={isServicesDialogOpen}
+        onClose={() => setIsServicesDialogOpen(false)}
+        onServiceSelect={handleServiceSelect}
+        selectedService={formData.services}
+      />
     </div>
   )
 }
