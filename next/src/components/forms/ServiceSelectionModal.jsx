@@ -227,6 +227,7 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
 
   const handleCustomerTypeSelect = async (type) => {
     setIsLoading(true)
+    console.log('Customer Type Selected:', type)
     setCustomerType(type)
     await new Promise(resolve => setTimeout(resolve, 150))
     if (type === 'internal') {
@@ -239,6 +240,7 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
 
   const handleExternalTypeSelect = async (type) => {
     setIsLoading(true)
+    console.log('External Customer Type Selected:', type)
     setExternalType(type)
     await new Promise(resolve => setTimeout(resolve, 150))
     setStep(2)
@@ -248,9 +250,18 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
   const handleServiceSelect = async (service) => {
     setIsLoading(true)
     try {
-      await new Promise(resolve => setTimeout(resolve, 150))
-      onServiceSelect(service)
-      onClose()
+      const serviceData = {
+        ...service,
+        customerType,
+        externalType,
+        selectedOffice: selectedOffice?.name,
+        selectedUnit: selectedUnit?.name
+      };
+      
+      console.log('Service Selected in Modal:', serviceData);
+      await new Promise(resolve => setTimeout(resolve, 150));
+      onServiceSelect(serviceData);  
+      onClose();
     } finally {
       setIsLoading(false)
     }
