@@ -10,14 +10,14 @@ import { motion } from 'framer-motion';
 const heartEyesFace = "/assets/emojis/smiling_face_with_heart-eyes_animated.png";
 const smilingFace = "/assets/emojis/smiling_face_with_smiling_eyes_animated.png";
 const neutralFace = "/assets/emojis/face_without_mouth_animated.png";
-const frowningFace = "/assets/emojis/frowning_face_animated.png";
+const happyFace = "/assets/emojis/slightly_smiling_face_animated.png";
 const poutingFace = "/assets/emojis/pouting_face_animated.png";
 
 //Static emojis
 const heartEyesFaceStatic = "/assets/emojis/smiling_face_with_heart-eyes_color.svg";
 const smilingFaceStatic = "/assets/emojis/smiling_face_with_smiling_eyes_color.svg";
 const neutralFaceStatic = "/assets/emojis/face_without_mouth_color.svg";
-const frowningFaceStatic = "/assets/emojis/frowning_face_color.svg";
+const happyFaceStatic = "/assets/emojis/slightly_smiling_face_color.svg";
 const poutingFaceStatic = "/assets/emojis/pouting_face_color.svg";
 
 export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataChange }) {
@@ -66,8 +66,8 @@ export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataCh
     {
       value: "satisfactory",
       label: "Satisfactory (Kasiya-siya)",
-      imageSource: frowningFace,
-      imageSourceStatic: frowningFaceStatic
+      imageSource: happyFace,
+      imageSourceStatic: happyFaceStatic
     },
     {
       value: "fair",

@@ -25,7 +25,7 @@ export default function RatingQuestion({
         </div>
       </div>
       
-      <div className="grid grid-cols-2 sm:grid-cols-6 gap-4">
+      <div className={`grid grid-cols-2 ${emojiOptions.length === 6 ? 'sm:grid-cols-6' : 'sm:grid-cols-5'} gap-4`}>
         {emojiOptions.map((option) => (
           <EmojiRatingOption
             key={option.value}
