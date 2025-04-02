@@ -89,7 +89,7 @@ export default function CustomerFeedbackForm() {
       <div className="w-full">
         <div className="grid grid-cols-1 md:grid-cols-7">
           {/* Left Side - Progress Indicator */}
-          <div className="bg-[url('/diamond-pattern.svg')] bg-repeat bg-gray-50/95 p-8 md:col-span-2 relative shadow-lg z-10 min-h-screen flex flex-col">
+          <div className="bg-[url('/diamond-pattern.svg')] bg-repeat bg-gray-50/95 p-8 md:col-span-2 relative shadow-lg z-10 h-screen sticky top-0 flex flex-col">
             <div className="mb-10 flex items-center">
               <div className="mr-3 h-16 w-16">
                 <img src="/DOST_Logo.png" alt="DOST Logo" className="h-16 w-16 object-contain" />
@@ -229,7 +229,7 @@ export default function CustomerFeedbackForm() {
           </div>
 
           {/* Right Side - Form Content */}
-          <div className="bg-white p-20 md:col-span-5">
+          <div className="bg-white p-20 md:col-span-5 overflow-y-auto">
             <div className="mb-15">
               <h2 className="text-sm font-medium text-gray-500">Step {formState.currentStep} of 6</h2>
               <h1 className="text-2xl font-bold">
