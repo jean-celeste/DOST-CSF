@@ -25,9 +25,19 @@ function DialogPortal({
 }
 
 function DialogClose({
+  className,
   ...props
 }) {
-  return <DialogPrimitive.Close data-slot="dialog-close" {...props} />;
+  return (
+    <DialogPrimitive.Close
+      data-slot="dialog-close"
+      className={cn(
+        "absolute top-4 right-4 p-2 rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:pointer-events-none cursor-pointer",
+        className
+      )}
+      {...props}
+    />
+  );
 }
 
 function DialogOverlay({
@@ -61,11 +71,9 @@ function DialogContent({
         )}
         {...props}>
         {children}
-        <DialogPrimitive.Close
-          className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4">
-          <XIcon />
-          <span className="sr-only">Close</span>
-        </DialogPrimitive.Close>
+        <DialogClose aria-label="Close dialog">
+          <XIcon className="h-4 w-4 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100" />
+        </DialogClose>
       </DialogPrimitive.Content>
     </DialogPortal>
   );
