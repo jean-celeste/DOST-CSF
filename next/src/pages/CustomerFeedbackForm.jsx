@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import PropTypes from 'prop-types'
 import { UserIcon, CheckSquareIcon, SmileIcon, ClipboardListIcon, QrCodeIcon } from 'lucide-react'
 import PersonalDetailsForm from '@/components/forms/PersonalDetailsForm'
 import DataPrivacyConsent from '@/components/prompts/DataPrivacyConsent'
 import Review from '@/components/forms/Review'
+import ProgressBar from '@/components/forms/ProgressBar'
 
 // CSM-ARTA components
 import CSMARTACheckmark from '@/components/forms/csm-arta/Checkmark'
@@ -15,51 +15,24 @@ import CSMARTARatings from '@/components/forms/csm-arta/Ratings'
 import QMSCheckmark from '@/components/forms/qms-f4/Checkmark'
 import QMSRatings from '@/components/forms/qms-f4/Ratings'
 
+// Constants
+import {
+  FORM_STEPS,
+  INITIAL_FORM_STATE,
+  INITIAL_PERSONAL_DETAILS,
+  INITIAL_CSM_ARTA_CHECKMARK,
+  INITIAL_CSM_ARTA_RATINGS,
+  INITIAL_QMS_CHECKMARK,
+  INITIAL_QMS_RATINGS
+} from '@/constants/formSteps'
+
 export default function CustomerFeedbackForm() {
-  const [formState, setFormState] = useState({
-    showMainForm: false,
-    currentStep: 1
-  })
-
-  const [personalDetails, setPersonalDetails] = useState({
-    email: '',
-    contact: '',
-    services: '',
-    sex: 'male',
-    age: ''
-  })
-
-  const [csmARTACheckmark, setCSMARTACheckmark] = useState({
-    selectedOption: null,
-    additionalAnswers: {}
-  })
-
-  const [csmARTARatings, setCSMARTARatings] = useState({
-    ratings: {
-      question1: "",
-      question2: "",
-      question3: "",
-      question4: "",
-      question5: "",
-      question6: ""
-    },
-    currentPage: 0
-  })
-
-  const [qmsCheckmark, setQMSCheckmark] = useState({
-    selectedOption: null
-  })
-
-  const [qmsRatings, setQMSRatings] = useState({
-    ratings: {
-      question1: "",
-      question2: "",
-      question3: "",
-      question4: "",
-      question5: ""
-    },
-    currentPage: 0
-  })
+  const [formState, setFormState] = useState(INITIAL_FORM_STATE)
+  const [personalDetails, setPersonalDetails] = useState(INITIAL_PERSONAL_DETAILS)
+  const [csmARTACheckmark, setCSMARTACheckmark] = useState(INITIAL_CSM_ARTA_CHECKMARK)
+  const [csmARTARatings, setCSMARTARatings] = useState(INITIAL_CSM_ARTA_RATINGS)
+  const [qmsCheckmark, setQMSCheckmark] = useState(INITIAL_QMS_CHECKMARK)
+  const [qmsRatings, setQMSRatings] = useState(INITIAL_QMS_RATINGS)
 
   const handleConsent = () => {
     setFormState(prev => ({ ...prev, showMainForm: true }))
@@ -117,50 +90,7 @@ export default function CustomerFeedbackForm() {
 
             {/* Mobile Progress Steps */}
             <div className="md:hidden bg-white/80 rounded-xl p-4 shadow-sm backdrop-blur-sm mb-4">
-              <div className="relative">
-                {/* Progress Line with Segments */}
-                <div className="flex absolute top-4 left-8 right-8 h-[1px] -z-10">
-                  {[1, 2, 3, 4, 5].map((step) => (
-                    <div 
-                      key={`segment-${step}`}
-                      className={`flex-1 h-full transition-colors duration-300 ${
-                        formState.currentStep > step ? 'bg-[#3B82F6]' : 'bg-gray-200'
-                      }`}
-                    ></div>
-                  ))}
-                </div>
-                <div className="flex justify-between items-start px-4 relative z-10">
-                  {[
-                    { step: 1, title: "Personal\nDetails" },
-                    { step: 2, title: "CC" },
-                    { step: 3, title: "SQD" },
-                    { step: 4, title: "QMS" },
-                    { step: 5, title: "Checkmark" },
-                    { step: 6, title: "Review" }
-                  ].map(({ step, title }) => (
-                    <div key={step} className="flex flex-col items-center w-10">
-                      <div
-                        className={`h-8 w-8 rounded-full border-2 flex items-center justify-center transition-colors duration-200 leading-none mb-1.5 ${
-                          formState.currentStep >= step 
-                            ? "border-[#3B82F6] bg-white text-[#3B82F6]" 
-                            : "border-gray-300 bg-white text-gray-400"
-                        }`}
-                      >
-                        {step}
-                      </div>
-                      <span 
-                        className={`text-[10px] text-center whitespace-pre-line leading-tight ${
-                          formState.currentStep >= step 
-                            ? "text-[#3B82F6] font-medium" 
-                            : "text-gray-500"
-                        }`}
-                      >
-                        {title}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <ProgressBar currentStep={formState.currentStep} steps={FORM_STEPS} />
             </div>
 
             {/* Desktop Progress Steps */}
@@ -169,107 +99,27 @@ export default function CustomerFeedbackForm() {
                 <div className="relative">
                   <div className="absolute left-6 top-4 h-[calc(100%-32px)] w-0.5 bg-gray-200"></div>
                   <div className="space-y-8">
-                    {/* Step 1 - Personal Details */}
-                    <div className="relative flex items-start">
-                      <div
-                        className={`z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 transition-colors duration-200 ${
-                          formState.currentStep >= 1 ? "border-blue-500 bg-white text-blue-500" : "border-gray-300 bg-white text-gray-400"
-                        }`}
-                      >
-                        <UserIcon className="h-6 w-6" />
+                    {FORM_STEPS.map(({ step, title, description, icon }) => (
+                      <div key={step} className="relative flex items-start">
+                        <div
+                          className={`z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 transition-colors duration-200 ${
+                            formState.currentStep >= step ? "border-blue-500 bg-white text-blue-500" : "border-gray-300 bg-white text-gray-400"
+                          }`}
+                        >
+                          {icon === "UserIcon" && <UserIcon className="h-6 w-6" />}
+                          {icon === "CheckSquareIcon" && <CheckSquareIcon className="h-6 w-6" />}
+                          {icon === "SmileIcon" && <SmileIcon className="h-6 w-6" />}
+                          {icon === "QrCodeIcon" && <QrCodeIcon className="h-6 w-6" />}
+                          {icon === "ClipboardListIcon" && <ClipboardListIcon className="h-6 w-6" />}
+                        </div>
+                        <div className="ml-4 pt-1">
+                          <h3 className={`font-medium transition-colors duration-200 ${formState.currentStep === step ? "text-blue-500" : "text-gray-700"}`}>
+                            {title}
+                          </h3>
+                          <p className="text-sm text-gray-500 mt-1">{description}</p>
+                        </div>
                       </div>
-                      <div className="ml-4 pt-1">
-                        <h3 className={`font-medium transition-colors duration-200 ${formState.currentStep === 1 ? "text-blue-500" : "text-gray-700"}`}>
-                          Personal Details
-                        </h3>
-                        <p className="text-sm text-gray-500 mt-1">Please provide your basic information</p>
-                      </div>
-                    </div>
-
-                    {/* Step 2 - Citizen's Charter */}
-                    <div className="relative flex items-start">
-                      <div
-                        className={`z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 transition-colors duration-200 ${
-                          formState.currentStep >= 2 ? "border-blue-500 bg-white text-blue-500" : "border-gray-300 bg-white text-gray-400"
-                        }`}
-                      >
-                        <CheckSquareIcon className="h-6 w-6" />
-                      </div>
-                      <div className="ml-4 pt-1">
-                        <h3 className={`font-medium transition-colors duration-200 ${formState.currentStep === 2 ? "text-blue-500" : "text-gray-700"}`}>
-                          Citizen's Charter
-                        </h3>
-                        <p className="text-sm text-gray-500 mt-1">Questions about the Citizen's Charter</p>
-                      </div>
-                    </div>
-
-                    {/* Step 3 - CSM-ARTA Ratings */}
-                    <div className="relative flex items-start">
-                      <div
-                        className={`z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 transition-colors duration-200 ${
-                          formState.currentStep >= 3 ? "border-blue-500 bg-white text-blue-500" : "border-gray-300 bg-white text-gray-400"
-                        }`}
-                      >
-                        <SmileIcon className="h-6 w-6" />
-                      </div>
-                      <div className="ml-4 pt-1">
-                        <h3 className={`font-medium transition-colors duration-200 ${formState.currentStep === 3 ? "text-blue-500" : "text-gray-700"}`}>
-                          Service Ratings
-                        </h3>
-                        <p className="text-sm text-gray-500 mt-1">Rate your satisfaction with our services</p>
-                      </div>
-                    </div>
-
-                    {/* Step 4 - QMS */}
-                    <div className="relative flex items-start">
-                      <div
-                        className={`z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 transition-colors duration-200 ${
-                          formState.currentStep >= 4 ? "border-blue-500 bg-white text-blue-500" : "border-gray-300 bg-white text-gray-400"
-                        }`}
-                      >
-                        <QrCodeIcon className="h-6 w-6" />
-                      </div>
-                      <div className="ml-4 pt-1">
-                        <h3 className={`font-medium transition-colors duration-200 ${formState.currentStep === 4 ? "text-blue-500" : "text-gray-700"}`}>
-                          QMS
-                        </h3>
-                        <p className="text-sm text-gray-500 mt-1">Questions about the QMS</p>
-                      </div>
-                    </div>
-
-                    {/* Step 5 - QMS Ratings */}
-                    <div className="relative flex items-start">
-                      <div
-                        className={`z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 transition-colors duration-200 ${
-                          formState.currentStep >= 5 ? "border-blue-500 bg-white text-blue-500" : "border-gray-300 bg-white text-gray-400"
-                        }`}
-                      >
-                        <SmileIcon className="h-6 w-6" />
-                      </div>
-                      <div className="ml-4 pt-1">
-                        <h3 className={`font-medium transition-colors duration-200 ${formState.currentStep === 5 ? "text-blue-500" : "text-gray-700"}`}>
-                          QMS Ratings
-                        </h3>
-                        <p className="text-sm text-gray-500 mt-1">Rate the QMS</p>
-                      </div>
-                    </div>
-
-                    {/* Step 6 - Review */}
-                    <div className="relative flex items-start">
-                      <div
-                        className={`z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 transition-colors duration-200 ${
-                          formState.currentStep >= 6 ? "border-blue-500 bg-white text-blue-500" : "border-gray-300 bg-white text-gray-400"
-                        }`}
-                      >
-                        <ClipboardListIcon className="h-6 w-6" />
-                      </div>
-                      <div className="ml-4 pt-1">
-                        <h3 className={`font-medium transition-colors duration-200 ${formState.currentStep === 6 ? "text-blue-500" : "text-gray-700"}`}>
-                          Review
-                        </h3>
-                        <p className="text-sm text-gray-500 mt-1">Review your answers before submission</p>
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -289,20 +139,10 @@ export default function CustomerFeedbackForm() {
             <div className="hidden md:block mb-15">
               <h2 className="text-sm font-medium text-gray-500">Step {formState.currentStep} of 6</h2>
               <h1 className="text-2xl font-bold">
-                {formState.currentStep === 1 && "Personal Details"}
-                {formState.currentStep === 2 && "Citizen's Charter"}
-                {formState.currentStep === 3 && "Service Ratings"}
-                {formState.currentStep === 4 && "QMS Checkmark"}
-                {formState.currentStep === 5 && "QMS Ratings"}
-                {formState.currentStep === 6 && "Review"}
+                {FORM_STEPS.find(step => step.step === formState.currentStep)?.title}
               </h1>
               <p className="text-gray-600">
-                {formState.currentStep === 1 && "All these details are needed to be accomplished."}
-                {formState.currentStep === 2 && "Please answer questions about the Citizen's Charter."}
-                {formState.currentStep === 3 && "Rate your satisfaction with our services."}
-                {formState.currentStep === 4 && "Please provide feedback"}
-                {formState.currentStep === 5 && "Rate your experience"}
-                {formState.currentStep === 6 && "Review your answers before submission."}
+                {FORM_STEPS.find(step => step.step === formState.currentStep)?.description}
               </p>
             </div>
 
