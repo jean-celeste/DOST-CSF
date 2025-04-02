@@ -54,15 +54,32 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
   const [isServicesDialogOpen, setIsServicesDialogOpen] = useState(false)
 
   const handleInputChange = (field, value) => {
-    onFormDataChange({
+    const updatedData = {
       ...formData,
       [field]: value
-    })
+    }
+    console.log('Form Data Updated:', updatedData)
+    onFormDataChange(updatedData)
   }
 
-  const handleServiceSelect = (service) => {
-    handleInputChange('services', service.id)
-    setIsServicesDialogOpen(false)
+  const handleServiceSelect = (serviceData) => {
+    console.log('Received service data in form:', serviceData);
+    const updatedFormData = {
+      ...formData,
+      services: serviceData.name,
+      customerType: serviceData.customerType,
+      externalType: serviceData.externalType,
+      office: serviceData.selectedOffice,
+      unit: serviceData.selectedUnit
+    };
+    console.log('Updating form data to:', updatedFormData);
+    onFormDataChange(updatedFormData);
+    setIsServicesDialogOpen(false);
+  }
+
+  const handleNextClick = () => {
+    console.log('Form Data Before Next:', formData)
+    onNextStep()
   }
 
   const selectedService = SERVICES.find(service => service.id === formData.services)
@@ -174,7 +191,13 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
                   {formData.services ? (
                     <span className="flex items-center">
                       <span className="mr-2">🛠️</span>
-                      {formData.services}
+                      {selectedService?.name || formData.services}
+                      {formData.customerType && (
+                        <span className="ml-2 text-sm text-gray-500">
+                          ({formData.customerType}
+                          {formData.externalType ? ` - ${formData.externalType}` : ''})
+                        </span>
+                      )}
                     </span>
                   ) : (
                     <span className="text-gray-500">Select a service</span>
@@ -190,7 +213,7 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
             <Button 
               variant="gradient"
               className="px-6 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white shadow-md"
-              onClick={onNextStep} 
+              onClick={handleNextClick} 
             >
               Continue
               <ChevronRight className="ml-2 h-4 w-4" />
@@ -228,7 +251,11 @@ PersonalDetailsForm.propTypes = {
     contact: PropTypes.string,
     services: PropTypes.string,
     sex: PropTypes.string,
-    age: PropTypes.string
+    age: PropTypes.string,
+    customerType: PropTypes.string,
+    externalType: PropTypes.string,
+    office: PropTypes.string,
+    unit: PropTypes.string
   }).isRequired,
   onFormDataChange: PropTypes.func.isRequired
 }
