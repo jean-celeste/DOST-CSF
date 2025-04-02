@@ -5,6 +5,7 @@ import PropTypes from 'prop-types'
 import { UserIcon, CheckSquareIcon, SmileIcon, ClipboardListIcon, QrCodeIcon } from 'lucide-react'
 import PersonalDetailsForm from '@/components/forms/PersonalDetailsForm'
 import DataPrivacyConsent from '@/components/prompts/DataPrivacyConsent'
+import Review from '@/components/forms/Review'
 
 // CSM-ARTA components
 import CSMARTACheckmark from '@/components/forms/csm-arta/Checkmark'
@@ -291,8 +292,19 @@ export default function CustomerFeedbackForm() {
                 onFormDataChange={setQMSRatings}
               />
             )}
-            {/* You'll need to implement a Review component for step 6 */}
-            {/* {formState.currentStep === 6 && <ReviewForm onNextStep={handleNextStep} onPrevStep={handlePrevStep} />} */}
+            {formState.currentStep === 6 && (
+              <Review 
+                onNextStep={handleNextStep} 
+                onPrevStep={handlePrevStep}
+                formData={{
+                  personalDetails,
+                  csmARTACheckmark,
+                  csmARTARatings,
+                  qmsCheckmark,
+                  qmsRatings
+                }}
+              />
+            )}
           </div>
         </div>
       </div>
