@@ -39,7 +39,7 @@ export default function DataPrivacyConsent({ onConsent, onDecline }) {
         
         <div className="space-y-2 sm:space-y-4 text-sm sm:text-base text-gray-700 py-4">
           <p className="leading-relaxed">
-            This Client Satisfaction Measurement (CSM) tracks the customer experience of government offices. Your feedback on your recent transaction will help us improve our services.
+            This Client Satisfaction Measurement (CSM-ARTA-F1) and Customer Satisfaction Feedback (QMS-F4) tracks the customer experience of government offices. Your feedback on your recent transaction will help us improve our services.
           </p>
           <p className="leading-relaxed">
             Providing personal information is optional, and all shared details will be kept confidential.
