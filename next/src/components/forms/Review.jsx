@@ -2,38 +2,94 @@
 
 import PropTypes from 'prop-types';
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle2, Star, Pencil, X } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
 
-export default function Review({ onNextStep, onPrevStep, formData }) {
+export default function Review({ onNextStep, onPrevStep, formData, onEditSection }) {
+  const [editingSection, setEditingSection] = useState(null);
+
   const handleSubmit = () => {
     // TODO: Implement form submission logic
     onNextStep();
   };
 
+  const handleEdit = (section) => {
+    setEditingSection(section);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingSection(null);
+  };
+
+  const handleSaveEdit = (section) => {
+    // TODO: Implement save logic
+    setEditingSection(null);
+  };
+
+  const renderSectionHeader = (title, icon, section) => (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center space-x-2">
+        {icon}
+        <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
+      </div>
+      {editingSection === section ? (
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-red-500 hover:text-red-600 hover:bg-red-50"
+            onClick={handleCancelEdit}
+          >
+            <X className="h-4 w-4 mr-1" />
+            Cancel
+          </Button>
+          <Button
+            variant="default"
+            size="sm"
+            className="bg-blue-500 hover:bg-blue-600"
+            onClick={() => handleSaveEdit(section)}
+          >
+            Save Changes
+          </Button>
+        </div>
+      ) : (
+        <Button
+          variant="outline"
+          size="sm"
+          className="text-blue-500 hover:text-blue-600 hover:bg-blue-50"
+          onClick={() => handleEdit(section)}
+        >
+          <Pencil className="h-4 w-4 mr-1" />
+          Edit
+        </Button>
+      )}
+    </div>
+  );
+
   const renderPersonalDetails = () => (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-900">Personal Details</h3>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <p className="text-sm text-gray-500">Email</p>
-          <p className="font-medium">{formData.personalDetails.email}</p>
+      {renderSectionHeader('Personal Details', <CheckCircle2 className="h-5 w-5 text-blue-500" />, 'personal')}
+      <div className="grid grid-cols-2 gap-6">
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <p className="text-sm font-medium text-gray-500 mb-1">Email</p>
+          <p className="text-base text-gray-900">{formData.personalDetails.email}</p>
         </div>
-        <div>
-          <p className="text-sm text-gray-500">Contact</p>
-          <p className="font-medium">{formData.personalDetails.contact}</p>
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <p className="text-sm font-medium text-gray-500 mb-1">Contact</p>
+          <p className="text-base text-gray-900">{formData.personalDetails.contact}</p>
         </div>
-        <div>
-          <p className="text-sm text-gray-500">Services</p>
-          <p className="font-medium">{formData.personalDetails.services}</p>
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <p className="text-sm font-medium text-gray-500 mb-1">Services</p>
+          <p className="text-base text-gray-900">{formData.personalDetails.services}</p>
         </div>
-        <div>
-          <p className="text-sm text-gray-500">Sex</p>
-          <p className="font-medium">{formData.personalDetails.sex}</p>
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <p className="text-sm font-medium text-gray-500 mb-1">Sex</p>
+          <p className="text-base text-gray-900">{formData.personalDetails.sex}</p>
         </div>
-        <div>
-          <p className="text-sm text-gray-500">Age</p>
-          <p className="font-medium">{formData.personalDetails.age}</p>
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <p className="text-sm font-medium text-gray-500 mb-1">Age</p>
+          <p className="text-base text-gray-900">{formData.personalDetails.age}</p>
         </div>
       </div>
     </div>
@@ -41,24 +97,22 @@ export default function Review({ onNextStep, onPrevStep, formData }) {
 
   const renderCSMARTACheckmark = () => (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-900">Citizen's Charter</h3>
+      {renderSectionHeader('Citizen\'s Charter', <CheckCircle2 className="h-5 w-5 text-blue-500" />, 'csmarta')}
       <div className="space-y-4">
-        {/* Main Selection */}
-        <div className="space-y-2">
-          <p className="text-sm text-gray-500">Main Selection</p>
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <p className="text-sm font-medium text-gray-500 mb-2">Main Selection</p>
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-            <p className="font-medium">{formData.csmARTACheckmark.selectedOption}</p>
+            <p className="text-base text-gray-900">{formData.csmARTACheckmark.selectedOption}</p>
           </div>
         </div>
 
-        {/* Additional Answers */}
         {Object.entries(formData.csmARTACheckmark.additionalAnswers || {}).map(([questionId, answer]) => (
-          <div key={questionId} className="space-y-2">
-            <p className="text-sm text-gray-500">Additional Question {questionId}</p>
+          <div key={questionId} className="bg-gray-50 p-4 rounded-lg">
+            <p className="text-sm font-medium text-gray-500 mb-2">Additional Question {questionId}</p>
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-              <p className="font-medium">{answer}</p>
+              <p className="text-base text-gray-900">{answer}</p>
             </div>
           </div>
         ))}
@@ -68,12 +122,15 @@ export default function Review({ onNextStep, onPrevStep, formData }) {
 
   const renderCSMARTARatings = () => (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-900">Service Ratings</h3>
-      <div className="space-y-2">
+      {renderSectionHeader('Service Ratings', <Star className="h-5 w-5 text-yellow-400" />, 'csmarta-ratings')}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {Object.entries(formData.csmARTARatings.ratings).map(([key, value]) => (
-          <div key={key}>
-            <p className="text-sm text-gray-500">Question {key.slice(-1)}</p>
-            <p className="font-medium">{value}</p>
+          <div key={key} className="bg-gray-50 p-4 rounded-lg">
+            <p className="text-sm font-medium text-gray-500 mb-2">Question {key.slice(-1)}</p>
+            <div className="flex items-center space-x-2">
+              <Star className="h-4 w-4 text-yellow-400" />
+              <p className="text-base text-gray-900">{value}</p>
+            </div>
           </div>
         ))}
       </div>
@@ -82,14 +139,15 @@ export default function Review({ onNextStep, onPrevStep, formData }) {
 
   const renderQMSCheckmark = () => (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-900">QMS Checkmark</h3>
-      <div className="space-y-2">
-        <p className="text-sm text-gray-500">Selected Options</p>
+      {renderSectionHeader('QMS Checkmark', <CheckCircle2 className="h-5 w-5 text-blue-500" />, 'qms-checkmark')}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {Object.entries(formData.qmsCheckmark.selections || {}).map(([option, isSelected]) => (
           isSelected && (
-            <div key={option} className="flex items-center space-x-2">
-              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-              <p className="font-medium">{option}</p>
+            <div key={option} className="bg-gray-50 p-4 rounded-lg">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                <p className="text-base text-gray-900">{option}</p>
+              </div>
             </div>
           )
         ))}
@@ -99,12 +157,15 @@ export default function Review({ onNextStep, onPrevStep, formData }) {
 
   const renderQMSRatings = () => (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-900">QMS Ratings</h3>
-      <div className="space-y-2">
+      {renderSectionHeader('QMS Ratings', <Star className="h-5 w-5 text-yellow-400" />, 'qms-ratings')}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {Object.entries(formData.qmsRatings.ratings).map(([key, value]) => (
-          <div key={key}>
-            <p className="text-sm text-gray-500">Question {key.slice(-1)}</p>
-            <p className="font-medium">{value}</p>
+          <div key={key} className="bg-gray-50 p-4 rounded-lg">
+            <p className="text-sm font-medium text-gray-500 mb-2">Question {key.slice(-1)}</p>
+            <div className="flex items-center space-x-2">
+              <Star className="h-4 w-4 text-yellow-400" />
+              <p className="text-base text-gray-900">{value}</p>
+            </div>
           </div>
         ))}
       </div>
@@ -112,12 +173,12 @@ export default function Review({ onNextStep, onPrevStep, formData }) {
   );
 
   return (
-    <div className="space-y-8">
+    <div className="max-w-4xl mx-auto space-y-8">
       <div className="space-y-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-xl border border-gray-100 shadow-sm p-6"
+          className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
         >
           {renderPersonalDetails()}
         </motion.div>
@@ -126,7 +187,7 @@ export default function Review({ onNextStep, onPrevStep, formData }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white rounded-xl border border-gray-100 shadow-sm p-6"
+          className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
         >
           {renderCSMARTACheckmark()}
         </motion.div>
@@ -135,7 +196,7 @@ export default function Review({ onNextStep, onPrevStep, formData }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white rounded-xl border border-gray-100 shadow-sm p-6"
+          className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
         >
           {renderCSMARTARatings()}
         </motion.div>
@@ -144,7 +205,7 @@ export default function Review({ onNextStep, onPrevStep, formData }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-white rounded-xl border border-gray-100 shadow-sm p-6"
+          className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
         >
           {renderQMSCheckmark()}
         </motion.div>
@@ -153,29 +214,29 @@ export default function Review({ onNextStep, onPrevStep, formData }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="bg-white rounded-xl border border-gray-100 shadow-sm p-6"
+          className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
         >
           {renderQMSRatings()}
         </motion.div>
       </div>
 
       {/* Navigation Buttons */}
-      <div className="flex justify-between mt-20">
+      <div className="flex justify-between mt-12">
         <Button
           variant="outline"
-          className="px-6 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+          className="px-8 py-3 bg-white border-2 border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
           onClick={onPrevStep}
         >
-          <ChevronLeft className="mr-2 h-4 w-4" />
+          <ChevronLeft className="mr-2 h-5 w-5" />
           Go Back
         </Button>
         <Button
           variant="gradient"
-          className="px-6 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white shadow-md"
+          className="px-8 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white shadow-md hover:shadow-lg transition-all duration-200"
           onClick={handleSubmit}
         >
           Submit Feedback
-          <ChevronRight className="ml-2 h-4 w-4" />
+          <ChevronRight className="ml-2 h-5 w-5" />
         </Button>
       </div>
     </div>
@@ -185,6 +246,7 @@ export default function Review({ onNextStep, onPrevStep, formData }) {
 Review.propTypes = {
   onNextStep: PropTypes.func.isRequired,
   onPrevStep: PropTypes.func.isRequired,
+  onEditSection: PropTypes.func,
   formData: PropTypes.shape({
     personalDetails: PropTypes.shape({
       email: PropTypes.string,
