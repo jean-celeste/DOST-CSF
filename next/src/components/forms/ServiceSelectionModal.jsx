@@ -293,9 +293,14 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
     if (!customerType) return []
     
     let services = []
-    const data = customerType === 'internal' 
-      ? SERVICES_DATA.internal 
-      : SERVICES_DATA.external[externalType]
+    let data
+    if (customerType === 'internal') {
+      data = SERVICES_DATA.internal
+    } else {
+      data = SERVICES_DATA.external[externalType]
+    }
+
+    if (!data || !data.offices) return []
 
     data.offices.forEach(office => {
       if (!selectedOffice || office.id === selectedOffice.id) {
@@ -481,24 +486,30 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                     <Building2 className="h-4 w-4" />
                     All Offices
                   </motion.button>
-                  {SERVICES_DATA[customerType === 'internal' ? 'internal' : `external.${externalType}`].offices.map((office) => (
-                    <motion.button
-                      key={office.id}
-                      whileHover={{ x: 2 }}
-                      transition={{ duration: 0.1 }}
-                      className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all flex items-center gap-2
-                        ${selectedOffice?.id === office.id 
-                          ? 'bg-blue-50 text-blue-600 font-medium' 
-                          : 'hover:bg-gray-50 text-gray-700'}`}
-                      onClick={() => {
-                        setSelectedOffice(office)
-                        setSelectedUnit(null)
-                      }}
-                    >
-                      <Building2 className="h-4 w-4" />
-                      {office.name}
-                    </motion.button>
-                  ))}
+                  {(() => {
+                    const data = customerType === 'internal' 
+                      ? SERVICES_DATA.internal 
+                      : SERVICES_DATA.external[externalType];
+                    if (!data || !data.offices) return null;
+                    return data.offices.map((office) => (
+                      <motion.button
+                        key={office.id}
+                        whileHover={{ x: 2 }}
+                        transition={{ duration: 0.1 }}
+                        className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all flex items-center gap-2
+                          ${selectedOffice?.id === office.id 
+                            ? 'bg-blue-50 text-blue-600 font-medium' 
+                            : 'hover:bg-gray-50 text-gray-700'}`}
+                        onClick={() => {
+                          setSelectedOffice(office)
+                          setSelectedUnit(null)
+                        }}
+                      >
+                        <Building2 className="h-4 w-4" />
+                        {office.name}
+                      </motion.button>
+                    ));
+                  })()}
                 </div>
               </div>
 
