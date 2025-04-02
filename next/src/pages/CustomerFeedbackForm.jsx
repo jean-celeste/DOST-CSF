@@ -59,10 +59,10 @@ export default function CustomerFeedbackForm() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Main Form Content */}
-      <div className="w-full min-h-screen">
-        <div className="grid grid-cols-1 lg:grid-cols-7 min-h-screen">
+      <div className="w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-7">
           {/* Left Side - Progress Indicator */}
-          <div className="bg-[url('/diamond-pattern.svg')] bg-repeat bg-gray-50/95 p-3 xs:p-4 lg:p-8 lg:col-span-2 relative shadow-lg z-10 lg:min-h-screen lg:sticky lg:top-0 flex flex-col">
+          <div className="bg-[url('/diamond-pattern.svg')] bg-repeat bg-gray-50/95 lg:fixed lg:w-[28.5714%] lg:h-screen p-3 xs:p-4 lg:p-8 relative shadow-lg z-20 flex flex-col">
             {/* Mobile Header */}
             <div className="lg:hidden flex items-center justify-between mb-3 xs:mb-4 bg-white/80 rounded-xl p-2 xs:p-3 shadow-sm backdrop-blur-sm">
               <div className="flex items-center space-x-2">
@@ -78,9 +78,9 @@ export default function CustomerFeedbackForm() {
             </div>
 
             {/* Desktop Header */}
-            <div className="hidden lg:flex items-center mb-10">
-              <div className="mr-3 h-16 w-16">
-                <img src="/DOST_Logo.png" alt="DOST Logo" className="h-16 w-16 object-contain" />
+            <div className="hidden lg:flex items-center mb-8">
+              <div className="mr-3 h-14 w-14">
+                <img src="/DOST_Logo.png" alt="DOST Logo" className="h-14 w-14 object-contain" />
               </div>
               <div>
                 <h1 className="text-lg font-bold leading-tight">Department of Science and Technology V</h1>
@@ -94,35 +94,37 @@ export default function CustomerFeedbackForm() {
             </div>
 
             {/* Desktop Progress Steps */}
-            <div className="hidden lg:block relative flex-grow">
-              <div className="bg-white/80 rounded-2xl p-6 shadow-sm backdrop-blur-sm transition-all duration-300">
+            <div className="hidden lg:block flex-1">
+              <div className="bg-white/80 rounded-2xl p-6 shadow-sm backdrop-blur-sm">
                 <div className="relative">
-                  <div className="absolute left-6 top-4 h-[calc(100%-32px)] w-0.5 bg-gray-200"></div>
-                  <div className="space-y-8">
+                  <div className="absolute left-6 top-4 bottom-4 w-0.5 bg-gray-200"></div>
+                  <div className="space-y-7">
                     {FORM_STEPS.map(({ step, title, description, icon }) => (
                       <div key={step} className="relative flex items-start group">
                         <div
-                          className={`z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all duration-300 ease-in-out ${
+                          className={`shrink-0 z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all duration-300 ease-in-out ${
                             formState.currentStep >= step 
                               ? "border-blue-500 bg-white text-blue-500 shadow-sm" 
                               : "border-gray-300 bg-white text-gray-400"
                           }`}
                         >
-                          {icon === "UserIcon" && <UserIcon className="h-6 w-6" />}
-                          {icon === "CheckSquareIcon" && <CheckSquareIcon className="h-6 w-6" />}
-                          {icon === "SmileIcon" && <SmileIcon className="h-6 w-6" />}
-                          {icon === "QrCodeIcon" && <QrCodeIcon className="h-6 w-6" />}
-                          {icon === "ClipboardListIcon" && <ClipboardListIcon className="h-6 w-6" />}
+                          <div className="w-6 h-6 flex items-center justify-center">
+                            {icon === "UserIcon" && <UserIcon className="w-full h-full" />}
+                            {icon === "CheckSquareIcon" && <CheckSquareIcon className="w-full h-full" />}
+                            {icon === "SmileIcon" && <SmileIcon className="w-full h-full" />}
+                            {icon === "QrCodeIcon" && <QrCodeIcon className="w-full h-full" />}
+                            {icon === "ClipboardListIcon" && <ClipboardListIcon className="w-full h-full" />}
+                          </div>
                         </div>
-                        <div className="ml-4 pt-1">
-                          <h3 className={`font-medium transition-all duration-300 ${
+                        <div className="ml-4 min-w-0 flex-1">
+                          <h3 className={`text-sm font-medium transition-all duration-300 ${
                             formState.currentStep === step 
                               ? "text-blue-500" 
                               : "text-gray-700 group-hover:text-gray-900"
                           }`}>
                             {title}
                           </h3>
-                          <p className="text-sm text-gray-500 mt-1">{description}</p>
+                          <p className="text-xs text-gray-500 mt-1">{description}</p>
                         </div>
                       </div>
                     ))}
@@ -132,15 +134,15 @@ export default function CustomerFeedbackForm() {
             </div>
 
             {/* Logos at the bottom */}
-            <div className="hidden lg:flex mt-auto pt-8 justify-center space-x-6">
-              <img src="/ARTA_Logo.png" alt="ARTA Logo" className="h-12 w-12 object-contain" />
-              <img src="/CC_Logo.png" alt="CC Logo" className="h-12 w-12 object-contain" />
-              <img src="/BP_logo.png" alt="BP Logo" className="h-12 w-12 object-contain" />
+            <div className="hidden lg:flex justify-center space-x-8 mt-auto pt-6">
+              <img src="/ARTA_Logo.png" alt="ARTA Logo" className="h-12 w-12 object-contain opacity-90 hover:opacity-100 transition-opacity" />
+              <img src="/CC_Logo.png" alt="CC Logo" className="h-12 w-12 object-contain opacity-90 hover:opacity-100 transition-opacity" />
+              <img src="/BP_logo.png" alt="BP Logo" className="h-12 w-12 object-contain opacity-90 hover:opacity-100 transition-opacity" />
             </div>
           </div>
 
           {/* Right Side - Form Content */}
-          <div className="bg-white p-3 xs:p-4 lg:p-8 xl:p-20 lg:col-span-5 min-h-screen">
+          <div className="bg-white lg:col-start-3 lg:col-span-5 min-h-screen p-3 xs:p-4 lg:p-8 xl:p-20">
             {/* Hide step indicator on mobile as it's shown in the progress bar */}
             <div className="hidden md:block mb-8 lg:mb-15">
               <h2 className="text-sm font-medium text-gray-500">Step {formState.currentStep} of 6</h2>
