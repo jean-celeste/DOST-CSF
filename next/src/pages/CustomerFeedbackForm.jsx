@@ -89,8 +89,23 @@ export default function CustomerFeedbackForm() {
       <div className="w-full">
         <div className="grid grid-cols-1 md:grid-cols-7">
           {/* Left Side - Progress Indicator */}
-          <div className="bg-[url('/diamond-pattern.svg')] bg-repeat bg-gray-50/95 p-8 md:col-span-2 relative shadow-lg z-10 h-screen sticky top-0 flex flex-col">
-            <div className="mb-10 flex items-center">
+          <div className="bg-[url('/diamond-pattern.svg')] bg-repeat bg-gray-50/95 p-4 md:p-8 md:col-span-2 relative shadow-lg z-10 md:h-screen md:sticky md:top-0 flex flex-col">
+            {/* Mobile Header */}
+            <div className="md:hidden flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <div className="mr-2 h-8 w-8">
+                  <img src="/DOST_Logo.png" alt="DOST Logo" className="h-8 w-8 object-contain" />
+                </div>
+                <div>
+                  <h1 className="text-sm font-bold leading-tight">DOST V</h1>
+                  <p className="text-xs text-gray-600">Feedback Form</p>
+                </div>
+              </div>
+              <div className="text-sm font-medium text-gray-500">Step {formState.currentStep}/6</div>
+            </div>
+
+            {/* Desktop Header */}
+            <div className="hidden md:flex items-center mb-10">
               <div className="mr-3 h-16 w-16">
                 <img src="/DOST_Logo.png" alt="DOST Logo" className="h-16 w-16 object-contain" />
               </div>
@@ -100,19 +115,59 @@ export default function CustomerFeedbackForm() {
               </div>
             </div>
 
-            <div className="mb-8">
-              <h1 className="text-xl font-bold text-gray-800 mb-2">Stages of Feedback</h1>
-              <p className="text-base text-gray-600">Your feedback will help us enhance our services</p>
+            {/* Mobile Progress Steps */}
+            <div className="md:hidden bg-white/80 rounded-xl p-4 shadow-sm backdrop-blur-sm mb-4">
+              <div className="relative">
+                {/* Progress Line with Segments */}
+                <div className="flex absolute top-4 left-8 right-8 h-[1px] -z-10">
+                  {[1, 2, 3, 4, 5].map((step) => (
+                    <div 
+                      key={`segment-${step}`}
+                      className={`flex-1 h-full transition-colors duration-300 ${
+                        formState.currentStep > step ? 'bg-[#3B82F6]' : 'bg-gray-200'
+                      }`}
+                    ></div>
+                  ))}
+                </div>
+                <div className="flex justify-between items-start px-4 relative z-10">
+                  {[
+                    { step: 1, title: "Personal\nDetails" },
+                    { step: 2, title: "CC" },
+                    { step: 3, title: "SQD" },
+                    { step: 4, title: "QMS" },
+                    { step: 5, title: "Checkmark" },
+                    { step: 6, title: "Review" }
+                  ].map(({ step, title }) => (
+                    <div key={step} className="flex flex-col items-center w-10">
+                      <div
+                        className={`h-8 w-8 rounded-full border-2 flex items-center justify-center transition-colors duration-200 leading-none mb-1.5 ${
+                          formState.currentStep >= step 
+                            ? "border-[#3B82F6] bg-white text-[#3B82F6]" 
+                            : "border-gray-300 bg-white text-gray-400"
+                        }`}
+                      >
+                        {step}
+                      </div>
+                      <span 
+                        className={`text-[10px] text-center whitespace-pre-line leading-tight ${
+                          formState.currentStep >= step 
+                            ? "text-[#3B82F6] font-medium" 
+                            : "text-gray-500"
+                        }`}
+                      >
+                        {title}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            <div className="relative flex-grow">
-              {/* Steps Container with rounded corners */}
+            {/* Desktop Progress Steps */}
+            <div className="hidden md:block relative flex-grow">
               <div className="bg-white/80 rounded-2xl p-6 shadow-sm backdrop-blur-sm">
-                {/* Steps Container */}
                 <div className="relative">
-                  {/* Vertical Line */}
                   <div className="absolute left-6 top-4 h-[calc(100%-32px)] w-0.5 bg-gray-200"></div>
-
                   <div className="space-y-8">
                     {/* Step 1 - Personal Details */}
                     <div className="relative flex items-start">
@@ -220,8 +275,8 @@ export default function CustomerFeedbackForm() {
               </div>
             </div>
 
-            {/* Logos at the bottom */}
-            <div className="mt-auto pt-8 flex justify-center space-x-6">
+            {/* Logos at the bottom - Hidden on mobile */}
+            <div className="hidden md:flex mt-auto pt-8 justify-center space-x-6">
               <img src="/ARTA_Logo.png" alt="ARTA Logo" className="h-12 w-12 object-contain" />
               <img src="/CC_Logo.png" alt="CC Logo" className="h-12 w-12 object-contain" />
               <img src="/BP_logo.png" alt="BP Logo" className="h-12 w-12 object-contain" />
@@ -229,8 +284,9 @@ export default function CustomerFeedbackForm() {
           </div>
 
           {/* Right Side - Form Content */}
-          <div className="bg-white p-20 md:col-span-5 overflow-y-auto">
-            <div className="mb-15">
+          <div className="bg-white p-4 md:p-20 md:col-span-5 overflow-y-auto">
+            {/* Hide step indicator on mobile as it's shown in the progress bar */}
+            <div className="hidden md:block mb-15">
               <h2 className="text-sm font-medium text-gray-500">Step {formState.currentStep} of 6</h2>
               <h1 className="text-2xl font-bold">
                 {formState.currentStep === 1 && "Personal Details"}
