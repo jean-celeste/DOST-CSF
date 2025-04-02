@@ -164,8 +164,48 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
       setSelectedOffice(null)
       setSelectedUnit(null)
       setSearchQuery('')
+      setIsLoading(false) // Reset loading state when modal closes
     }
   }, [isOpen])
+
+  // Set initial customer type and external type based on selected service
+  useEffect(() => {
+    if (selectedService?.name) {
+      // Find the service in the data structure
+      for (const type of ['internal', 'external']) {
+        if (type === 'internal') {
+          for (const office of SERVICES_DATA.internal.offices) {
+            for (const unit of office.units) {
+              const service = unit.services.find(s => s.name === selectedService.name);
+              if (service) {
+                setCustomerType('internal');
+                setSelectedOffice(office);
+                setSelectedUnit(unit);
+                setStep(2);
+                return;
+              }
+            }
+          }
+        } else {
+          for (const category of Object.keys(SERVICES_DATA.external)) {
+            for (const office of SERVICES_DATA.external[category].offices) {
+              for (const unit of office.units) {
+                const service = unit.services.find(s => s.name === selectedService.name);
+                if (service) {
+                  setCustomerType('external');
+                  setExternalType(category);
+                  setSelectedOffice(office);
+                  setSelectedUnit(unit);
+                  setStep(2);
+                  return;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }, [selectedService]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -187,6 +227,7 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
 
   const handleCustomerTypeSelect = async (type) => {
     setIsLoading(true)
+    console.log('Customer Type Selected:', type)
     setCustomerType(type)
     await new Promise(resolve => setTimeout(resolve, 150))
     if (type === 'internal') {
@@ -199,6 +240,7 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
 
   const handleExternalTypeSelect = async (type) => {
     setIsLoading(true)
+    console.log('External Customer Type Selected:', type)
     setExternalType(type)
     await new Promise(resolve => setTimeout(resolve, 150))
     setStep(2)
@@ -207,9 +249,22 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
 
   const handleServiceSelect = async (service) => {
     setIsLoading(true)
-    await new Promise(resolve => setTimeout(resolve, 150)) // Reduced from 300ms to 150ms
-    onServiceSelect(service)
-    onClose()
+    try {
+      const serviceData = {
+        ...service,
+        customerType,
+        externalType,
+        selectedOffice: selectedOffice?.name,
+        selectedUnit: selectedUnit?.name
+      };
+      
+      console.log('Service Selected in Modal:', serviceData);
+      await new Promise(resolve => setTimeout(resolve, 150));
+      onServiceSelect(serviceData);  
+      onClose();
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleStepClick = (stepId) => {
@@ -238,9 +293,14 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
     if (!customerType) return []
     
     let services = []
-    const data = customerType === 'internal' 
-      ? SERVICES_DATA.internal 
-      : SERVICES_DATA.external[externalType]
+    let data
+    if (customerType === 'internal') {
+      data = SERVICES_DATA.internal
+    } else {
+      data = SERVICES_DATA.external[externalType]
+    }
+
+    if (!data || !data.offices) return []
 
     data.offices.forEach(office => {
       if (!selectedOffice || office.id === selectedOffice.id) {
@@ -392,10 +452,10 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
       case 2:
         return (
           <motion.div
-            initial={{ opacity: 0, y: 10 }} // Reduced y offset
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }} // Reduced y offset
-            transition={{ duration: 0.2 }} // Added faster transition
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
             className="flex gap-8 h-[600px]"
           >
             {/* Left Panel - Filters */}
@@ -412,8 +472,8 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                 <h4 className="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wider">Offices</h4>
                 <div className="space-y-2">
                   <motion.button
-                    whileHover={{ x: 2 }} // Reduced x offset
-                    transition={{ duration: 0.1 }} // Added faster transition
+                    whileHover={{ x: 2 }}
+                    transition={{ duration: 0.1 }}
                     className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all flex items-center gap-2
                       ${!selectedOffice 
                         ? 'bg-blue-50 text-blue-600 font-medium' 
@@ -426,24 +486,30 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                     <Building2 className="h-4 w-4" />
                     All Offices
                   </motion.button>
-                  {SERVICES_DATA[customerType === 'internal' ? 'internal' : `external.${externalType}`].offices.map((office) => (
-                    <motion.button
-                      key={office.id}
-                      whileHover={{ x: 2 }} // Reduced x offset
-                      transition={{ duration: 0.1 }} // Added faster transition
-                      className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all flex items-center gap-2
-                        ${selectedOffice?.id === office.id 
-                          ? 'bg-blue-50 text-blue-600 font-medium' 
-                          : 'hover:bg-gray-50 text-gray-700'}`}
-                      onClick={() => {
-                        setSelectedOffice(office)
-                        setSelectedUnit(null)
-                      }}
-                    >
-                      <Building2 className="h-4 w-4" />
-                      {office.name}
-                    </motion.button>
-                  ))}
+                  {(() => {
+                    const data = customerType === 'internal' 
+                      ? SERVICES_DATA.internal 
+                      : SERVICES_DATA.external[externalType];
+                    if (!data || !data.offices) return null;
+                    return data.offices.map((office) => (
+                      <motion.button
+                        key={office.id}
+                        whileHover={{ x: 2 }}
+                        transition={{ duration: 0.1 }}
+                        className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all flex items-center gap-2
+                          ${selectedOffice?.id === office.id 
+                            ? 'bg-blue-50 text-blue-600 font-medium' 
+                            : 'hover:bg-gray-50 text-gray-700'}`}
+                        onClick={() => {
+                          setSelectedOffice(office)
+                          setSelectedUnit(null)
+                        }}
+                      >
+                        <Building2 className="h-4 w-4" />
+                        {office.name}
+                      </motion.button>
+                    ));
+                  })()}
                 </div>
               </div>
 
@@ -453,8 +519,8 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                   <h4 className="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wider">Units</h4>
                   <div className="space-y-2">
                     <motion.button
-                      whileHover={{ x: 2 }} // Reduced x offset
-                      transition={{ duration: 0.1 }} // Added faster transition
+                      whileHover={{ x: 2 }}
+                      transition={{ duration: 0.1 }}
                       className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all flex items-center gap-2
                         ${!selectedUnit 
                           ? 'bg-blue-50 text-blue-600 font-medium' 
@@ -467,8 +533,8 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                     {selectedOffice.units.map((unit) => (
                       <motion.button
                         key={unit.id}
-                        whileHover={{ x: 2 }} // Reduced x offset
-                        transition={{ duration: 0.1 }} // Added faster transition
+                        whileHover={{ x: 2 }}
+                        transition={{ duration: 0.1 }}
                         className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all flex items-center gap-2
                           ${selectedUnit?.id === unit.id 
                             ? 'bg-blue-50 text-blue-600 font-medium' 
@@ -500,11 +566,11 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                 {getFilteredServices().map((service) => (
                   <motion.button
                     key={service.id}
-                    whileHover={{ scale: 1.005, y: -1 }} // Reduced scale and y offset
-                    whileTap={{ scale: 0.995 }} // Reduced scale
-                    transition={{ duration: 0.1 }} // Added faster transition
+                    whileHover={{ scale: 1.005, y: -1 }}
+                    whileTap={{ scale: 0.995 }}
+                    transition={{ duration: 0.1 }}
                     className={`w-full p-5 rounded-xl border-2 transition-all text-left group relative overflow-hidden
-                      ${selectedService?.id === service.id
+                      ${selectedService?.name === service.name
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-gray-200 hover:border-blue-500 hover:shadow-md'
                       }`}
@@ -516,7 +582,7 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                         <h3 className="text-lg font-semibold text-gray-900 mb-1">{service.name}</h3>
                         <p className="text-sm text-gray-500">{service.description}</p>
                       </div>
-                      {selectedService?.id === service.id && (
+                      {selectedService?.name === service.name && (
                         <div className="p-2 rounded-full bg-blue-100 text-blue-500">
                           <Check className="h-5 w-5" />
                         </div>
