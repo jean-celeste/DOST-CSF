@@ -45,4 +45,4 @@ check-db-tables.js
 display-services.js
 
 # db
-next/src/lib/db/migrations/backup.sql
+backup.sql
