@@ -128,6 +128,28 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
             </div>
             </div>
 
+            {/* Age */}
+          <div>
+            <Label htmlFor="age" className="text-base font-medium flex items-center gap-2 mb-2">
+                <Calendar className="h-4 w-4 text-blue-500" />
+                Age
+              </Label>
+            <div className="relative">
+                <Input
+                  id="age"
+                  type="number"
+                  placeholder="Enter your age"
+                className="w-full h-12 pl-10 pr-10"
+                  value={formData.age}
+                  onChange={(e) => handleInputChange('age', e.target.value)}
+                  min="1"
+                  max="120"
+                />
+                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              {formData.age && <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-green-500" />}
+            </div>
+            </div>
+
             {/* Sex */}
             <div>
             <Label className="text-base font-medium flex items-center gap-2 mb-2">
@@ -148,28 +170,6 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
                   <span className="text-base capitalize">{option === 'prefer-not' ? 'Prefer not to say' : option}</span>
                 </button>
               ))}
-            </div>
-            </div>
-
-            {/* Age */}
-          <div>
-            <Label htmlFor="age" className="text-base font-medium flex items-center gap-2 mb-2">
-                <Calendar className="h-4 w-4 text-blue-500" />
-                Age
-              </Label>
-            <div className="relative">
-                <Input
-                  id="age"
-                  type="number"
-                  placeholder="Enter your age"
-                className="w-full h-12 pl-10 pr-10"
-                  value={formData.age}
-                  onChange={(e) => handleInputChange('age', e.target.value)}
-                  min="1"
-                  max="120"
-                />
-                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              {formData.age && <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-green-500" />}
             </div>
             </div>
 
@@ -222,7 +222,7 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
       </div>
 
       {/* Logo Section - Right side */}
-      <div className="md:col-span-4 bg-gradient-to-br from-blue-50 to-indigo-100 p-8 flex flex-col items-center justify-center">
+      <div className="md:col-span-4 bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100 p-8 flex flex-col items-center justify-center min-h-full">
         <div className="mb-6">
           <img src="/DOST_Logo.png" alt="DOST Logo" className="h-32 w-32 object-contain" />
         </div>
