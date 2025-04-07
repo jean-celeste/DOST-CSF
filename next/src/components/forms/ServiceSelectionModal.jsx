@@ -537,7 +537,7 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-[1000px] p-8">
+        <DialogContent className="sm:max-w-[1000px] p-6 max-h-[90vh] overflow-y-auto">
           <DialogHeader className="mb-4">
             <div className="flex justify-between items-center">
               <DialogTitle className="text-2xl font-bold text-gray-900">
@@ -553,13 +553,13 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
             onStepClick={handleStepClick}
           />
           
-          <div className="mt-6">
+          <div className="mt-4">
             <AnimatePresence mode="wait">
               {renderStepContent()}
             </AnimatePresence>
           </div>
           
-          <div className="flex justify-between mt-8">
+          <div className="flex justify-between mt-6">
             {step > 1 && (
               <Button
                 variant="outline"
