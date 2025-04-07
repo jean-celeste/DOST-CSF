@@ -20,7 +20,7 @@ const neutralFaceStatic = "/assets/emojis/face_without_mouth_color.svg";
 const frowningFaceStatic = "/assets/emojis/frowning_face_color.svg";
 const poutingFaceStatic = "/assets/emojis/pouting_face_color.svg";
 
-export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataChange }) {
+export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataChange, isReviewMode }) {
   const handleRatingSelect = (questionKey, value) => {
     onFormDataChange({
       ...formData,
@@ -32,7 +32,11 @@ export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataCh
   };
 
   const handleContinue = () => {
-    onNextStep();
+    if (isReviewMode) {
+      onNextStep(); // This will be handleReturnToReview from the parent
+    } else {
+      onNextStep();
+    }
   };
 
   const handleNextPage = () => {
@@ -55,36 +59,42 @@ export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataCh
       value: "strongly-agree",
       label: "Strongly Agree",
       imageSource: heartEyesFace,
-      imageSourceStatic: heartEyesFaceStatic
+      imageSourceStatic: heartEyesFaceStatic,
+      emoji: "😍"
     },
     {
       value: "agree",
       label: "Agree",
       imageSource: smilingFace,
-      imageSourceStatic: smilingFaceStatic
+      imageSourceStatic: smilingFaceStatic,
+      emoji: "😊"
     },
     {
       value: "disagree",
       label: "Disagree",
       imageSource: frowningFace,
-      imageSourceStatic: frowningFaceStatic
+      imageSourceStatic: frowningFaceStatic,
+      emoji: "😕"
     },
     {
       value: "neutral",
       label: "Neither Agree\nor Disagree",
       imageSource: neutralFace,
-      imageSourceStatic: neutralFaceStatic
+      imageSourceStatic: neutralFaceStatic,
+      emoji: "😐"
     },
     {
       value: "strongly-disagree",
       label: "Strongly Disagree",
       imageSource: poutingFace,
-      imageSourceStatic: poutingFaceStatic
+      imageSourceStatic: poutingFaceStatic,
+      emoji: "😠"
     },
     {
       value: "na",
       label: "Not Applicable",
-      imageSource: null
+      imageSource: null,
+      emoji: "❌"
     }
   ];
 
@@ -144,6 +154,7 @@ export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataCh
                   selectedRating={formData.ratings[q.questionKey]}
                   onRatingSelect={(value) => handleRatingSelect(q.questionKey, value)}
                   emojiOptions={emojiOptions}
+                  showEmoji={true}
                 />
               </motion.div>
             ))}
@@ -182,7 +193,7 @@ export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataCh
             onClick={formData.currentPage === totalPages - 1 ? handleContinue : handleNextPage}
             disabled={!currentQuestions.every(q => formData.ratings[q.questionKey])}
           >
-            {formData.currentPage === totalPages - 1 ? "Continue" : "Next"}
+            {formData.currentPage === totalPages - 1 ? (isReviewMode ? "Return to Review" : "Continue") : "Next"}
             <ChevronRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
@@ -205,5 +216,6 @@ Ratings.propTypes = {
     }),
     currentPage: PropTypes.number
   }).isRequired,
-  onFormDataChange: PropTypes.func.isRequired
+  onFormDataChange: PropTypes.func.isRequired,
+  isReviewMode: PropTypes.bool
 };
