@@ -11,6 +11,7 @@ export default function Checkmark({
   onPrevStep,
   formData,
   onFormDataChange,
+  isReviewMode = false,
   mainQuestion = "Which of the following best describes your awareness of a CC?",
   mainOptions = [
     "I know what a CC is and I saw this office's CC.",
@@ -169,7 +170,7 @@ export default function Checkmark({
             onClick={handleSubmit}
             disabled={!formData.selectedOption || !areAllQuestionsAnswered()}
           >
-            Continue
+            {isReviewMode ? 'Return to Review' : 'Continue'}
             <ChevronRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
@@ -186,6 +187,7 @@ Checkmark.propTypes = {
     additionalAnswers: PropTypes.object
   }).isRequired,
   onFormDataChange: PropTypes.func.isRequired,
+  isReviewMode: PropTypes.bool,
   mainQuestion: PropTypes.string,
   mainOptions: PropTypes.arrayOf(PropTypes.string),
   additionalQuestions: PropTypes.arrayOf(PropTypes.shape({

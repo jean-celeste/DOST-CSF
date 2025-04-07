@@ -15,7 +15,18 @@ export default function Review({ onNextStep, onPrevStep, formData, onEditSection
   };
 
   const handleEdit = (section) => {
-    setEditingSection(section);
+    if (section === 'personal') {
+      // Navigate back to PersonalDetailsForm
+      onEditSection('personal');
+    } else if (section === 'csmarta') {
+      // Navigate back to CSMARTACheckmark
+      onEditSection('csmarta');
+    } else if (section === 'qms-checkmark') {
+      // Navigate back to QMSCheckmark
+      onEditSection('qms-checkmark');
+    } else {
+      setEditingSection(section);
+    }
   };
 
   const handleCancelEdit = () => {
@@ -33,7 +44,17 @@ export default function Review({ onNextStep, onPrevStep, formData, onEditSection
         {icon}
         <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
       </div>
-      {editingSection === section ? (
+      {section === 'personal' || section === 'csmarta' || section === 'qms-checkmark' ? (
+        <Button
+          variant="outline"
+          size="sm"
+          className="text-blue-500 hover:text-blue-600 hover:bg-blue-50"
+          onClick={() => handleEdit(section)}
+        >
+          <Pencil className="h-4 w-4 mr-1" />
+          Edit
+        </Button>
+      ) : editingSection === section ? (
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"
