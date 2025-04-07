@@ -172,10 +172,15 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
               <div className="flex items-center justify-between">
                 {formData.service_name ? (
                   <div className="space-y-1">
-                    <span className="flex items-center text-gray-900">
-                      <span className="mr-2">🛠️</span>
-                      {formData.service_name}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-900 font-medium">{formData.service_name}</span>
+                      <span className="text-sm text-gray-500">
+                        ({formData.customerType === 'internal' ? 'Internal Customer' : 
+                          formData.externalType === 'citizen' ? 'Citizen' :
+                          formData.externalType === 'business' ? 'Business' :
+                          formData.externalType === 'government' ? 'Government' : 'External Customer'})
+                      </span>
+                    </div>
                     {formData.office_name && (
                       <div className="flex items-center gap-2 text-sm text-gray-500">
                         <span className="flex items-center gap-1">
