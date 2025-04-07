@@ -33,6 +33,7 @@ export default function CustomerFeedbackForm() {
   const [csmARTARatings, setCSMARTARatings] = useState(INITIAL_CSM_ARTA_RATINGS)
   const [qmsCheckmark, setQMSCheckmark] = useState(INITIAL_QMS_CHECKMARK)
   const [qmsRatings, setQMSRatings] = useState(INITIAL_QMS_RATINGS)
+  const [editingSection, setEditingSection] = useState(null)
 
   const handleConsent = () => {
     setFormState(prev => ({ ...prev, showMainForm: true }))
@@ -48,6 +49,26 @@ export default function CustomerFeedbackForm() {
 
   const handlePrevStep = () => {
     setFormState(prev => ({ ...prev, currentStep: prev.currentStep - 1 }))
+  }
+
+  const handleEditSection = (section) => {
+    setEditingSection(section)
+    if (section === 'personal') {
+      setFormState(prev => ({ ...prev, currentStep: 1 }))
+    } else if (section === 'csmarta') {
+      setFormState(prev => ({ ...prev, currentStep: 2 }))
+    } else if (section === 'csmarta-ratings') {
+      setFormState(prev => ({ ...prev, currentStep: 3 }))
+    } else if (section === 'qms-checkmark') {
+      setFormState(prev => ({ ...prev, currentStep: 4 }))
+    } else if (section === 'qms-ratings') {
+      setFormState(prev => ({ ...prev, currentStep: 5 }))
+    }
+  }
+
+  const handleReturnToReview = () => {
+    setEditingSection(null)
+    setFormState(prev => ({ ...prev, currentStep: 6 }))
   }
 
   // Render the data privacy page if consent hasn't been given
@@ -157,43 +178,48 @@ export default function CustomerFeedbackForm() {
             {/* Render the form component based on current step */}
             {formState.currentStep === 1 && (
               <PersonalDetailsForm 
-                onNextStep={handleNextStep} 
+                onNextStep={editingSection === 'personal' ? handleReturnToReview : handleNextStep} 
                 onPrevStep={handlePrevStep}
                 formData={personalDetails}
                 onFormDataChange={setPersonalDetails}
+                isReviewMode={editingSection === 'personal'}
               />
             )}
             
             {formState.currentStep === 2 && (
               <CSMARTACheckmark 
-                onNextStep={handleNextStep} 
+                onNextStep={editingSection === 'csmarta' ? handleReturnToReview : handleNextStep} 
                 onPrevStep={handlePrevStep}
                 formData={csmARTACheckmark}
                 onFormDataChange={setCSMARTACheckmark}
+                isReviewMode={editingSection === 'csmarta'}
               />
             )}
             {formState.currentStep === 3 && (
               <CSMARTARatings 
-                onNextStep={handleNextStep} 
+                onNextStep={editingSection === 'csmarta-ratings' ? handleReturnToReview : handleNextStep} 
                 onPrevStep={handlePrevStep}
                 formData={csmARTARatings}
                 onFormDataChange={setCSMARTARatings}
+                isReviewMode={editingSection === 'csmarta-ratings'}
               />
             )}
             {formState.currentStep === 4 && (
               <QMSCheckmark 
-                onNextStep={handleNextStep} 
+                onNextStep={editingSection === 'qms-checkmark' ? handleReturnToReview : handleNextStep} 
                 onPrevStep={handlePrevStep}
                 formData={qmsCheckmark}
                 onFormDataChange={setQMSCheckmark}
+                isReviewMode={editingSection === 'qms-checkmark'}
               />
             )}
             {formState.currentStep === 5 && (
               <QMSRatings 
-                onNextStep={handleNextStep} 
+                onNextStep={editingSection === 'qms-ratings' ? handleReturnToReview : handleNextStep} 
                 onPrevStep={handlePrevStep}
                 formData={qmsRatings}
                 onFormDataChange={setQMSRatings}
+                isReviewMode={editingSection === 'qms-ratings'}
               />
             )}
             {formState.currentStep === 6 && (
@@ -207,6 +233,7 @@ export default function CustomerFeedbackForm() {
                   qmsCheckmark,
                   qmsRatings
                 }}
+                onEditSection={handleEditSection}
               />
             )}
           </div>

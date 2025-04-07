@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import { Button } from '@/components/ui/button'
-import { Check } from 'lucide-react'
+import { Check, ChevronRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 export default function Checkmark({ 
@@ -8,6 +8,7 @@ export default function Checkmark({
   onPrevStep,
   formData,
   onFormDataChange,
+  isReviewMode = false,
   mainQuestion = "Please select the criteria/attributes that are important to you.",
   mainOptions = [
     "Appropriateness of the Service/Activity",
@@ -94,7 +95,8 @@ export default function Checkmark({
             onClick={handleSubmit}
             disabled={Object.keys(formData.selections || {}).length === 0}
           >
-            Continue
+            {isReviewMode ? 'Return to Review' : 'Continue'}
+            <ChevronRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
       </div>
@@ -109,6 +111,7 @@ Checkmark.propTypes = {
     selections: PropTypes.objectOf(PropTypes.bool)
   }).isRequired,
   onFormDataChange: PropTypes.func.isRequired,
+  isReviewMode: PropTypes.bool,
   mainQuestion: PropTypes.string,
   mainOptions: PropTypes.arrayOf(PropTypes.string)
 }

@@ -5,6 +5,15 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, CheckCircle2, Star, Pencil, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import Image from 'next/image';
+
+//Animated emojis
+const heartEyesFace = "/assets/emojis/smiling_face_with_heart-eyes_animated.png";
+const smilingFace = "/assets/emojis/smiling_face_with_smiling_eyes_animated.png";
+const neutralFace = "/assets/emojis/face_without_mouth_animated.png";
+const happyFace = "/assets/emojis/slightly_smiling_face_animated.png";
+const frowningFace = "/assets/emojis/frowning_face_animated.png";
+const poutingFace = "/assets/emojis/pouting_face_animated.png";
 
 export default function Review({ onNextStep, onPrevStep, formData, onEditSection }) {
   const [editingSection, setEditingSection] = useState(null);
@@ -15,7 +24,24 @@ export default function Review({ onNextStep, onPrevStep, formData, onEditSection
   };
 
   const handleEdit = (section) => {
-    setEditingSection(section);
+    if (section === 'personal') {
+      // Navigate back to PersonalDetailsForm
+      onEditSection('personal');
+    } else if (section === 'csmarta') {
+      // Navigate back to CSMARTACheckmark
+      onEditSection('csmarta');
+    } else if (section === 'csmarta-ratings') {
+      // Navigate back to CSMARTARatings
+      onEditSection('csmarta-ratings');
+    } else if (section === 'qms-checkmark') {
+      // Navigate back to QMSCheckmark
+      onEditSection('qms-checkmark');
+    } else if (section === 'qms-ratings') {
+      // Navigate back to QMSRatings
+      onEditSection('qms-ratings');
+    } else {
+      setEditingSection(section);
+    }
   };
 
   const handleCancelEdit = () => {
@@ -27,13 +53,64 @@ export default function Review({ onNextStep, onPrevStep, formData, onEditSection
     setEditingSection(null);
   };
 
+  const getEmojiImage = (rating, type) => {
+    if (type === 'qms') {
+      switch (rating) {
+        case 'outstanding': return heartEyesFace;
+        case 'very-satisfactory': return smilingFace;
+        case 'satisfactory': return happyFace;
+        case 'fair': return neutralFace;
+        case 'unsatisfactory': return poutingFace;
+        default: return null;
+      }
+    } else {
+      switch (rating) {
+        case 'strongly-agree': return heartEyesFace;
+        case 'agree': return smilingFace;
+        case 'disagree': return frowningFace;
+        case 'neutral': return neutralFace;
+        case 'strongly-disagree': return poutingFace;
+        case 'na': return null;
+        default: return null;
+      }
+    }
+  };
+
+  const renderEmoji = (rating, type) => {
+    const emojiImage = getEmojiImage(rating, type);
+    if (emojiImage) {
+      return (
+        <div className="relative w-12 h-12">
+          <Image
+            src={emojiImage}
+            alt={rating}
+            fill
+            className="object-contain"
+            sizes="48px"
+          />
+        </div>
+      );
+    }
+    return <span className="text-4xl">❌</span>;
+  };
+
   const renderSectionHeader = (title, icon, section) => (
     <div className="flex items-center justify-between">
       <div className="flex items-center space-x-2">
         {icon}
         <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
       </div>
-      {editingSection === section ? (
+      {section === 'personal' || section === 'csmarta' || section === 'qms-checkmark' ? (
+        <Button
+          variant="outline"
+          size="sm"
+          className="text-blue-500 hover:text-blue-600 hover:bg-blue-50"
+          onClick={() => handleEdit(section)}
+        >
+          <Pencil className="h-4 w-4 mr-1" />
+          Edit
+        </Button>
+      ) : editingSection === section ? (
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"
@@ -128,7 +205,7 @@ export default function Review({ onNextStep, onPrevStep, formData, onEditSection
           <div key={key} className="bg-gray-50 p-4 rounded-lg">
             <p className="text-sm font-medium text-gray-500 mb-2">Question {key.slice(-1)}</p>
             <div className="flex items-center space-x-2">
-              <Star className="h-4 w-4 text-yellow-400" />
+              {renderEmoji(value, 'csm')}
               <p className="text-base text-gray-900">{value}</p>
             </div>
           </div>
@@ -163,7 +240,7 @@ export default function Review({ onNextStep, onPrevStep, formData, onEditSection
           <div key={key} className="bg-gray-50 p-4 rounded-lg">
             <p className="text-sm font-medium text-gray-500 mb-2">Question {key.slice(-1)}</p>
             <div className="flex items-center space-x-2">
-              <Star className="h-4 w-4 text-yellow-400" />
+              {renderEmoji(value, 'qms')}
               <p className="text-base text-gray-900">{value}</p>
             </div>
           </div>
