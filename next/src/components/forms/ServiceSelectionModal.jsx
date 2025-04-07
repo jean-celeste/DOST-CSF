@@ -259,15 +259,15 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="space-y-8"
+            className="space-y-6 md:space-y-8"
           >
             {/* Customer Type Selection */}
-            <div className="grid grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
               <motion.button
-                whileHover={{ scale: 1.02, y: -2 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{ scale: 1.001 }}
+                whileTap={{ scale: 0.995 }}
                 transition={{ duration: 0.1 }}
-                className={`group p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative overflow-hidden
+                className={`group p-6 sm:p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative
                   ${customerType === 'internal' 
                     ? 'border-blue-500 bg-blue-50' 
                     : 'border-gray-200 hover:border-blue-500'
@@ -289,10 +289,10 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                 </div>
               </motion.button>
               <motion.button
-                whileHover={{ scale: 1.02, y: -2 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{ scale: 1.001 }}
+                whileTap={{ scale: 0.995 }}
                 transition={{ duration: 0.1 }}
-                className={`group p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative overflow-hidden
+                className={`group p-6 sm:p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative
                   ${customerType === 'external' 
                     ? 'border-blue-500 bg-blue-50' 
                     : 'border-gray-200 hover:border-blue-500'
@@ -325,14 +325,14 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                   transition={{ duration: 0.2 }}
                   className="overflow-hidden"
                 >
-                  <div className="pt-6 border-t border-gray-100">
-                    <div className="flex items-center gap-2 mb-6">
+                  <div className="pt-4 sm:pt-6 border-t border-gray-100">
+                    <div className="flex items-center gap-2 mb-4 sm:mb-6">
                       <div className="p-2 rounded-lg bg-blue-50">
                         <Users className="h-5 w-5 text-blue-500" />
                       </div>
                       <h3 className="font-semibold text-lg">Select External Customer Type</h3>
                     </div>
-                    <div className="grid grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                       {[
                         { id: 'citizen', icon: User, title: 'Citizen', description: 'Individual member of the public' },
                         { id: 'business', icon: Briefcase, title: 'Business', description: 'Private company or organization' },
@@ -343,7 +343,7 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                           whileHover={{ scale: 1.02, y: -2 }}
                           whileTap={{ scale: 0.98 }}
                           transition={{ duration: 0.1 }}
-                          className={`group p-6 rounded-xl border-2 transition-all bg-white hover:shadow-lg relative overflow-hidden
+                          className={`group p-6 sm:p-8 rounded-xl border-2 transition-all bg-white hover:shadow-lg relative overflow-hidden
                             ${externalType === id 
                               ? 'border-blue-500 bg-blue-50' 
                               : 'border-gray-200 hover:border-blue-500'
@@ -380,11 +380,11 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="flex gap-8 h-[600px]"
+            className="flex flex-col lg:flex-row gap-4 sm:gap-6 md:gap-8"
           >
             {/* Left Panel - Filters */}
-            <div className="w-1/3 border-r pr-6 overflow-y-auto">
-              <div className="flex items-center gap-2 mb-6">
+            <div className="w-full lg:w-1/3 border-r-0 lg:border-r pr-0 lg:pr-6">
+              <div className="flex items-center gap-2 mb-4 sm:mb-6">
                 <div className="p-2 rounded-lg bg-blue-50">
                   <Filter className="h-5 w-5 text-blue-500" />
                 </div>
@@ -392,7 +392,7 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
               </div>
               
               {/* Offices */}
-              <div className="mb-8">
+              <div className="mb-6 sm:mb-8">
                 <h4 className="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wider">Offices</h4>
                 <div className="space-y-2">
                   <motion.button
@@ -433,7 +433,7 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
 
               {/* Units */}
               {selectedOffice && (
-                <div className="mb-8">
+                <div className="mb-6 sm:mb-8">
                   <h4 className="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wider">Units</h4>
                   <div className="space-y-2">
                     <motion.button
@@ -469,8 +469,8 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
             </div>
 
             {/* Right Panel - Services */}
-            <div className="w-2/3 overflow-y-auto">
-              <div className="relative mb-6">
+            <div className="w-full lg:w-2/3">
+              <div className="relative mb-4 sm:mb-6">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
                   placeholder="Search services..."
@@ -480,14 +480,14 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                 />
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {getFilteredServices().map((service) => (
                   <motion.button
                     key={service.service_id}
-                    whileHover={{ scale: 1.005, y: -1 }}
+                    whileHover={{ scale: 1.001, y: -1 }}
                     whileTap={{ scale: 0.995 }}
                     transition={{ duration: 0.1 }}
-                    className={`w-full p-5 rounded-xl border-2 transition-all text-left group relative overflow-hidden
+                    className={`w-full p-3 sm:p-4 rounded-xl border-2 transition-all text-left group relative
                       ${selectedService?.service_id === service.service_id
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-gray-200 hover:border-blue-500 hover:shadow-md'
@@ -495,30 +495,30 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                     onClick={() => handleServiceSelect(service)}
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <div className="relative flex items-start justify-between">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">{service.service_name}</h3>
-                        <p className="text-sm text-gray-500">{service.description}</p>
-                        <div className="mt-2 flex items-center gap-2 text-sm text-gray-500">
+                    <div className="relative flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 truncate">{service.service_name}</h3>
+                        <p className="text-sm text-gray-500 line-clamp-2">{service.description}</p>
+                        <div className="mt-2 flex items-center gap-2 text-sm text-gray-500 flex-wrap">
                           <span className="flex items-center gap-1">
-                            <Building2 className="h-4 w-4" />
-                            {service.office_name}
+                            <Building2 className="h-4 w-4 flex-shrink-0" />
+                            <span className="truncate">{service.office_name}</span>
                           </span>
                           {service.unit_name && (
                             <span className="flex items-center gap-1">
-                              <Users className="h-4 w-4" />
-                              {service.unit_name}
+                              <Users className="h-4 w-4 flex-shrink-0" />
+                              <span className="truncate">{service.unit_name}</span>
                             </span>
                           )}
                           <span className="flex items-center gap-1">
-                            <Briefcase className="h-4 w-4" />
-                            {service.service_type_name}
+                            <Briefcase className="h-4 w-4 flex-shrink-0" />
+                            <span className="truncate">{service.service_type_name}</span>
                           </span>
                         </div>
                       </div>
                       {selectedService?.service_id === service.service_id && (
-                        <div className="p-2 rounded-full bg-blue-100 text-blue-500">
-                          <Check className="h-5 w-5" />
+                        <div className="p-2 rounded-full bg-blue-100 text-blue-500 flex-shrink-0">
+                          <Check className="h-4 w-4 sm:h-5 sm:w-5" />
                         </div>
                       )}
                     </div>
@@ -537,7 +537,7 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-[1000px] p-6 max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[1000px] p-6 max-h-[90vh] flex flex-col">
           <DialogHeader className="mb-4">
             <div className="flex justify-between items-center">
               <DialogTitle className="text-2xl font-bold text-gray-900">
@@ -553,13 +553,13 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
             onStepClick={handleStepClick}
           />
           
-          <div className="mt-4">
+          <div className="flex-1 overflow-y-auto">
             <AnimatePresence mode="wait">
               {renderStepContent()}
             </AnimatePresence>
           </div>
           
-          <div className="flex justify-between mt-6">
+          <div className="flex justify-between mt-4">
             {step > 1 && (
               <Button
                 variant="outline"
