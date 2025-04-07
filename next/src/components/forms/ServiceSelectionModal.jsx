@@ -8,101 +8,9 @@ import { Label } from '@/components/ui/label'
 import { Search, Building2, Users, ChevronRight, ChevronLeft, Filter, Check, User, Briefcase, Landmark, ArrowLeft, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-// Sample data structure for services
-const SERVICES_DATA = {
-  internal: {
-    offices: [
-      {
-        id: 'office1',
-        name: 'Office of the Regional Director',
-        units: [
-          {
-            id: 'unit1',
-            name: 'Administrative Unit',
-            services: [
-              { id: 'service1', name: 'Document Processing', description: 'Process and handle administrative documents' },
-              { id: 'service2', name: 'Records Management', description: 'Manage and maintain office records' }
-            ]
-          }
-        ]
-      },
-      {
-        id: 'office2',
-        name: 'Technical Services Office',
-        units: [
-          {
-            id: 'unit2',
-            name: 'Laboratory Services',
-            services: [
-              { id: 'service3', name: 'Chemical Analysis', description: 'Chemical testing and analysis services' },
-              { id: 'service4', name: 'Microbiological Testing', description: 'Microbiological analysis services' }
-            ]
-          }
-        ]
-      }
-    ]
-  },
-  external: {
-    citizen: {
-      offices: [
-        {
-          id: 'office3',
-          name: 'Customer Service Office',
-          units: [
-            {
-              id: 'unit3',
-              name: 'Client Support',
-              services: [
-                { id: 'service5', name: 'Technical Consultation', description: 'Technical advice and consultation' },
-                { id: 'service6', name: 'Training Services', description: 'Technical training programs' }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    business: {
-      offices: [
-        {
-          id: 'office4',
-          name: 'Business Services Office',
-          units: [
-            {
-              id: 'unit4',
-              name: 'Business Support',
-              services: [
-                { id: 'service7', name: 'Business Consultation', description: 'Business and technical advice' },
-                { id: 'service8', name: 'Technology Transfer', description: 'Transfer of technology to businesses' }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    government: {
-      offices: [
-        {
-          id: 'office5',
-          name: 'Government Services Office',
-          units: [
-            {
-              id: 'unit5',
-              name: 'Government Support',
-              services: [
-                { id: 'service9', name: 'Government Consultation', description: 'Technical advice for government projects' },
-                { id: 'service10', name: 'Project Support', description: 'Support for government initiatives' }
-              ]
-            }
-          ]
-        }
-      ]
-    }
-  }
-}
-
 const Breadcrumb = ({ steps, currentStep, onStepClick }) => {
   return (
-    <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+    <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
       {steps.map((step, index) => (
         <div key={step.id} className="flex items-center">
           <button
@@ -154,6 +62,52 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
   const [searchQuery, setSearchQuery] = useState('')
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [services, setServices] = useState([])
+  const [offices, setOffices] = useState([])
+  const [units, setUnits] = useState([])
+
+  // Fetch services when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchServices()
+    }
+  }, [isOpen])
+
+  const fetchServices = async () => {
+    try {
+      setIsLoading(true)
+      const response = await fetch('/api/services')
+      if (!response.ok) throw new Error('Failed to fetch services')
+      const data = await response.json()
+      setServices(data)
+      
+      // Extract unique offices and units
+      const uniqueOffices = [...new Set(data.map(service => service.office_name))]
+      const uniqueUnits = [...new Set(data.map(service => service.unit_name).filter(Boolean))]
+      
+      setOffices(uniqueOffices)
+      setUnits(uniqueUnits)
+    } catch (error) {
+      console.error('Error fetching services:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Get filtered services based on selected filters
+  const getFilteredServices = () => {
+    if (!customerType) return []
+    
+    return services.filter(service => {
+      const matchesSearch = service.service_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          service.description.toLowerCase().includes(searchQuery.toLowerCase())
+      
+      const matchesOffice = !selectedOffice || service.office_name === selectedOffice
+      const matchesUnit = !selectedUnit || service.unit_name === selectedUnit
+      
+      return matchesSearch && matchesOffice && matchesUnit
+    })
+  }
 
   // Reset state when modal closes
   useEffect(() => {
@@ -288,36 +242,6 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
     }
   }
 
-  // Get all services based on filters
-  const getFilteredServices = () => {
-    if (!customerType) return []
-    
-    let services = []
-    let data
-    if (customerType === 'internal') {
-      data = SERVICES_DATA.internal
-    } else {
-      data = SERVICES_DATA.external[externalType]
-    }
-
-    if (!data || !data.offices) return []
-
-    data.offices.forEach(office => {
-      if (!selectedOffice || office.id === selectedOffice.id) {
-        office.units.forEach(unit => {
-          if (!selectedUnit || unit.id === selectedUnit.id) {
-            services = services.concat(unit.services)
-          }
-        })
-      }
-    })
-
-    return services.filter(service =>
-      service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      service.description.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-  }
-
   const renderStepContent = () => {
     if (isLoading) {
       return (
@@ -335,15 +259,15 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="space-y-6"
+            className="space-y-6 md:space-y-8"
           >
             {/* Customer Type Selection */}
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
               <motion.button
-                whileHover={{ scale: 1.01, y: -1 }}
-                whileTap={{ scale: 0.99 }}
+                whileHover={{ scale: 1.001 }}
+                whileTap={{ scale: 0.995 }}
                 transition={{ duration: 0.1 }}
-                className={`group p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative overflow-hidden
+                className={`group p-6 sm:p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative
                   ${customerType === 'internal' 
                     ? 'border-blue-500 bg-blue-50' 
                     : 'border-gray-200 hover:border-blue-500'
@@ -365,10 +289,10 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                 </div>
               </motion.button>
               <motion.button
-                whileHover={{ scale: 1.01, y: -1 }}
-                whileTap={{ scale: 0.99 }}
+                whileHover={{ scale: 1.001 }}
+                whileTap={{ scale: 0.995 }}
                 transition={{ duration: 0.1 }}
-                className={`group p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative overflow-hidden
+                className={`group p-6 sm:p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative
                   ${customerType === 'external' 
                     ? 'border-blue-500 bg-blue-50' 
                     : 'border-gray-200 hover:border-blue-500'
@@ -401,14 +325,14 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                   transition={{ duration: 0.2 }}
                   className="overflow-hidden"
                 >
-                  <div className="pt-6 border-t border-gray-100">
-                    <div className="flex items-center gap-2 mb-6">
+                  <div className="pt-4 sm:pt-6 border-t border-gray-100">
+                    <div className="flex items-center gap-2 mb-4 sm:mb-6">
                       <div className="p-2 rounded-lg bg-blue-50">
                         <Users className="h-5 w-5 text-blue-500" />
                       </div>
                       <h3 className="font-semibold text-lg">Select External Customer Type</h3>
                     </div>
-                    <div className="grid grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                       {[
                         { id: 'citizen', icon: User, title: 'Citizen', description: 'Individual member of the public' },
                         { id: 'business', icon: Briefcase, title: 'Business', description: 'Private company or organization' },
@@ -416,10 +340,10 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                       ].map(({ id, icon: Icon, title, description }) => (
                         <motion.button
                           key={id}
-                          whileHover={{ scale: 1.01, y: -1 }}
-                          whileTap={{ scale: 0.99 }}
+                          whileHover={{ scale: 1.02, y: -2 }}
+                          whileTap={{ scale: 0.98 }}
                           transition={{ duration: 0.1 }}
-                          className={`group p-6 rounded-xl border-2 transition-all bg-white hover:shadow-lg relative overflow-hidden
+                          className={`group p-6 sm:p-8 rounded-xl border-2 transition-all bg-white hover:shadow-lg relative overflow-hidden
                             ${externalType === id 
                               ? 'border-blue-500 bg-blue-50' 
                               : 'border-gray-200 hover:border-blue-500'
@@ -456,11 +380,11 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="flex gap-8 h-[600px]"
+            className="flex flex-col lg:flex-row gap-4 sm:gap-6 md:gap-8"
           >
             {/* Left Panel - Filters */}
-            <div className="w-1/3 border-r pr-6">
-              <div className="flex items-center gap-2 mb-6">
+            <div className="w-full lg:w-1/3 border-r-0 lg:border-r pr-0 lg:pr-6">
+              <div className="flex items-center gap-2 mb-4 sm:mb-6">
                 <div className="p-2 rounded-lg bg-blue-50">
                   <Filter className="h-5 w-5 text-blue-500" />
                 </div>
@@ -468,7 +392,7 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
               </div>
               
               {/* Offices */}
-              <div className="mb-8">
+              <div className="mb-6 sm:mb-8">
                 <h4 className="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wider">Offices</h4>
                 <div className="space-y-2">
                   <motion.button
@@ -486,36 +410,30 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                     <Building2 className="h-4 w-4" />
                     All Offices
                   </motion.button>
-                  {(() => {
-                    const data = customerType === 'internal' 
-                      ? SERVICES_DATA.internal 
-                      : SERVICES_DATA.external[externalType];
-                    if (!data || !data.offices) return null;
-                    return data.offices.map((office) => (
-                      <motion.button
-                        key={office.id}
-                        whileHover={{ x: 2 }}
-                        transition={{ duration: 0.1 }}
-                        className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all flex items-center gap-2
-                          ${selectedOffice?.id === office.id 
-                            ? 'bg-blue-50 text-blue-600 font-medium' 
-                            : 'hover:bg-gray-50 text-gray-700'}`}
-                        onClick={() => {
-                          setSelectedOffice(office)
-                          setSelectedUnit(null)
-                        }}
-                      >
-                        <Building2 className="h-4 w-4" />
-                        {office.name}
-                      </motion.button>
-                    ));
-                  })()}
+                  {offices.map((office) => (
+                    <motion.button
+                      key={office}
+                      whileHover={{ x: 2 }}
+                      transition={{ duration: 0.1 }}
+                      className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all flex items-center gap-2
+                        ${selectedOffice === office 
+                          ? 'bg-blue-50 text-blue-600 font-medium' 
+                          : 'hover:bg-gray-50 text-gray-700'}`}
+                      onClick={() => {
+                        setSelectedOffice(office)
+                        setSelectedUnit(null)
+                      }}
+                    >
+                      <Building2 className="h-4 w-4" />
+                      {office}
+                    </motion.button>
+                  ))}
                 </div>
               </div>
 
               {/* Units */}
               {selectedOffice && (
-                <div>
+                <div className="mb-6 sm:mb-8">
                   <h4 className="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wider">Units</h4>
                   <div className="space-y-2">
                     <motion.button
@@ -530,19 +448,19 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                       <Users className="h-4 w-4" />
                       All Units
                     </motion.button>
-                    {selectedOffice.units.map((unit) => (
+                    {units.map((unit) => (
                       <motion.button
-                        key={unit.id}
+                        key={unit}
                         whileHover={{ x: 2 }}
                         transition={{ duration: 0.1 }}
                         className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all flex items-center gap-2
-                          ${selectedUnit?.id === unit.id 
+                          ${selectedUnit === unit 
                             ? 'bg-blue-50 text-blue-600 font-medium' 
                             : 'hover:bg-gray-50 text-gray-700'}`}
                         onClick={() => setSelectedUnit(unit)}
                       >
                         <Users className="h-4 w-4" />
-                        {unit.name}
+                        {unit}
                       </motion.button>
                     ))}
                   </div>
@@ -551,8 +469,8 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
             </div>
 
             {/* Right Panel - Services */}
-            <div className="w-2/3">
-              <div className="relative mb-6">
+            <div className="w-full lg:w-2/3">
+              <div className="relative mb-4 sm:mb-6">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
                   placeholder="Search services..."
@@ -562,29 +480,45 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                 />
               </div>
               
-              <div className="space-y-4 overflow-y-auto h-[calc(100%-80px)] pr-2">
+              <div className="space-y-3 sm:space-y-4">
                 {getFilteredServices().map((service) => (
                   <motion.button
-                    key={service.id}
-                    whileHover={{ scale: 1.005, y: -1 }}
+                    key={service.service_id}
+                    whileHover={{ scale: 1.001, y: -1 }}
                     whileTap={{ scale: 0.995 }}
                     transition={{ duration: 0.1 }}
-                    className={`w-full p-5 rounded-xl border-2 transition-all text-left group relative overflow-hidden
-                      ${selectedService?.name === service.name
+                    className={`w-full p-3 sm:p-4 rounded-xl border-2 transition-all text-left group relative
+                      ${selectedService?.service_id === service.service_id
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-gray-200 hover:border-blue-500 hover:shadow-md'
                       }`}
                     onClick={() => handleServiceSelect(service)}
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <div className="relative flex items-start justify-between">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">{service.name}</h3>
-                        <p className="text-sm text-gray-500">{service.description}</p>
+                    <div className="relative flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 truncate">{service.service_name}</h3>
+                        <p className="text-sm text-gray-500 line-clamp-2">{service.description}</p>
+                        <div className="mt-2 flex items-center gap-2 text-sm text-gray-500 flex-wrap">
+                          <span className="flex items-center gap-1">
+                            <Building2 className="h-4 w-4 flex-shrink-0" />
+                            <span className="truncate">{service.office_name}</span>
+                          </span>
+                          {service.unit_name && (
+                            <span className="flex items-center gap-1">
+                              <Users className="h-4 w-4 flex-shrink-0" />
+                              <span className="truncate">{service.unit_name}</span>
+                            </span>
+                          )}
+                          <span className="flex items-center gap-1">
+                            <Briefcase className="h-4 w-4 flex-shrink-0" />
+                            <span className="truncate">{service.service_type_name}</span>
+                          </span>
+                        </div>
                       </div>
-                      {selectedService?.name === service.name && (
-                        <div className="p-2 rounded-full bg-blue-100 text-blue-500">
-                          <Check className="h-5 w-5" />
+                      {selectedService?.service_id === service.service_id && (
+                        <div className="p-2 rounded-full bg-blue-100 text-blue-500 flex-shrink-0">
+                          <Check className="h-4 w-4 sm:h-5 sm:w-5" />
                         </div>
                       )}
                     </div>
@@ -603,19 +537,13 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-[1000px] p-6">
-          <DialogHeader className="mb-2">
+        <DialogContent className="sm:max-w-[1000px] p-6 max-h-[90vh] flex flex-col">
+          <DialogHeader className="mb-4">
             <div className="flex justify-between items-center">
               <DialogTitle className="text-2xl font-bold text-gray-900">
                 {step === 1 && 'Select Customer Type'}
                 {step === 2 && 'Select Service'}
               </DialogTitle>
-              {/* <button
-                onClick={handleClose}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <X className="h-5 w-5 text-gray-500" />
-              </button> */}
             </div>
           </DialogHeader>
           
@@ -625,13 +553,13 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
             onStepClick={handleStepClick}
           />
           
-          <div className="mt-6">
+          <div className="flex-1 overflow-y-auto">
             <AnimatePresence mode="wait">
               {renderStepContent()}
             </AnimatePresence>
           </div>
           
-          <div className="flex justify-between mt-8">
+          <div className="flex justify-between mt-4">
             {step > 1 && (
               <Button
                 variant="outline"
