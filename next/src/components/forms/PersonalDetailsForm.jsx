@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { motion } from 'framer-motion'
 import ServiceSelectionModal from './ServiceSelectionModal'
 
-export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, onFormDataChange }) {
+export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, onFormDataChange, isReviewMode }) {
   const [isServicesDialogOpen, setIsServicesDialogOpen] = useState(false)
 
   const handleInputChange = (field, value) => {
@@ -206,7 +206,20 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
         </div>
 
         {/* Navigation Buttons */}
-        <div className="flex justify-end mt-20">
+        <div className="flex justify-between mt-20">
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Button 
+              variant="outline"
+              className="px-8 py-3 rounded-xl border-2 border-gray-200 hover:border-gray-300"
+              onClick={onPrevStep}
+            >
+              <ChevronLeft className="mr-2 h-5 w-5" />
+              Back
+            </Button>
+          </motion.div>
           <motion.div
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -216,7 +229,7 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
               className="px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white shadow-lg"
               onClick={handleNextClick} 
             >
-              Continue
+              {isReviewMode ? 'Return to Review' : 'Continue'}
               <ChevronRight className="ml-2 h-5 w-5" />
             </Button>
           </motion.div>
@@ -272,5 +285,6 @@ PersonalDetailsForm.propTypes = {
     sex: PropTypes.string,
     age: PropTypes.string
   }).isRequired,
-  onFormDataChange: PropTypes.func.isRequired
+  onFormDataChange: PropTypes.func.isRequired,
+  isReviewMode: PropTypes.bool
 }
