@@ -45,4 +45,4 @@ check-db-tables.js
 display-services.js
 
 # db
-backup.sql
+*.sql
