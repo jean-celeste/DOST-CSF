@@ -39,22 +39,26 @@ export default function Suggestion({ onNextStep, onPrevStep, formData, onFormDat
         className="space-y-6"
       >
         {/* First Question - For scores of 3, 2, 1 */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 hover:shadow-md transition-shadow">
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">
-              For scores of 3, 2, 1, please give reason to further enhance our service
-            </h3>
-            <p className="text-sm text-gray-500 italic">
-              (Para sa marka na 3, 2, 1, maaari po lamang na ibigay ang kadahilanan para mas mapahusay ang aming serbisyo)
-            </p>
+        {formData.ratings && Object.values(formData.ratings).some(rating => 
+          ['satisfactory', 'fair', 'unsatisfactory'].includes(rating)
+        ) && (
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 hover:shadow-md transition-shadow">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                For scores of 3, 2, 1, please give reason to further enhance our service
+              </h3>
+              <p className="text-sm text-gray-500 italic">
+                (Para sa marka na 3, 2, 1, maaari po lamang na ibigay ang kadahilanan para mas mapahusay ang aming serbisyo)
+              </p>
+            </div>
+            <Textarea
+              placeholder="Type your reason here..."
+              className="min-h-[150px] resize-none"
+              value={formData.reasonForLowScore || ''}
+              onChange={(e) => handleInputChange('reasonForLowScore', e.target.value)}
+            />
           </div>
-          <Textarea
-            placeholder="Type your reason here..."
-            className="min-h-[150px] resize-none"
-            value={formData.reasonForLowScore || ''}
-            onChange={(e) => handleInputChange('reasonForLowScore', e.target.value)}
-          />
-        </div>
+        )}
 
         {/* Second Question - General Comments/Suggestions */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 hover:shadow-md transition-shadow">
@@ -103,7 +107,8 @@ Suggestion.propTypes = {
   onPrevStep: PropTypes.func.isRequired,
   formData: PropTypes.shape({
     reasonForLowScore: PropTypes.string,
-    generalComments: PropTypes.string
+    generalComments: PropTypes.string,
+    ratings: PropTypes.object
   }).isRequired,
   onFormDataChange: PropTypes.func.isRequired,
   isReviewMode: PropTypes.bool

@@ -232,7 +232,10 @@ export default function CustomerFeedbackForm() {
               <Suggestion 
                 onNextStep={editingSection === 'suggestion' ? handleReturnToReview : handleNextStep} 
                 onPrevStep={handlePrevStep}
-                formData={suggestion}
+                formData={{
+                  ...suggestion,
+                  ratings: qmsRatings.ratings
+                }}
                 onFormDataChange={setSuggestion}
                 isReviewMode={editingSection === 'suggestion'}
               />
