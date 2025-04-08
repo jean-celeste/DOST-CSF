@@ -1,11 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { UserIcon, CheckSquareIcon, SmileIcon, ClipboardListIcon, QrCodeIcon } from 'lucide-react'
+import { UserIcon, CheckSquareIcon, SmileIcon, ClipboardListIcon, QrCodeIcon, MessageSquare } from 'lucide-react'
 import PersonalDetailsForm from '@/components/forms/PersonalDetailsForm'
 import DataPrivacyConsent from '@/components/prompts/DataPrivacyConsent'
 import Review from '@/components/forms/Review'
 import ProgressBar from '@/components/forms/ProgressBar'
+import Suggestion from '@/components/forms/Suggestion'
 
 // CSM-ARTA components
 import CSMARTACheckmark from '@/components/forms/csm-arta/Checkmark'
@@ -23,7 +24,8 @@ import {
   INITIAL_CSM_ARTA_CHECKMARK,
   INITIAL_CSM_ARTA_RATINGS,
   INITIAL_QMS_CHECKMARK,
-  INITIAL_QMS_RATINGS
+  INITIAL_QMS_RATINGS,
+  INITIAL_SUGGESTION
 } from '@/constants/formSteps'
 
 export default function CustomerFeedbackForm() {
@@ -33,6 +35,7 @@ export default function CustomerFeedbackForm() {
   const [csmARTARatings, setCSMARTARatings] = useState(INITIAL_CSM_ARTA_RATINGS)
   const [qmsCheckmark, setQMSCheckmark] = useState(INITIAL_QMS_CHECKMARK)
   const [qmsRatings, setQMSRatings] = useState(INITIAL_QMS_RATINGS)
+  const [suggestion, setSuggestion] = useState(INITIAL_SUGGESTION)
   const [editingSection, setEditingSection] = useState(null)
 
   const handleConsent = () => {
@@ -63,12 +66,14 @@ export default function CustomerFeedbackForm() {
       setFormState(prev => ({ ...prev, currentStep: 4 }))
     } else if (section === 'qms-ratings') {
       setFormState(prev => ({ ...prev, currentStep: 5 }))
+    } else if (section === 'suggestion') {
+      setFormState(prev => ({ ...prev, currentStep: 6 }))
     }
   }
 
   const handleReturnToReview = () => {
     setEditingSection(null)
-    setFormState(prev => ({ ...prev, currentStep: 6 }))
+    setFormState(prev => ({ ...prev, currentStep: 7 }))
   }
 
   // Render the data privacy page if consent hasn't been given
@@ -95,7 +100,7 @@ export default function CustomerFeedbackForm() {
                   <p className="text-[10px] xs:text-xs text-gray-600">Feedback Form</p>
                 </div>
               </div>
-              <div className="text-xs xs:text-sm font-medium text-gray-500">Step {formState.currentStep}/6</div>
+              <div className="text-xs xs:text-sm font-medium text-gray-500">Step {formState.currentStep}/7</div>
             </div>
 
             {/* Desktop Header */}
@@ -135,6 +140,7 @@ export default function CustomerFeedbackForm() {
                             {icon === "SmileIcon" && <SmileIcon className="w-full h-full" />}
                             {icon === "QrCodeIcon" && <QrCodeIcon className="w-full h-full" />}
                             {icon === "ClipboardListIcon" && <ClipboardListIcon className="w-full h-full" />}
+                            {icon === "MessageSquare" && <MessageSquare className="w-full h-full" />}
                           </div>
                         </div>
                         <div className="ml-4 min-w-0 flex-1">
@@ -166,7 +172,7 @@ export default function CustomerFeedbackForm() {
           <div className="bg-white lg:col-start-3 lg:col-span-5 min-h-screen p-3 xs:p-4 lg:p-8 xl:p-20">
             {/* Hide step indicator on mobile as it's shown in the progress bar */}
             <div className="hidden md:block mb-8 lg:mb-15">
-              <h2 className="text-sm font-medium text-gray-500">Step {formState.currentStep} of 6</h2>
+              <h2 className="text-sm font-medium text-gray-500">Step {formState.currentStep} of 7</h2>
               <h1 className="text-xl lg:text-2xl font-bold mt-1">
                 {FORM_STEPS.find(step => step.step === formState.currentStep)?.title}
               </h1>
@@ -223,6 +229,15 @@ export default function CustomerFeedbackForm() {
               />
             )}
             {formState.currentStep === 6 && (
+              <Suggestion 
+                onNextStep={editingSection === 'suggestion' ? handleReturnToReview : handleNextStep} 
+                onPrevStep={handlePrevStep}
+                formData={suggestion}
+                onFormDataChange={setSuggestion}
+                isReviewMode={editingSection === 'suggestion'}
+              />
+            )}
+            {formState.currentStep === 7 && (
               <Review 
                 onNextStep={handleNextStep} 
                 onPrevStep={handlePrevStep}
@@ -231,7 +246,8 @@ export default function CustomerFeedbackForm() {
                   csmARTACheckmark,
                   csmARTARatings,
                   qmsCheckmark,
-                  qmsRatings
+                  qmsRatings,
+                  suggestion
                 }}
                 onEditSection={handleEditSection}
               />

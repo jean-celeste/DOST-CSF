@@ -2,7 +2,7 @@
 
 import PropTypes from 'prop-types';
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, CheckCircle2, Star, Pencil, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle2, Star, Pencil, X, MessageSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import Image from 'next/image';
@@ -249,6 +249,22 @@ export default function Review({ onNextStep, onPrevStep, formData, onEditSection
     </div>
   );
 
+  const renderSuggestion = () => (
+    <div className="space-y-4">
+      {renderSectionHeader('Your Feedback and Suggestions', <MessageSquare className="h-5 w-5 text-blue-500" />, 'suggestion')}
+      <div className="space-y-4">
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <p className="text-sm font-medium text-gray-500 mb-2">Reason for Scores (3, 2, 1)</p>
+          <p className="text-base text-gray-900 whitespace-pre-wrap">{formData.suggestion?.reasonForLowScore || 'No reason provided'}</p>
+        </div>
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <p className="text-sm font-medium text-gray-500 mb-2">General Comments/Suggestions</p>
+          <p className="text-base text-gray-900 whitespace-pre-wrap">{formData.suggestion?.generalComments || 'No comments provided'}</p>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="space-y-8">
@@ -294,6 +310,15 @@ export default function Review({ onNextStep, onPrevStep, formData, onEditSection
           className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
         >
           {renderQMSRatings()}
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
+        >
+          {renderSuggestion()}
         </motion.div>
       </div>
 
@@ -344,6 +369,7 @@ Review.propTypes = {
     }),
     qmsRatings: PropTypes.shape({
       ratings: PropTypes.object
-    })
+    }),
+    suggestion: PropTypes.string
   }).isRequired
 }; 
