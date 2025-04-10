@@ -147,27 +147,16 @@ export default function Review({ onNextStep, onPrevStep, formData, onEditSection
   const renderPersonalDetails = () => (
     <div className="space-y-4">
       {renderSectionHeader('Personal Details', <CheckCircle2 className="h-5 w-5 text-blue-500" />, 'personal')}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-gray-50 p-4 rounded-lg">
           <p className="text-sm font-medium text-gray-500 mb-1">Email</p>
-          <p className="text-base text-gray-900">{formData.personalDetails.email}</p>
+          <p className="text-base text-gray-900 break-words">{formData.personalDetails.email}</p>
         </div>
         <div className="bg-gray-50 p-4 rounded-lg">
           <p className="text-sm font-medium text-gray-500 mb-1">Contact</p>
           <p className="text-base text-gray-900">{formData.personalDetails.contact}</p>
         </div>
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <p className="text-sm font-medium text-gray-500 mb-1">Services</p>
-          <div className="space-y-1">
-            <p className="text-base text-gray-900">{formData.personalDetails.service_name}</p>
-            <p className="text-sm text-gray-500">
-              {formData.personalDetails.office_name}
-              {formData.personalDetails.unit_name && ` - ${formData.personalDetails.unit_name}`}
-            </p>
-            <p className="text-sm text-gray-500">{formData.personalDetails.service_type_name}</p>
-          </div>
-        </div>
-        <div className="bg-gray-50 p-4 rounded-lg">
+        <div className="bg-gray-50 p-4 rounded-lg md:col-span-2">
           <p className="text-sm font-medium text-gray-500 mb-1">Customer Type</p>
           <p className="text-base text-gray-900">
             {formData.personalDetails.customerType === 'internal' ? 'Internal Customer' : 
@@ -177,6 +166,19 @@ export default function Review({ onNextStep, onPrevStep, formData, onEditSection
               formData.personalDetails.externalType === 'government' ? 'Government' : 'External'})` : 
              'External Customer'}
           </p>
+        </div>
+        <div className="bg-gray-50 p-4 rounded-lg md:col-span-2">
+          <p className="text-sm font-medium text-gray-500 mb-1">Service</p>
+          <div className="space-y-2">
+            <p className="text-base text-gray-900 font-medium">{formData.personalDetails.service_name}</p>
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm text-gray-600">
+                {formData.personalDetails.office_name}
+                {formData.personalDetails.unit_name && ` - ${formData.personalDetails.unit_name}`}
+              </p>
+              <p className="text-sm text-gray-600">{formData.personalDetails.service_type_name}</p>
+            </div>
+          </div>
         </div>
         <div className="bg-gray-50 p-4 rounded-lg">
           <p className="text-sm font-medium text-gray-500 mb-1">Sex</p>
