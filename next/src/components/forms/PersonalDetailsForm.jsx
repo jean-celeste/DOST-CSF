@@ -36,7 +36,9 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
       service_name: serviceData.service_name,
       office_name: serviceData.office_name,
       unit_name: serviceData.unit_name,
-      service_type_name: serviceData.service_type_name
+      service_type_name: serviceData.service_type_name,
+      customerType: serviceData.customerType,
+      externalType: serviceData.externalType
     };
     console.log('Updating form data to:', updatedFormData);
     onFormDataChange(updatedFormData);

@@ -158,7 +158,25 @@ export default function Review({ onNextStep, onPrevStep, formData, onEditSection
         </div>
         <div className="bg-gray-50 p-4 rounded-lg">
           <p className="text-sm font-medium text-gray-500 mb-1">Services</p>
-          <p className="text-base text-gray-900">{formData.personalDetails.services}</p>
+          <div className="space-y-1">
+            <p className="text-base text-gray-900">{formData.personalDetails.service_name}</p>
+            <p className="text-sm text-gray-500">
+              {formData.personalDetails.office_name}
+              {formData.personalDetails.unit_name && ` - ${formData.personalDetails.unit_name}`}
+            </p>
+            <p className="text-sm text-gray-500">{formData.personalDetails.service_type_name}</p>
+          </div>
+        </div>
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <p className="text-sm font-medium text-gray-500 mb-1">Customer Type</p>
+          <p className="text-base text-gray-900">
+            {formData.personalDetails.customerType === 'internal' ? 'Internal Customer' : 
+             formData.personalDetails.customerType === 'external' ? 
+             `External Customer (${formData.personalDetails.externalType === 'citizen' ? 'Citizen' :
+              formData.personalDetails.externalType === 'business' ? 'Business' :
+              formData.personalDetails.externalType === 'government' ? 'Government' : 'External'})` : 
+             'External Customer'}
+          </p>
         </div>
         <div className="bg-gray-50 p-4 rounded-lg">
           <p className="text-sm font-medium text-gray-500 mb-1">Sex</p>
@@ -353,7 +371,12 @@ Review.propTypes = {
     personalDetails: PropTypes.shape({
       email: PropTypes.string,
       contact: PropTypes.string,
-      services: PropTypes.string,
+      service_name: PropTypes.string,
+      office_name: PropTypes.string,
+      unit_name: PropTypes.string,
+      service_type_name: PropTypes.string,
+      customerType: PropTypes.string,
+      externalType: PropTypes.string,
       sex: PropTypes.string,
       age: PropTypes.string
     }),
