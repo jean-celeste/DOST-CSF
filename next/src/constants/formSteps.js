@@ -36,6 +36,13 @@ export const FORM_STEPS = [
   },
   { 
     step: 6, 
+    title: "Suggestions",
+    mobileTitle: "Suggestions",
+    description: "Share your suggestions to help us improve.",
+    icon: "MessageSquare"
+  },
+  { 
+    step: 7, 
     title: "Review",
     mobileTitle: "Review",
     description: "Review your answers before submission.",
@@ -51,39 +58,35 @@ export const INITIAL_FORM_STATE = {
 export const INITIAL_PERSONAL_DETAILS = {
   email: '',
   contact: '',
-  services: '',
-  sex: 'male',
+  service_id: null,
+  service_name: '',
+  office_name: '',
+  unit_name: '',
+  service_type_name: '',
+  sex: '',
   age: ''
 }
 
 export const INITIAL_CSM_ARTA_CHECKMARK = {
-  selectedOption: null,
+  selectedOption: '',
   additionalAnswers: {}
 }
 
 export const INITIAL_CSM_ARTA_RATINGS = {
-  ratings: {
-    question1: "",
-    question2: "",
-    question3: "",
-    question4: "",
-    question5: "",
-    question6: ""
-  },
+  ratings: {},
   currentPage: 0
 }
 
 export const INITIAL_QMS_CHECKMARK = {
-  selectedOption: null
+  selections: {}
 }
 
 export const INITIAL_QMS_RATINGS = {
-  ratings: {
-    question1: "",
-    question2: "",
-    question3: "",
-    question4: "",
-    question5: ""
-  },
+  ratings: {},
   currentPage: 0
+}
+
+export const INITIAL_SUGGESTION = {
+  reasonForLowScore: '',
+  generalComments: ''
 } 

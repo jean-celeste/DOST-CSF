@@ -12,6 +12,7 @@ import ServiceSelectionModal from './ServiceSelectionModal'
 
 export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, onFormDataChange, isReviewMode }) {
   const [isServicesDialogOpen, setIsServicesDialogOpen] = useState(false)
+  const [missingFields, setMissingFields] = useState([])
 
   const handleInputChange = (field, value) => {
     const updatedData = {
@@ -20,6 +21,11 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
     }
     console.log('Form Data Updated:', updatedData)
     onFormDataChange(updatedData)
+    
+    // Remove field from missing fields if it's now populated
+    if (value) {
+      setMissingFields(prev => prev.filter(f => f !== field))
+    }
   }
 
   const handleServiceSelect = (serviceData) => {
@@ -30,7 +36,9 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
       service_name: serviceData.service_name,
       office_name: serviceData.office_name,
       unit_name: serviceData.unit_name,
-      service_type_name: serviceData.service_type_name
+      service_type_name: serviceData.service_type_name,
+      customerType: serviceData.customerType,
+      externalType: serviceData.externalType
     };
     console.log('Updating form data to:', updatedFormData);
     onFormDataChange(updatedFormData);
@@ -38,6 +46,15 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
   }
 
   const handleNextClick = () => {
+    // Check if all required fields are populated
+    const requiredFields = ['contact', 'age', 'sex', 'service_id'];
+    const emptyFields = requiredFields.filter(field => !formData[field]);
+    
+    if (emptyFields.length > 0) {
+      setMissingFields(emptyFields);
+      return;
+    }
+
     console.log('Form Data Before Next:', formData)
     onNextStep()
   }
@@ -85,7 +102,9 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
               <Input
                 id="contact"
                 placeholder="09123456789"
-                className="w-full h-12 pl-10 pr-10 rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                className={`w-full h-12 pl-10 pr-10 rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500 ${
+                  missingFields.includes('contact') ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
+                }`}
                 value={formData.contact}
                 onChange={(e) => handleInputChange('contact', e.target.value)}
               />
@@ -109,7 +128,9 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
                 id="age"
                 type="number"
                 placeholder="Enter your age"
-                className="w-full h-12 pl-10 pr-10 rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                className={`w-full h-12 pl-10 pr-10 rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500 ${
+                  missingFields.includes('age') ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
+                }`}
                 value={formData.age}
                 onChange={(e) => handleInputChange('age', e.target.value)}
                 min="1"
@@ -130,7 +151,7 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
               <User className="h-4 w-4 text-blue-500" />
               Sex
             </Label>
-            <div className="grid grid-cols-3 gap-4">
+            <div className={`grid grid-cols-3 gap-4 ${missingFields.includes('sex') ? 'ring-2 ring-red-500 rounded-xl p-1' : ''}`}>
               {['male', 'female', 'prefer-not'].map((option) => (
                 <motion.button
                   key={option}
@@ -162,11 +183,11 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
             <motion.button
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
-              className={`w-full p-4 rounded-xl text-left transition-all border
-                ${formData.service_id 
+              className={`w-full p-4 rounded-xl text-left transition-all border ${
+                formData.service_id 
                   ? 'bg-blue-100 border-blue-500 shadow-md' 
-                  : 'bg-white border-gray-200 hover:border-blue-400 hover:shadow-sm'
-                }`}
+                  : `bg-white ${missingFields.includes('service_id') ? 'border-red-500' : 'border-gray-200'} hover:border-blue-400 hover:shadow-sm`
+              }`}
               onClick={() => setIsServicesDialogOpen(true)}
             >
               <div className="flex items-center justify-between">

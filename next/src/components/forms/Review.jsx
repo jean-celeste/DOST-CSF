@@ -2,7 +2,7 @@
 
 import PropTypes from 'prop-types';
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, CheckCircle2, Star, Pencil, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle2, Star, Pencil, X, MessageSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import Image from 'next/image';
@@ -147,18 +147,38 @@ export default function Review({ onNextStep, onPrevStep, formData, onEditSection
   const renderPersonalDetails = () => (
     <div className="space-y-4">
       {renderSectionHeader('Personal Details', <CheckCircle2 className="h-5 w-5 text-blue-500" />, 'personal')}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-gray-50 p-4 rounded-lg">
           <p className="text-sm font-medium text-gray-500 mb-1">Email</p>
-          <p className="text-base text-gray-900">{formData.personalDetails.email}</p>
+          <p className="text-base text-gray-900 break-words">{formData.personalDetails.email}</p>
         </div>
         <div className="bg-gray-50 p-4 rounded-lg">
           <p className="text-sm font-medium text-gray-500 mb-1">Contact</p>
           <p className="text-base text-gray-900">{formData.personalDetails.contact}</p>
         </div>
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <p className="text-sm font-medium text-gray-500 mb-1">Services</p>
-          <p className="text-base text-gray-900">{formData.personalDetails.services}</p>
+        <div className="bg-gray-50 p-4 rounded-lg md:col-span-2">
+          <p className="text-sm font-medium text-gray-500 mb-1">Customer Type</p>
+          <p className="text-base text-gray-900">
+            {formData.personalDetails.customerType === 'internal' ? 'Internal Customer' : 
+             formData.personalDetails.customerType === 'external' ? 
+             `External Customer (${formData.personalDetails.externalType === 'citizen' ? 'Citizen' :
+              formData.personalDetails.externalType === 'business' ? 'Business' :
+              formData.personalDetails.externalType === 'government' ? 'Government' : 'External'})` : 
+             'External Customer'}
+          </p>
+        </div>
+        <div className="bg-gray-50 p-4 rounded-lg md:col-span-2">
+          <p className="text-sm font-medium text-gray-500 mb-1">Service</p>
+          <div className="space-y-2">
+            <p className="text-base text-gray-900 font-medium">{formData.personalDetails.service_name}</p>
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm text-gray-600">
+                {formData.personalDetails.office_name}
+                {formData.personalDetails.unit_name && ` - ${formData.personalDetails.unit_name}`}
+              </p>
+              <p className="text-sm text-gray-600">{formData.personalDetails.service_type_name}</p>
+            </div>
+          </div>
         </div>
         <div className="bg-gray-50 p-4 rounded-lg">
           <p className="text-sm font-medium text-gray-500 mb-1">Sex</p>
@@ -201,9 +221,9 @@ export default function Review({ onNextStep, onPrevStep, formData, onEditSection
     <div className="space-y-4">
       {renderSectionHeader('Service Ratings', <Star className="h-5 w-5 text-yellow-400" />, 'csmarta-ratings')}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {Object.entries(formData.csmARTARatings.ratings).map(([key, value]) => (
+        {Object.entries(formData.csmARTARatings.ratings).map(([key, value], index) => (
           <div key={key} className="bg-gray-50 p-4 rounded-lg">
-            <p className="text-sm font-medium text-gray-500 mb-2">Question {key.slice(-1)}</p>
+            <p className="text-sm font-medium text-gray-500 mb-2">SQD {index}</p>
             <div className="flex items-center space-x-2">
               {renderEmoji(value, 'csm')}
               <p className="text-base text-gray-900">{value}</p>
@@ -245,6 +265,22 @@ export default function Review({ onNextStep, onPrevStep, formData, onEditSection
             </div>
           </div>
         ))}
+      </div>
+    </div>
+  );
+
+  const renderSuggestion = () => (
+    <div className="space-y-4">
+      {renderSectionHeader('Your Feedback and Suggestions', <MessageSquare className="h-5 w-5 text-blue-500" />, 'suggestion')}
+      <div className="space-y-4">
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <p className="text-sm font-medium text-gray-500 mb-2">Reason for Scores (3, 2, 1)</p>
+          <p className="text-base text-gray-900 whitespace-pre-wrap">{formData.suggestion?.reasonForLowScore || 'No reason provided'}</p>
+        </div>
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <p className="text-sm font-medium text-gray-500 mb-2">General Comments/Suggestions</p>
+          <p className="text-base text-gray-900 whitespace-pre-wrap">{formData.suggestion?.generalComments || 'No comments provided'}</p>
+        </div>
       </div>
     </div>
   );
@@ -295,6 +331,15 @@ export default function Review({ onNextStep, onPrevStep, formData, onEditSection
         >
           {renderQMSRatings()}
         </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
+        >
+          {renderSuggestion()}
+        </motion.div>
       </div>
 
       {/* Navigation Buttons */}
@@ -328,7 +373,12 @@ Review.propTypes = {
     personalDetails: PropTypes.shape({
       email: PropTypes.string,
       contact: PropTypes.string,
-      services: PropTypes.string,
+      service_name: PropTypes.string,
+      office_name: PropTypes.string,
+      unit_name: PropTypes.string,
+      service_type_name: PropTypes.string,
+      customerType: PropTypes.string,
+      externalType: PropTypes.string,
       sex: PropTypes.string,
       age: PropTypes.string
     }),
@@ -344,6 +394,7 @@ Review.propTypes = {
     }),
     qmsRatings: PropTypes.shape({
       ratings: PropTypes.object
-    })
+    }),
+    suggestion: PropTypes.string
   }).isRequired
 }; 

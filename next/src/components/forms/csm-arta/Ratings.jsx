@@ -1,26 +1,38 @@
 "use client"
 
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Button } from "@/components/ui/button";
 import RatingQuestion from '@/components/forms-resources/RatingQuestion';
-import { ChevronRight, ChevronLeft, Star, Info } from 'lucide-react';
+import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { csmArtaOptions } from '@/lib/options/csm-arta-options';
+import { fetchQuestions, groupQuestions } from '@/lib/questions/fetchQuestions';
+import LoadingSpinner from '@/components/forms-resources/LoadingSpinner';
 
-//Animated emojis
-const heartEyesFace = "/assets/emojis/smiling_face_with_heart-eyes_animated.png";
-const smilingFace = "/assets/emojis/smiling_face_with_smiling_eyes_animated.png";
-const neutralFace = "/assets/emojis/face_without_mouth_animated.png";
-const frowningFace = "/assets/emojis/frowning_face_animated.png";
-const poutingFace = "/assets/emojis/pouting_face_animated.png";
+export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataChange, isReviewMode, formId = 1 }) {
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-//Static emojis
-const heartEyesFaceStatic = "/assets/emojis/smiling_face_with_heart-eyes_color.svg";
-const smilingFaceStatic = "/assets/emojis/smiling_face_with_smiling_eyes_color.svg";
-const neutralFaceStatic = "/assets/emojis/face_without_mouth_color.svg";
-const frowningFaceStatic = "/assets/emojis/frowning_face_color.svg";
-const poutingFaceStatic = "/assets/emojis/pouting_face_color.svg";
+  useEffect(() => {
+    const loadQuestions = async () => {
+      try {
+        const fetchedQuestions = await fetchQuestions(formId);
+        const { ratingQuestions } = groupQuestions(fetchedQuestions);
+        setQuestions(ratingQuestions);
+        setError(null);
+      } catch (error) {
+        console.error('Error loading questions:', error);
+        setError('Failed to load questions. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataChange, isReviewMode }) {
+    loadQuestions();
+  }, [formId]);
+
   const handleRatingSelect = (questionKey, value) => {
     onFormDataChange({
       ...formData,
@@ -53,78 +65,18 @@ export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataCh
     });
   };
 
-  // Define emoji options once to reuse
-  const emojiOptions = [
-    {
-      value: "strongly-agree",
-      label: "Strongly Agree",
-      imageSource: heartEyesFace,
-      imageSourceStatic: heartEyesFaceStatic,
-      emoji: "😍"
-    },
-    {
-      value: "agree",
-      label: "Agree",
-      imageSource: smilingFace,
-      imageSourceStatic: smilingFaceStatic,
-      emoji: "😊"
-    },
-    {
-      value: "disagree",
-      label: "Disagree",
-      imageSource: frowningFace,
-      imageSourceStatic: frowningFaceStatic,
-      emoji: "😕"
-    },
-    {
-      value: "neutral",
-      label: "Neither Agree\nor Disagree",
-      imageSource: neutralFace,
-      imageSourceStatic: neutralFaceStatic,
-      emoji: "😐"
-    },
-    {
-      value: "strongly-disagree",
-      label: "Strongly Disagree",
-      imageSource: poutingFace,
-      imageSourceStatic: poutingFaceStatic,
-      emoji: "😠"
-    },
-    {
-      value: "na",
-      label: "Not Applicable",
-      imageSource: null,
-      emoji: "❌"
-    }
-  ];
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
-  // Define the questions and divide them into pages
-  const questions = [
-    {
-      question: "I am satisfied with the service that I availed.",
-      questionKey: "question1"
-    },
-    {
-      question: "I spent a reasonable amount of time for my transaction.",
-      questionKey: "question2"
-    },
-    {
-      question: "The office followed the transaction's requirements and steps based on the information provided.",
-      questionKey: "question3"
-    },
-    {
-      question: "I am satisfied with the service that I availed.",
-      questionKey: "question4"
-    },
-    {
-      question: "I spent a reasonable amount of time for my transaction.",
-      questionKey: "question5"
-    },
-    {
-      question: "I am satisfied with the service that I availed.",
-      questionKey: "question6"
-    }
-  ];
+  if (error) {
+    return (
+      <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+        <p className="text-red-500 mb-4">{error}</p>
+        <Button onClick={() => window.location.reload()}>Retry</Button>
+      </div>
+    );
+  }
 
   const questionsPerPage = 3;
   const totalPages = Math.ceil(questions.length / questionsPerPage);
@@ -141,19 +93,19 @@ export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataCh
           <div className="space-y-8">
             {currentQuestions.map((q, index) => (
               <motion.div
-                key={index}
+                key={q.question_id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 hover:shadow-md transition-shadow"
               >
                 <RatingQuestion
-                  question={q.question}
+                  question={q.question_text}
                   questionId={formData.currentPage * questionsPerPage + index}
                   totalQuestions={questions.length}
-                  selectedRating={formData.ratings[q.questionKey]}
-                  onRatingSelect={(value) => handleRatingSelect(q.questionKey, value)}
-                  emojiOptions={emojiOptions}
+                  selectedRating={formData.ratings[`question${q.question_id}`]}
+                  onRatingSelect={(value) => handleRatingSelect(`question${q.question_id}`, value)}
+                  emojiOptions={csmArtaOptions.ratingOptions}
                   showEmoji={true}
                 />
               </motion.div>
@@ -191,7 +143,7 @@ export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataCh
             variant="gradient"
             className="px-6 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white shadow-md"
             onClick={formData.currentPage === totalPages - 1 ? handleContinue : handleNextPage}
-            disabled={!currentQuestions.every(q => formData.ratings[q.questionKey])}
+            disabled={!currentQuestions.every(q => formData.ratings[`question${q.question_id}`])}
           >
             {formData.currentPage === totalPages - 1 ? (isReviewMode ? "Return to Review" : "Continue") : "Next"}
             <ChevronRight className="ml-2 h-4 w-4" />
@@ -206,16 +158,10 @@ Ratings.propTypes = {
   onNextStep: PropTypes.func.isRequired,
   onPrevStep: PropTypes.func.isRequired,
   formData: PropTypes.shape({
-    ratings: PropTypes.shape({
-      question1: PropTypes.string,
-      question2: PropTypes.string,
-      question3: PropTypes.string,
-      question4: PropTypes.string,
-      question5: PropTypes.string,
-      question6: PropTypes.string
-    }),
+    ratings: PropTypes.object,
     currentPage: PropTypes.number
   }).isRequired,
   onFormDataChange: PropTypes.func.isRequired,
-  isReviewMode: PropTypes.bool
+  isReviewMode: PropTypes.bool,
+  formId: PropTypes.number
 };
