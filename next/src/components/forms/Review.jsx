@@ -221,9 +221,9 @@ export default function Review({ onNextStep, onPrevStep, formData, onEditSection
     <div className="space-y-4">
       {renderSectionHeader('Service Ratings', <Star className="h-5 w-5 text-yellow-400" />, 'csmarta-ratings')}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {Object.entries(formData.csmARTARatings.ratings).map(([key, value]) => (
+        {Object.entries(formData.csmARTARatings.ratings).map(([key, value], index) => (
           <div key={key} className="bg-gray-50 p-4 rounded-lg">
-            <p className="text-sm font-medium text-gray-500 mb-2">Question {key.slice(-1)}</p>
+            <p className="text-sm font-medium text-gray-500 mb-2">SQD {index}</p>
             <div className="flex items-center space-x-2">
               {renderEmoji(value, 'csm')}
               <p className="text-base text-gray-900">{value}</p>
