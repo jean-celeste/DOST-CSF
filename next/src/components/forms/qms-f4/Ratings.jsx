@@ -10,20 +10,6 @@ import { fetchQuestions, groupQuestions } from '@/lib/questions/fetchQuestions'
 import LoadingSpinner from '@/components/forms-resources/LoadingSpinner'
 import { qmsOptions } from '@/lib/options/qms-options'
 
-//Animated emojis
-const heartEyesFace = "/assets/emojis/smiling_face_with_heart-eyes_animated.png"
-const smilingFace = "/assets/emojis/smiling_face_with_smiling_eyes_animated.png"
-const neutralFace = "/assets/emojis/face_without_mouth_animated.png"
-const happyFace = "/assets/emojis/slightly_smiling_face_animated.png"
-const poutingFace = "/assets/emojis/pouting_face_animated.png"
-
-//Static emojis
-const heartEyesFaceStatic = "/assets/emojis/smiling_face_with_heart-eyes_color.svg"
-const smilingFaceStatic = "/assets/emojis/smiling_face_with_smiling_eyes_color.svg"
-const neutralFaceStatic = "/assets/emojis/face_without_mouth_color.svg"
-const happyFaceStatic = "/assets/emojis/slightly_smiling_face_color.svg"
-const poutingFaceStatic = "/assets/emojis/pouting_face_color.svg"
-
 export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataChange, isReviewMode, formId = 3 }) {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
