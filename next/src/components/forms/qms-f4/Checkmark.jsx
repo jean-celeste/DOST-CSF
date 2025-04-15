@@ -1,7 +1,12 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { Button } from '@/components/ui/button'
 import { Check, ChevronRight } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { fetchQuestions, groupQuestions } from '@/lib/questions/fetchQuestions'
+import LoadingSpinner from '@/components/forms-resources/LoadingSpinner'
 
 export default function Checkmark({ 
   onNextStep, 
@@ -9,15 +14,35 @@ export default function Checkmark({
   formData,
   onFormDataChange,
   isReviewMode = false,
-  mainQuestion = "Please select the criteria/attributes that are important to you.",
-  mainOptions = [
-    "Appropriateness of the Service/Activity",
-    "How beneficial is the Service/Activity",
-    "Timeliness of Delivery",
-    "Attitude of Staff",
-    "Gender Fair Treatment"
-  ]
+  formId = 3 // Default to QMS form
 }) {
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const loadQuestions = async () => {
+      try {
+        console.log('Fetching questions for formId:', formId);
+        const fetchedQuestions = await fetchQuestions(formId);
+        console.log('Fetched questions:', fetchedQuestions);
+        
+        const { checkmarkQuestions } = groupQuestions(fetchedQuestions, formId);
+        console.log('Grouped checkmark questions:', checkmarkQuestions);
+        
+        setQuestions(checkmarkQuestions);
+        setError(null);
+      } catch (error) {
+        console.error('Error loading questions:', error);
+        setError('Failed to load questions. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadQuestions();
+  }, [formId]);
+
   const handleOptionChange = (option) => {
     const currentSelections = formData.selections || {}
     onFormDataChange({
@@ -38,39 +63,54 @@ export default function Checkmark({
     return formData.selections?.[option] === true
   }
 
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+        <p className="text-red-500 mb-4">{error}</p>
+        <Button onClick={() => window.location.reload()}>Retry</Button>
+      </div>
+    );
+  }
+
+  console.log('Rendering with questions:', questions);
+
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden">
       <div className="p-8">
         <div className="space-y-8">
           <div className="space-y-2">
             <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
-              {mainQuestion}
+              Please select the criteria/attributes that are important to you.
             </h2>
             <p className="text-gray-500">Click on any attribute to mark it as important.</p>
           </div>
           
           <div className="space-y-4">
-            {mainOptions.map((option, index) => (
+            {questions.map((q) => (
               <motion.button
-                key={index}
+                key={q.question_id}
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
                 className={`w-full p-6 rounded-xl text-left transition-all border-2
-                  ${isOptionSelected(option)
+                  ${isOptionSelected(q.question_text)
                     ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-500 shadow-md'
                     : 'bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50/50'
                   }`}
-                onClick={() => handleOptionChange(option)}
+                onClick={() => handleOptionChange(q.question_text)}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-base font-medium">{option}</span>
+                  <span className="text-base font-medium">{q.question_text}</span>
                   <div className={`p-2 rounded-full transition-colors ${
-                    isOptionSelected(option)
+                    isOptionSelected(q.question_text)
                       ? 'bg-blue-500'
                       : 'bg-gray-100'
                   }`}>
                     <Check className={`h-5 w-5 ${
-                      isOptionSelected(option)
+                      isOptionSelected(q.question_text)
                         ? 'text-white'
                         : 'text-gray-500'
                     }`} />
@@ -112,6 +152,5 @@ Checkmark.propTypes = {
   }).isRequired,
   onFormDataChange: PropTypes.func.isRequired,
   isReviewMode: PropTypes.bool,
-  mainQuestion: PropTypes.string,
-  mainOptions: PropTypes.arrayOf(PropTypes.string)
+  formId: PropTypes.number
 }
