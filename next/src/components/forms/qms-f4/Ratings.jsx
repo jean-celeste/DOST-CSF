@@ -8,6 +8,7 @@ import { motion } from 'framer-motion'
 import RatingQuestion from '@/components/forms-resources/RatingQuestion'
 import { fetchQuestions, groupQuestions } from '@/lib/questions/fetchQuestions'
 import LoadingSpinner from '@/components/forms-resources/LoadingSpinner'
+import { qmsOptions } from '@/lib/options/qms-options'
 
 //Animated emojis
 const heartEyesFace = "/assets/emojis/smiling_face_with_heart-eyes_animated.png"
@@ -31,8 +32,13 @@ export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataCh
   useEffect(() => {
     const loadQuestions = async () => {
       try {
+        console.log('Fetching questions for formId:', formId);
         const fetchedQuestions = await fetchQuestions(formId);
+        console.log('Fetched questions:', fetchedQuestions);
+        
         const { ratingQuestions } = groupQuestions(fetchedQuestions, formId);
+        console.log('Grouped rating questions:', ratingQuestions);
+        
         setQuestions(ratingQuestions);
         setError(null);
       } catch (error) {
@@ -47,6 +53,7 @@ export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataCh
   }, [formId]);
 
   const handleRatingSelect = (questionKey, value) => {
+    console.log('Rating selected:', { questionKey, value });
     onFormDataChange({
       ...formData,
       ratings: {
@@ -99,43 +106,9 @@ export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataCh
     (formData.currentPage + 1) * questionsPerPage
   );
 
-  const emojiOptions = [
-    {
-      value: "outstanding",
-      label: "Outstanding (Lubos na kasiya-siya)",
-      imageSource: heartEyesFace,
-      imageSourceStatic: heartEyesFaceStatic,
-      emoji: "😍"
-    },
-    {
-      value: "very-satisfactory",
-      label: "Very Satisfactory (Napaka Kasiya-siya)",
-      imageSource: smilingFace,
-      imageSourceStatic: smilingFaceStatic,
-      emoji: "😊"
-    },
-    {
-      value: "satisfactory",
-      label: "Satisfactory (Kasiya-siya)",
-      imageSource: happyFace,
-      imageSourceStatic: happyFaceStatic,
-      emoji: "🙂"
-    },
-    {
-      value: "fair",
-      label: "Fair (Katamtaman)",
-      imageSource: neutralFace,
-      imageSourceStatic: neutralFaceStatic,
-      emoji: "😐"
-    },
-    {
-      value: "unsatisfactory",
-      label: "Unsatisfactory (Hindi Kasiya-siya)",
-      imageSource: poutingFace,
-      imageSourceStatic: poutingFaceStatic,
-      emoji: "😠"
-    }
-  ];
+  console.log('Rendering with questions:', questions);
+  console.log('Current page:', formData.currentPage);
+  console.log('Current questions:', currentQuestions);
 
   return (
     <div className="space-y-8">
@@ -163,7 +136,7 @@ export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataCh
               totalQuestions={questions.length}
               selectedRating={formData.ratings[`question${q.question_id}`]}
               onRatingSelect={(value) => handleRatingSelect(`question${q.question_id}`, value)}
-              emojiOptions={emojiOptions}
+              emojiOptions={qmsOptions.ratingOptions}
               showEmoji={true}
             />
           </motion.div>

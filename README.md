@@ -1,17 +1,43 @@
 # DOST-CSF (Customer Satisfaction Feedback System)
 
 ## Overview
-DOST-CSF is a Customer Satisfaction Feedback System developed for the Department of Science and Technology. This system allows customers to provide feedback on various services and activities through a user-friendly interface.
+DOST-CSF is a Customer Satisfaction Feedback System developed for the Department of Science and Technology. This system allows customers to provide feedback on various services and activities through a user-friendly interface. The system includes multiple feedback forms such as CSM-ARTA and QMS, each with specific rating and checkmark components.
 
 ## Project Structure
 ```
 DOST-CSF/
 ├── next/                  # Next.js application
-│   ├── src/              # Source code
-│   ├── public/           # Static assets
+│   ├── src/
+│   │   ├── app/          # Next.js app router pages
+│   │   ├── components/   # React components
+│   │   │   ├── forms/    # Form components (CSM-ARTA, QMS)
+│   │   │   └── ui/       # Reusable UI components
+│   │   ├── lib/          # Utility functions and configurations
+│   │   │   ├── db/       # Database utilities
+│   │   │   ├── options/  # Form options and configurations
+│   │   │   └── questions/# Question fetching and grouping
+│   │   └── public/       # Static assets (images, emojis)
 │   └── package.json      # Next.js dependencies
 └── README.md             # Project documentation
 ```
+
+## Features
+- **Multiple Feedback Forms**
+  - CSM-ARTA (Citizen Satisfaction Measurement - Anti-Red Tape Act)
+  - QMS (Quality Management System)
+- **Dynamic Question Loading**
+  - Questions fetched from database
+  - Grouped into checkmark and rating questions
+- **Interactive UI Components**
+  - Rating questions with emoji reactions
+  - Checkmark questions for multiple selections
+  - Progress indicators
+  - Responsive design
+- **Form Management**
+  - Multi-step forms
+  - Review mode
+  - Data validation
+  - Form state management
 
 ## Prerequisites
 - Node.js (v18 or higher)
@@ -39,6 +65,11 @@ DOST-CSF/
    DATABASE_URL=your_database_url
    ```
 
+### Database Setup
+1. Create a PostgreSQL database
+2. Run the database migrations
+3. Seed the database with initial questions and options
+
 ### Development
 To start the development server:
 ```bash
@@ -55,11 +86,19 @@ npm run build
 npm start
 ```
 
-## Features
-- Customer feedback collection
-- Service evaluation forms
-- Real-time data processing
-- User-friendly interface
+## Form Types
+
+### CSM-ARTA Form
+- Form ID: 1
+- Checkmark questions (IDs 1-3)
+- Rating questions (IDs 4-12)
+- Includes N/A option for ratings
+
+### QMS Form
+- Form ID: 3
+- Checkmark questions (IDs 31-35)
+- Rating questions (IDs 26-30)
+- Standard rating options
 
 ## Contributing
 1. Fork the repository
