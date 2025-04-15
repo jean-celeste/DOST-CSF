@@ -33,12 +33,12 @@ export default function Review({ onNextStep, onPrevStep, formData, onEditSection
     } else if (section === 'csmarta-ratings') {
       // Navigate back to CSMARTARatings
       onEditSection('csmarta-ratings');
-    } else if (section === 'qms-checkmark') {
-      // Navigate back to QMSCheckmark
-      onEditSection('qms-checkmark');
     } else if (section === 'qms-ratings') {
       // Navigate back to QMSRatings
       onEditSection('qms-ratings');
+    } else if (section === 'qms-checkmark') {
+      // Navigate back to QMSCheckmark
+      onEditSection('qms-checkmark');
     } else {
       setEditingSection(section);
     }
@@ -320,7 +320,7 @@ export default function Review({ onNextStep, onPrevStep, formData, onEditSection
           transition={{ delay: 0.3 }}
           className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
         >
-          {renderQMSCheckmark()}
+          {renderQMSRatings()}
         </motion.div>
 
         <motion.div
@@ -329,7 +329,7 @@ export default function Review({ onNextStep, onPrevStep, formData, onEditSection
           transition={{ delay: 0.4 }}
           className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
         >
-          {renderQMSRatings()}
+          {renderQMSCheckmark()}
         </motion.div>
 
         <motion.div
