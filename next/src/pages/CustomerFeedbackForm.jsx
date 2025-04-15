@@ -62,9 +62,9 @@ export default function CustomerFeedbackForm() {
       setFormState(prev => ({ ...prev, currentStep: 2 }))
     } else if (section === 'csmarta-ratings') {
       setFormState(prev => ({ ...prev, currentStep: 3 }))
-    } else if (section === 'qms-checkmark') {
-      setFormState(prev => ({ ...prev, currentStep: 4 }))
     } else if (section === 'qms-ratings') {
+      setFormState(prev => ({ ...prev, currentStep: 4 }))
+    } else if (section === 'qms-checkmark') {
       setFormState(prev => ({ ...prev, currentStep: 5 }))
     } else if (section === 'suggestion') {
       setFormState(prev => ({ ...prev, currentStep: 6 }))
@@ -211,21 +211,21 @@ export default function CustomerFeedbackForm() {
               />
             )}
             {formState.currentStep === 4 && (
-              <QMSCheckmark 
-                onNextStep={editingSection === 'qms-checkmark' ? handleReturnToReview : handleNextStep} 
-                onPrevStep={handlePrevStep}
-                formData={qmsCheckmark}
-                onFormDataChange={setQMSCheckmark}
-                isReviewMode={editingSection === 'qms-checkmark'}
-              />
-            )}
-            {formState.currentStep === 5 && (
               <QMSRatings 
                 onNextStep={editingSection === 'qms-ratings' ? handleReturnToReview : handleNextStep} 
                 onPrevStep={handlePrevStep}
                 formData={qmsRatings}
                 onFormDataChange={setQMSRatings}
                 isReviewMode={editingSection === 'qms-ratings'}
+              />
+            )}
+            {formState.currentStep === 5 && (
+              <QMSCheckmark 
+                onNextStep={editingSection === 'qms-checkmark' ? handleReturnToReview : handleNextStep} 
+                onPrevStep={handlePrevStep}
+                formData={qmsCheckmark}
+                onFormDataChange={setQMSCheckmark}
+                isReviewMode={editingSection === 'qms-checkmark'}
               />
             )}
             {formState.currentStep === 6 && (
