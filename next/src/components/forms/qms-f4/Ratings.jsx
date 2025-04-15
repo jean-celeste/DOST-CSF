@@ -1,27 +1,45 @@
 "use client"
 
-import PropTypes from 'prop-types';
-import { Button } from "@/components/ui/button";
-import RatingQuestion from '@/components/forms-resources/RatingQuestion';
-import { ChevronRight, ChevronLeft } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react'
+import PropTypes from 'prop-types'
+import { Button } from '@/components/ui/button'
+import { ChevronRight, ChevronLeft } from 'lucide-react'
+import { motion } from 'framer-motion'
+import RatingQuestion from '@/components/forms-resources/RatingQuestion'
+import { fetchQuestions, groupQuestions } from '@/lib/questions/fetchQuestions'
+import LoadingSpinner from '@/components/forms-resources/LoadingSpinner'
+import { qmsOptions } from '@/lib/options/qms-options'
 
-//Animated emojis
-const heartEyesFace = "/assets/emojis/smiling_face_with_heart-eyes_animated.png";
-const smilingFace = "/assets/emojis/smiling_face_with_smiling_eyes_animated.png";
-const neutralFace = "/assets/emojis/face_without_mouth_animated.png";
-const happyFace = "/assets/emojis/slightly_smiling_face_animated.png";
-const poutingFace = "/assets/emojis/pouting_face_animated.png";
+export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataChange, isReviewMode, formId = 3 }) {
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-//Static emojis
-const heartEyesFaceStatic = "/assets/emojis/smiling_face_with_heart-eyes_color.svg";
-const smilingFaceStatic = "/assets/emojis/smiling_face_with_smiling_eyes_color.svg";
-const neutralFaceStatic = "/assets/emojis/face_without_mouth_color.svg";
-const happyFaceStatic = "/assets/emojis/slightly_smiling_face_color.svg";
-const poutingFaceStatic = "/assets/emojis/pouting_face_color.svg";
+  useEffect(() => {
+    const loadQuestions = async () => {
+      try {
+        console.log('Fetching questions for formId:', formId);
+        const fetchedQuestions = await fetchQuestions(formId);
+        console.log('Fetched questions:', fetchedQuestions);
+        
+        const { ratingQuestions } = groupQuestions(fetchedQuestions, formId);
+        console.log('Grouped rating questions:', ratingQuestions);
+        
+        setQuestions(ratingQuestions);
+        setError(null);
+      } catch (error) {
+        console.error('Error loading questions:', error);
+        setError('Failed to load questions. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataChange, isReviewMode }) {
+    loadQuestions();
+  }, [formId]);
+
   const handleRatingSelect = (questionKey, value) => {
+    console.log('Rating selected:', { questionKey, value });
     onFormDataChange({
       ...formData,
       ratings: {
@@ -53,68 +71,18 @@ export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataCh
     });
   };
 
-  // Define emoji options once to reuse
-  const emojiOptions = [
-    {
-      value: "outstanding",
-      label: "Outstanding (Lubos na kasiya-siya)",
-      imageSource: heartEyesFace,
-      imageSourceStatic: heartEyesFaceStatic,
-      emoji: "😍"
-    },
-    {
-      value: "very-satisfactory",
-      label: "Very Satisfactory (Napaka Kasiya-siya)",
-      imageSource: smilingFace,
-      imageSourceStatic: smilingFaceStatic,
-      emoji: "😊"
-    },
-    {
-      value: "satisfactory",
-      label: "Satisfactory (Kasiya-siya)",
-      imageSource: happyFace,
-      imageSourceStatic: happyFaceStatic,
-      emoji: "🙂"
-    },
-    {
-      value: "fair",
-      label: "Fair (Katamtaman)",
-      imageSource: neutralFace,
-      imageSourceStatic: neutralFaceStatic,
-      emoji: "😐"
-    },
-    {
-      value: "unsatisfactory",
-      label: "Unsatisfactory (Hindi Kasiya-siya)",
-      imageSource: poutingFace,
-      imageSourceStatic: poutingFaceStatic,
-      emoji: "😠"
-    }
-  ];
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
-  // Define the questions and divide them into pages
-  const questions = [
-    {
-      question: "Appropriateness of the Service/Activity (Kaangkupan ng Serbisyo/Aktibidad)",
-      questionKey: "question1"
-    },
-    {
-      question: "How beneficial is the Service/Activity (Gaano kapaki-pakkinabang ang serbisyo/aktibidad)",
-      questionKey: "question2"
-    },
-    {
-      question: "Attitude of Staff (Kagandahang loob at asal ng mga kawani)",
-      questionKey: "question3"
-    },
-    {
-      question: "Gender Fair Treatment (Pantay pantay na pakikitungo)",
-      questionKey: "question4"
-    },
-    {
-      question: "OVER-ALL SATISFACTION (Pangkalahatang kasiyahan ng serbisyong naibigay)",
-      questionKey: "question5"
-    }
-  ];
+  if (error) {
+    return (
+      <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+        <p className="text-red-500 mb-4">{error}</p>
+        <Button onClick={() => window.location.reload()}>Retry</Button>
+      </div>
+    );
+  }
 
   const questionsPerPage = 3;
   const totalPages = Math.ceil(questions.length / questionsPerPage);
@@ -123,6 +91,10 @@ export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataCh
     formData.currentPage * questionsPerPage,
     (formData.currentPage + 1) * questionsPerPage
   );
+
+  console.log('Rendering with questions:', questions);
+  console.log('Current page:', formData.currentPage);
+  console.log('Current questions:', currentQuestions);
 
   return (
     <div className="space-y-8">
@@ -138,19 +110,19 @@ export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataCh
       <div className="space-y-8">
         {currentQuestions.map((q, index) => (
           <motion.div
-            key={index}
+            key={q.question_id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
             className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 hover:shadow-md transition-shadow"
           >
             <RatingQuestion
-              question={q.question}
+              question={q.question_text}
               questionId={formData.currentPage * questionsPerPage + index}
               totalQuestions={questions.length}
-              selectedRating={formData.ratings[q.questionKey]}
-              onRatingSelect={(value) => handleRatingSelect(q.questionKey, value)}
-              emojiOptions={emojiOptions}
+              selectedRating={formData.ratings[`question${q.question_id}`]}
+              onRatingSelect={(value) => handleRatingSelect(`question${q.question_id}`, value)}
+              emojiOptions={qmsOptions.ratingOptions}
               showEmoji={true}
             />
           </motion.div>
@@ -187,7 +159,7 @@ export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataCh
           variant="gradient"
           className="px-6 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white shadow-md"
           onClick={formData.currentPage === totalPages - 1 ? handleContinue : handleNextPage}
-          disabled={!currentQuestions.every(q => formData.ratings[q.questionKey])}
+          disabled={!currentQuestions.every(q => formData.ratings[`question${q.question_id}`])}
         >
           {formData.currentPage === totalPages - 1 ? (isReviewMode ? "Return to Review" : "Continue") : "Next"}
           <ChevronRight className="ml-2 h-4 w-4" />
@@ -201,15 +173,10 @@ Ratings.propTypes = {
   onNextStep: PropTypes.func.isRequired,
   onPrevStep: PropTypes.func.isRequired,
   formData: PropTypes.shape({
-    ratings: PropTypes.shape({
-      question1: PropTypes.string,
-      question2: PropTypes.string,
-      question3: PropTypes.string,
-      question4: PropTypes.string,
-      question5: PropTypes.string
-    }),
+    ratings: PropTypes.object,
     currentPage: PropTypes.number
   }).isRequired,
   onFormDataChange: PropTypes.func.isRequired,
-  isReviewMode: PropTypes.bool
+  isReviewMode: PropTypes.bool,
+  formId: PropTypes.number
 };

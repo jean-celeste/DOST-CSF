@@ -11,13 +11,22 @@ export async function fetchQuestions(formId) {
   }
 }
 
-export function groupQuestions(questions) {
-  // Group questions into checkmark and rating questions
-  const checkmarkQuestions = questions.filter(q => q.question_id <= 3);
-  const ratingQuestions = questions.filter(q => q.question_id > 3);
-
-  return {
-    checkmarkQuestions,
-    ratingQuestions
-  };
+export function groupQuestions(questions, formId) {
+  console.log('Grouping questions for formId:', formId);
+  console.log('All questions:', questions);
+  
+  if (formId === 1) { // CSM ARTA form
+    const checkmarkQuestions = questions.filter(q => q.question_id <= 3);
+    const ratingQuestions = questions.filter(q => q.question_id > 3);
+    console.log('CSM ARTA checkmark questions:', checkmarkQuestions);
+    console.log('CSM ARTA rating questions:', ratingQuestions);
+    return { checkmarkQuestions, ratingQuestions };
+  } else if (formId === 3) { // QMS form
+    // Questions 31-35 are for checkmarks
+    const checkmarkQuestions = questions.filter(q => q.question_id >= 31 && q.question_id <= 35);
+    // Questions 26-30 are for ratings
+    const ratingQuestions = questions.filter(q => q.question_id >= 26 && q.question_id <= 30);
+    return { checkmarkQuestions, ratingQuestions };
+  }
+  return { checkmarkQuestions: [], ratingQuestions: [] };
 } 

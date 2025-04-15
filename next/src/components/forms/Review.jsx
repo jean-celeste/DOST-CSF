@@ -18,9 +18,42 @@ const poutingFace = "/assets/emojis/pouting_face_animated.png";
 export default function Review({ onNextStep, onPrevStep, formData, onEditSection }) {
   const [editingSection, setEditingSection] = useState(null);
 
-  const handleSubmit = () => {
-    // TODO: Implement form submission logic
-    onNextStep();
+  const handleSubmit = async () => {
+    try {
+      // Log all form data for verification
+      console.log('=== Form Submission Data ===');
+      console.log('Personal Details:', formData.personalDetails);
+      console.log('CSM ARTA Checkmark:', formData.csmARTACheckmark);
+      console.log('CSM ARTA Ratings:', formData.csmARTARatings);
+      console.log('QMS Checkmark:', formData.qmsCheckmark);
+      console.log('QMS Ratings:', formData.qmsRatings);
+      console.log('Suggestion:', formData.suggestion);
+      console.log('=== End Form Data ===');
+
+      const response = await fetch('/api/forms/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          formId: 1, // You'll need to pass the correct form ID
+          serviceId: 1, // You'll need to pass the correct service ID
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit form');
+      }
+
+      const result = await response.json();
+      console.log('Form submitted successfully:', result);
+      
+      onNextStep();
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      // TODO: Add error handling UI
+    }
   };
 
   const handleEdit = (section) => {
