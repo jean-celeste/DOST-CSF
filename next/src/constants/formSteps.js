@@ -22,17 +22,17 @@ export const FORM_STEPS = [
   },
   { 
     step: 4, 
-    title: "QMS Checkmark",
-    mobileTitle: "QMS",
-    description: "Please provide feedback",
-    icon: "QrCodeIcon"
-  },
-  { 
-    step: 5, 
     title: "QMS Ratings",
     mobileTitle: "Checkmark",
     description: "Rate your experience",
     icon: "SmileIcon"
+  },
+  { 
+    step: 5, 
+    title: "QMS Checkmark",
+    mobileTitle: "QMS",
+    description: "Please provide feedback",
+    icon: "QrCodeIcon"
   },
   { 
     step: 6, 
