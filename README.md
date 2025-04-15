@@ -38,6 +38,50 @@ DOST-CSF/
   - Review mode
   - Data validation
   - Form state management
+- **Data Storage**
+  - Clean JSON structure for responses
+  - Question IDs as keys for ratings
+  - Automatic customer data management
+  - Transaction-based submissions
+
+## Recent Updates
+- **Form Submission Improvements**
+  - Removed UI state data (currentPage) from stored responses
+  - Transformed question numbers to question IDs in stored data
+  - Implemented cleaner JSON structure for responses
+  - Added transaction support for data consistency
+
+## Data Structure
+### Response Format
+```json
+{
+  "csmARTACheckmark": {
+    "selectedOption": "string",
+    "additionalAnswers": {
+      "question_id": "answer"
+    }
+  },
+  "csmARTARatings": {
+    "ratings": {
+      "question_id": "rating_value"
+    }
+  },
+  "qmsCheckmark": {
+    "selections": {
+      "question_text": boolean
+    }
+  },
+  "qmsRatings": {
+    "ratings": {
+      "question_id": "rating_value"
+    }
+  },
+  "suggestion": {
+    "generalComments": "string",
+    "reasonForLowScore": "string"
+  }
+}
+```
 
 ## Prerequisites
 - Node.js (v18 or higher)
