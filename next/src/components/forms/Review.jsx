@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, CheckCircle2, Star, Pencil, X, MessageSquare
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import Image from 'next/image';
+import ThankYouModal from './ThankYouModal';
 
 //Animated emojis
 const heartEyesFace = "/assets/emojis/smiling_face_with_heart-eyes_animated.png";
@@ -15,20 +16,26 @@ const happyFace = "/assets/emojis/slightly_smiling_face_animated.png";
 const frowningFace = "/assets/emojis/frowning_face_animated.png";
 const poutingFace = "/assets/emojis/pouting_face_animated.png";
 
-export default function Review({ onNextStep, onPrevStep, formData, onEditSection }) {
+export default function Review({ onNextStep, onPrevStep, formData, onEditSection, onNewForm }) {
   const [editingSection, setEditingSection] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showThankYou, setShowThankYou] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setError(null);
+
     try {
       // Log all form data for verification
-      console.log('=== Form Submission Data ===');
+      console.log('=== Form Data to be Submitted ===');
       console.log('Personal Details:', formData.personalDetails);
       console.log('CSM ARTA Checkmark:', formData.csmARTACheckmark);
       console.log('CSM ARTA Ratings:', formData.csmARTARatings);
       console.log('QMS Checkmark:', formData.qmsCheckmark);
       console.log('QMS Ratings:', formData.qmsRatings);
-      console.log('Suggestion:', formData.suggestion);
-      console.log('=== End Form Data ===');
+      console.log('Suggestions:', formData.suggestion);
+      console.log('================================');
 
       const response = await fetch('/api/forms/submit', {
         method: 'POST',
@@ -37,22 +44,27 @@ export default function Review({ onNextStep, onPrevStep, formData, onEditSection
         },
         body: JSON.stringify({
           ...formData,
-          formId: 1, // You'll need to pass the correct form ID
-          serviceId: 1, // You'll need to pass the correct service ID
+          formId: 1, // CSM-ARTA form
+          serviceId: 1, // Default service ID
         }),
       });
 
+      const result = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to submit form');
+        throw new Error(result.error || 'Failed to submit form');
       }
 
-      const result = await response.json();
       console.log('Form submitted successfully:', result);
+      setShowThankYou(true);
       
-      onNextStep();
+      // Remove the setTimeout since the modal now handles its own timing
+      // The modal will automatically close after 10 seconds
     } catch (error) {
       console.error('Error submitting form:', error);
-      // TODO: Add error handling UI
+      setError(error.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -389,11 +401,40 @@ export default function Review({ onNextStep, onPrevStep, formData, onEditSection
           variant="gradient"
           className="px-8 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white shadow-md hover:shadow-lg transition-all duration-200"
           onClick={handleSubmit}
+          disabled={isSubmitting}
         >
-          Submit Feedback
+          {isSubmitting ? (
+            <>
+              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Submitting...
+            </>
+          ) : (
+            'Submit Feedback'
+          )}
           <ChevronRight className="ml-2 h-5 w-5" />
         </Button>
       </div>
+
+      {error && (
+        <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-lg">
+          {error}
+        </div>
+      )}
+
+      <ThankYouModal 
+        isOpen={showThankYou} 
+        onClose={() => {
+          setShowThankYou(false);
+          onNextStep();
+        }}
+        onNewForm={() => {
+          setShowThankYou(false);
+          onNewForm();
+        }}
+      />
     </div>
   );
 }
@@ -402,6 +443,7 @@ Review.propTypes = {
   onNextStep: PropTypes.func.isRequired,
   onPrevStep: PropTypes.func.isRequired,
   onEditSection: PropTypes.func,
+  onNewForm: PropTypes.func,
   formData: PropTypes.shape({
     personalDetails: PropTypes.shape({
       email: PropTypes.string,

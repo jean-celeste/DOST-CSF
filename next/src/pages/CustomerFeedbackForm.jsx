@@ -76,6 +76,18 @@ export default function CustomerFeedbackForm() {
     setFormState(prev => ({ ...prev, currentStep: 7 }))
   }
 
+  const handleNewForm = () => {
+    // Reset all form states
+    setFormState(INITIAL_FORM_STATE)
+    setPersonalDetails(INITIAL_PERSONAL_DETAILS)
+    setCSMARTACheckmark(INITIAL_CSM_ARTA_CHECKMARK)
+    setCSMARTARatings(INITIAL_CSM_ARTA_RATINGS)
+    setQMSCheckmark(INITIAL_QMS_CHECKMARK)
+    setQMSRatings(INITIAL_QMS_RATINGS)
+    setSuggestion(INITIAL_SUGGESTION)
+    setEditingSection(null)
+  }
+
   // Render the data privacy page if consent hasn't been given
   if (!formState.showMainForm) {
     return <DataPrivacyConsent onConsent={handleConsent} onDecline={handleDecline} />
@@ -253,6 +265,7 @@ export default function CustomerFeedbackForm() {
                   suggestion
                 }}
                 onEditSection={handleEditSection}
+                onNewForm={handleNewForm}
               />
             )}
           </div>
