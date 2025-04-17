@@ -29,7 +29,11 @@ import {
 } from '@/constants/formSteps'
 
 export default function CustomerFeedbackForm() {
-  const [formState, setFormState] = useState(INITIAL_FORM_STATE)
+  const [formState, setFormState] = useState({
+    ...INITIAL_FORM_STATE,
+    currentFormId: 1, // Default to CSM-ARTA form (1)
+    formType: 'csm-arta' // Default form type
+  })
   const [personalDetails, setPersonalDetails] = useState(INITIAL_PERSONAL_DETAILS)
   const [csmARTACheckmark, setCSMARTACheckmark] = useState(INITIAL_CSM_ARTA_CHECKMARK)
   const [csmARTARatings, setCSMARTARatings] = useState(INITIAL_CSM_ARTA_RATINGS)
@@ -47,7 +51,13 @@ export default function CustomerFeedbackForm() {
   }
 
   const handleNextStep = () => {
-    setFormState(prev => ({ ...prev, currentStep: prev.currentStep + 1 }))
+    setFormState(prev => {
+      // Don't increment if we're already at the last step
+      if (prev.currentStep >= 7) {
+        return prev;
+      }
+      return { ...prev, currentStep: prev.currentStep + 1 };
+    });
   }
 
   const handlePrevStep = () => {
@@ -74,6 +84,22 @@ export default function CustomerFeedbackForm() {
   const handleReturnToReview = () => {
     setEditingSection(null)
     setFormState(prev => ({ ...prev, currentStep: 7 }))
+  }
+
+  const handleNewForm = () => {
+    // Reset all form states
+    setFormState({
+      ...INITIAL_FORM_STATE,
+      currentFormId: 1,
+      formType: 'csm-arta'
+    })
+    setPersonalDetails(INITIAL_PERSONAL_DETAILS)
+    setCSMARTACheckmark(INITIAL_CSM_ARTA_CHECKMARK)
+    setCSMARTARatings(INITIAL_CSM_ARTA_RATINGS)
+    setQMSCheckmark(INITIAL_QMS_CHECKMARK)
+    setQMSRatings(INITIAL_QMS_RATINGS)
+    setSuggestion(INITIAL_SUGGESTION)
+    setEditingSection(null)
   }
 
   // Render the data privacy page if consent hasn't been given
@@ -253,6 +279,9 @@ export default function CustomerFeedbackForm() {
                   suggestion
                 }}
                 onEditSection={handleEditSection}
+                onNewForm={handleNewForm}
+                formId={formState.currentFormId}
+                formType={formState.formType}
               />
             )}
           </div>
