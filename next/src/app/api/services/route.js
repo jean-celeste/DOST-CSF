@@ -8,6 +8,7 @@ export async function GET() {
         s.service_id,
         s.service_name,
         s.description,
+        s.service_type_id,
         st.service_type_name,
         o.office_name,
         u.unit_name

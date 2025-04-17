@@ -205,11 +205,14 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
     setIsLoading(true)
     try {
       const serviceData = {
-        ...service,
+        service_id: service.service_id,
+        service_name: service.service_name,
+        office_name: service.office_name,
+        unit_name: service.unit_name,
+        service_type_id: service.service_type_id,
+        service_type_name: service.service_type_name,
         customerType,
-        externalType,
-        selectedOffice: selectedOffice?.name,
-        selectedUnit: selectedUnit?.name
+        externalType
       };
       
       console.log('Service Selected in Modal:', serviceData);

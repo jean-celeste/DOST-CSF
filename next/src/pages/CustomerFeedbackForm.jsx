@@ -31,8 +31,8 @@ import {
 export default function CustomerFeedbackForm() {
   const [formState, setFormState] = useState({
     ...INITIAL_FORM_STATE,
-    currentFormId: 1, // Default to CSM-ARTA form (1)
-    formType: 'csm-arta' // Default form type
+    currentFormId: 1,
+    formType: 'csm-arta'
   })
   const [personalDetails, setPersonalDetails] = useState(INITIAL_PERSONAL_DETAILS)
   const [csmARTACheckmark, setCSMARTACheckmark] = useState(INITIAL_CSM_ARTA_CHECKMARK)
@@ -41,6 +41,35 @@ export default function CustomerFeedbackForm() {
   const [qmsRatings, setQMSRatings] = useState(INITIAL_QMS_RATINGS)
   const [suggestion, setSuggestion] = useState(INITIAL_SUGGESTION)
   const [editingSection, setEditingSection] = useState(null)
+
+  // Add function to determine which steps to show based on service type
+  const getVisibleSteps = () => {
+    if (!personalDetails.service_type_id) return FORM_STEPS;
+    
+    // If service is on-site (service_type_id = 1), show only CSM steps (2 and 3)
+    if (personalDetails.service_type_id === 1) {
+      return FORM_STEPS.filter(step => 
+        step.step === 1 || // Personal details
+        step.step === 2 || // CSM Checkmark
+        step.step === 3 || // CSM Ratings
+        step.step === 6 || // Suggestion
+        step.step === 7    // Review
+      );
+    }
+    
+    // If service is off-site (service_type_id = 2), show only QMS steps (4 and 5)
+    if (personalDetails.service_type_id === 2) {
+      return FORM_STEPS.filter(step => 
+        step.step === 1 || // Personal details
+        step.step === 4 || // QMS Ratings
+        step.step === 5 || // QMS Checkmark
+        step.step === 6 || // Suggestion
+        step.step === 7    // Review
+      );
+    }
+    
+    return FORM_STEPS;
+  };
 
   const handleConsent = () => {
     setFormState(prev => ({ ...prev, showMainForm: true }))
@@ -51,17 +80,77 @@ export default function CustomerFeedbackForm() {
   }
 
   const handleNextStep = () => {
+    console.log('Current Step:', formState.currentStep);
+    console.log('Service Type ID:', personalDetails.service_type_id);
+    
     setFormState(prev => {
       // Don't increment if we're already at the last step
       if (prev.currentStep >= 7) {
         return prev;
       }
+      
+      // If we're at step 1 and moving to step 2, check service type
+      if (prev.currentStep === 1) {
+        if (personalDetails.service_type_id === 1) {
+          // For on-site services, go to CSM form (step 2)
+          return { ...prev, currentStep: 2 };
+        } else if (personalDetails.service_type_id === 2) {
+          // For off-site services, go to QMS form (step 4)
+          return { ...prev, currentStep: 4 };
+        }
+      }
+      
+      // For on-site services (type 1), skip steps 4 and 5
+      if (personalDetails.service_type_id === 1) {
+        if (prev.currentStep === 3) {
+          // After CSM ratings, go to suggestion
+          return { ...prev, currentStep: 6 };
+        }
+      }
+      
+      // For off-site services (type 2), skip steps 2 and 3
+      if (personalDetails.service_type_id === 2) {
+        if (prev.currentStep === 5) {
+          // After QMS checkmark, go to suggestion
+          return { ...prev, currentStep: 6 };
+        }
+      }
+      
       return { ...prev, currentStep: prev.currentStep + 1 };
     });
   }
 
   const handlePrevStep = () => {
-    setFormState(prev => ({ ...prev, currentStep: prev.currentStep - 1 }))
+    setFormState(prev => {
+      // If we're at step 6 (suggestion), go back to the appropriate previous step based on service type
+      if (prev.currentStep === 6) {
+        if (personalDetails.service_type_id === 1) {
+          // For on-site services, go back to CSM ratings (step 3)
+          return { ...prev, currentStep: 3 };
+        } else if (personalDetails.service_type_id === 2) {
+          // For off-site services, go back to QMS checkmark (step 5)
+          return { ...prev, currentStep: 5 };
+        }
+      }
+      
+      // For on-site services (type 1), skip steps 4 and 5
+      if (personalDetails.service_type_id === 1) {
+        if (prev.currentStep === 3) {
+          // Go back to CSM checkmark (step 2)
+          return { ...prev, currentStep: 2 };
+        }
+      }
+      
+      // For off-site services (type 2), skip steps 2 and 3
+      if (personalDetails.service_type_id === 2) {
+        if (prev.currentStep === 4) {
+          // Go back to personal details (step 1)
+          return { ...prev, currentStep: 1 };
+        }
+      }
+      
+      return { ...prev, currentStep: prev.currentStep - 1 };
+    });
   }
 
   const handleEditSection = (section) => {
@@ -151,7 +240,7 @@ export default function CustomerFeedbackForm() {
                 <div className="relative">
                   <div className="absolute left-6 top-4 bottom-4 w-0.5 bg-gray-200"></div>
                   <div className="space-y-7">
-                    {FORM_STEPS.map(({ step, title, description, icon }) => (
+                    {getVisibleSteps().map(({ step, title, description, icon }) => (
                       <div key={step} className="relative flex items-start group">
                         <div
                           className={`shrink-0 z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all duration-300 ease-in-out ${
@@ -218,7 +307,7 @@ export default function CustomerFeedbackForm() {
               />
             )}
             
-            {formState.currentStep === 2 && (
+            {formState.currentStep === 2 && personalDetails.service_type_id === 1 && (
               <CSMARTACheckmark 
                 onNextStep={editingSection === 'csmarta' ? handleReturnToReview : handleNextStep} 
                 onPrevStep={handlePrevStep}
@@ -227,7 +316,7 @@ export default function CustomerFeedbackForm() {
                 isReviewMode={editingSection === 'csmarta'}
               />
             )}
-            {formState.currentStep === 3 && (
+            {formState.currentStep === 3 && personalDetails.service_type_id === 1 && (
               <CSMARTARatings 
                 onNextStep={editingSection === 'csmarta-ratings' ? handleReturnToReview : handleNextStep} 
                 onPrevStep={handlePrevStep}
@@ -236,7 +325,7 @@ export default function CustomerFeedbackForm() {
                 isReviewMode={editingSection === 'csmarta-ratings'}
               />
             )}
-            {formState.currentStep === 4 && (
+            {formState.currentStep === 4 && personalDetails.service_type_id === 2 && (
               <QMSRatings 
                 onNextStep={editingSection === 'qms-ratings' ? handleReturnToReview : handleNextStep} 
                 onPrevStep={handlePrevStep}
@@ -245,7 +334,7 @@ export default function CustomerFeedbackForm() {
                 isReviewMode={editingSection === 'qms-ratings'}
               />
             )}
-            {formState.currentStep === 5 && (
+            {formState.currentStep === 5 && personalDetails.service_type_id === 2 && (
               <QMSCheckmark 
                 onNextStep={editingSection === 'qms-checkmark' ? handleReturnToReview : handleNextStep} 
                 onPrevStep={handlePrevStep}
@@ -260,7 +349,7 @@ export default function CustomerFeedbackForm() {
                 onPrevStep={handlePrevStep}
                 formData={{
                   ...suggestion,
-                  ratings: qmsRatings.ratings
+                  ratings: personalDetails.service_type_id === 1 ? csmARTARatings.ratings : qmsRatings.ratings
                 }}
                 onFormDataChange={setSuggestion}
                 isReviewMode={editingSection === 'suggestion'}

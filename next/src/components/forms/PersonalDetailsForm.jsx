@@ -36,6 +36,7 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
       service_name: serviceData.service_name,
       office_name: serviceData.office_name,
       unit_name: serviceData.unit_name,
+      service_type_id: serviceData.service_type_id,
       service_type_name: serviceData.service_type_name,
       customerType: serviceData.customerType,
       externalType: serviceData.externalType
@@ -55,8 +56,9 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
       return;
     }
 
-    console.log('Form Data Before Next:', formData)
-    onNextStep()
+    console.log('Form Data Before Next:', formData);
+    console.log('Service Type ID:', formData.service_type_id);
+    onNextStep();
   }
 
   return (
