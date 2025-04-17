@@ -10,6 +10,16 @@ export async function POST(request) {
     try {
       await client.query('BEGIN');
 
+      // Validate form_id exists
+      const formCheck = await client.query(
+        `SELECT form_id FROM forms WHERE form_id = $1 AND status_id = 1`, // Check if form is active
+        [formData.formId]
+      );
+
+      if (formCheck.rows.length === 0) {
+        throw new Error('Invalid form ID or form is not active');
+      }
+
       // 1. Check if customer exists
       const customerCheck = await client.query(
         `SELECT customer_id FROM customer WHERE email = $1`,
@@ -67,23 +77,28 @@ export async function POST(request) {
       };
 
       // Clean up form data before storing
-      const cleanFormData = {
+      const cleanFormData = formData.formId === 1 ? {
         csmARTACheckmark: {
-          selectedOption: formData.csmARTACheckmark.selectedOption,
-          additionalAnswers: formData.csmARTACheckmark.additionalAnswers
+          selectedOption: formData.csmARTACheckmark?.selectedOption,
+          additionalAnswers: formData.csmARTACheckmark?.additionalAnswers
         },
         csmARTARatings: {
-          ratings: transformRatings(formData.csmARTARatings.ratings)
-        },
-        qmsCheckmark: {
-          selections: formData.qmsCheckmark.selections
-        },
-        qmsRatings: {
-          ratings: transformRatings(formData.qmsRatings.ratings)
+          ratings: formData.csmARTARatings?.ratings ? transformRatings(formData.csmARTARatings.ratings) : {}
         },
         suggestion: {
-          generalComments: formData.suggestion.generalComments,
-          reasonForLowScore: formData.suggestion.reasonForLowScore
+          generalComments: formData.suggestion?.generalComments,
+          reasonForLowScore: formData.suggestion?.reasonForLowScore
+        }
+      } : {
+        qmsCheckmark: {
+          selections: formData.qmsCheckmark?.selections
+        },
+        qmsRatings: {
+          ratings: formData.qmsRatings?.ratings ? transformRatings(formData.qmsRatings.ratings) : {}
+        },
+        suggestion: {
+          generalComments: formData.suggestion?.generalComments,
+          reasonForLowScore: formData.suggestion?.reasonForLowScore
         }
       };
 
@@ -99,7 +114,7 @@ export async function POST(request) {
         RETURNING response_id`,
         [
           formData.formId,
-          formData.serviceId,
+          formData.personalDetails.service_id,
           customerId,
           JSON.stringify(cleanFormData)
         ]
@@ -120,7 +135,7 @@ export async function POST(request) {
   } catch (error) {
     console.error('Form submission error:', error);
     return NextResponse.json(
-      { error: 'Failed to submit form' },
+      { error: error.message || 'Failed to submit form' },
       { status: 500 }
     );
   }

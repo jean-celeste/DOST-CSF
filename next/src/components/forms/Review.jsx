@@ -16,7 +16,15 @@ const happyFace = "/assets/emojis/slightly_smiling_face_animated.png";
 const frowningFace = "/assets/emojis/frowning_face_animated.png";
 const poutingFace = "/assets/emojis/pouting_face_animated.png";
 
-export default function Review({ onNextStep, onPrevStep, formData, onEditSection, onNewForm }) {
+export default function Review({ 
+  onNextStep, 
+  onPrevStep, 
+  formData, 
+  onEditSection, 
+  onNewForm,
+  formId,
+  formType 
+}) {
   const [editingSection, setEditingSection] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showThankYou, setShowThankYou] = useState(false);
@@ -27,41 +35,52 @@ export default function Review({ onNextStep, onPrevStep, formData, onEditSection
     setError(null);
 
     try {
-      // Log all form data for verification
-      console.log('=== Form Data to be Submitted ===');
-      console.log('Personal Details:', formData.personalDetails);
-      console.log('CSM ARTA Checkmark:', formData.csmARTACheckmark);
-      console.log('CSM ARTA Ratings:', formData.csmARTARatings);
-      console.log('QMS Checkmark:', formData.qmsCheckmark);
-      console.log('QMS Ratings:', formData.qmsRatings);
-      console.log('Suggestions:', formData.suggestion);
-      console.log('================================');
-
-      const response = await fetch('/api/forms/submit', {
+      // Submit CSM ARTA form
+      const csmResponse = await fetch('/api/forms/submit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...formData,
-          formId: 1, // CSM-ARTA form
-          serviceId: 1, // Default service ID
+          formId: 1, // CSM ARTA form ID
+          serviceId: formData.personalDetails.service_id,
+          personalDetails: formData.personalDetails,
+          csmARTACheckmark: formData.csmARTACheckmark,
+          csmARTARatings: formData.csmARTARatings,
+          suggestion: formData.suggestion
         }),
       });
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to submit form');
+      const csmResult = await csmResponse.json();
+      if (!csmResponse.ok) {
+        throw new Error(csmResult.error || 'Failed to submit CSM ARTA form');
       }
 
-      console.log('Form submitted successfully:', result);
+      // Submit QMS form
+      const qmsResponse = await fetch('/api/forms/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          formId: 3, // QMS form ID
+          serviceId: formData.personalDetails.service_id,
+          personalDetails: formData.personalDetails,
+          qmsCheckmark: formData.qmsCheckmark,
+          qmsRatings: formData.qmsRatings,
+          suggestion: formData.suggestion
+        }),
+      });
+
+      const qmsResult = await qmsResponse.json();
+      if (!qmsResponse.ok) {
+        throw new Error(qmsResult.error || 'Failed to submit QMS form');
+      }
+
+      console.log('Both forms submitted successfully:', { csmResult, qmsResult });
       setShowThankYou(true);
-      
-      // Remove the setTimeout since the modal now handles its own timing
-      // The modal will automatically close after 10 seconds
     } catch (error) {
-      console.error('Error submitting form:', error);
+      console.error('Error submitting forms:', error);
       setError(error.message);
     } finally {
       setIsSubmitting(false);
@@ -442,34 +461,16 @@ export default function Review({ onNextStep, onPrevStep, formData, onEditSection
 Review.propTypes = {
   onNextStep: PropTypes.func.isRequired,
   onPrevStep: PropTypes.func.isRequired,
-  onEditSection: PropTypes.func,
-  onNewForm: PropTypes.func,
   formData: PropTypes.shape({
-    personalDetails: PropTypes.shape({
-      email: PropTypes.string,
-      contact: PropTypes.string,
-      service_name: PropTypes.string,
-      office_name: PropTypes.string,
-      unit_name: PropTypes.string,
-      service_type_name: PropTypes.string,
-      customerType: PropTypes.string,
-      externalType: PropTypes.string,
-      sex: PropTypes.string,
-      age: PropTypes.string
-    }),
-    csmARTACheckmark: PropTypes.shape({
-      selectedOption: PropTypes.string,
-      additionalAnswers: PropTypes.object
-    }),
-    csmARTARatings: PropTypes.shape({
-      ratings: PropTypes.object
-    }),
-    qmsCheckmark: PropTypes.shape({
-      selections: PropTypes.objectOf(PropTypes.bool)
-    }),
-    qmsRatings: PropTypes.shape({
-      ratings: PropTypes.object
-    }),
-    suggestion: PropTypes.string
-  }).isRequired
+    personalDetails: PropTypes.object,
+    csmARTACheckmark: PropTypes.object,
+    csmARTARatings: PropTypes.object,
+    qmsCheckmark: PropTypes.object,
+    qmsRatings: PropTypes.object,
+    suggestion: PropTypes.object
+  }).isRequired,
+  onEditSection: PropTypes.func.isRequired,
+  onNewForm: PropTypes.func.isRequired,
+  formId: PropTypes.number.isRequired,
+  formType: PropTypes.string.isRequired
 }; 
