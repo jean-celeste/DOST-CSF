@@ -35,52 +35,58 @@ export default function Review({
     setError(null);
 
     try {
-      // Submit CSM ARTA form
-      const csmResponse = await fetch('/api/forms/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          formId: 1, // CSM ARTA form ID
-          serviceId: formData.personalDetails.service_id,
-          personalDetails: formData.personalDetails,
-          csmARTACheckmark: formData.csmARTACheckmark,
-          csmARTARatings: formData.csmARTARatings,
-          suggestion: formData.suggestion
-        }),
-      });
+      // Determine which form to submit based on service type
+      if (formData.personalDetails.service_type_id === 1) {
+        // Submit CSM ARTA form for on-site services
+        const response = await fetch('/api/forms/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            formId: 1, // CSM ARTA form ID
+            serviceId: formData.personalDetails.service_id,
+            personalDetails: formData.personalDetails,
+            csmARTACheckmark: formData.csmARTACheckmark,
+            csmARTARatings: formData.csmARTARatings,
+            suggestion: formData.suggestion
+          }),
+        });
 
-      const csmResult = await csmResponse.json();
-      if (!csmResponse.ok) {
-        throw new Error(csmResult.error || 'Failed to submit CSM ARTA form');
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to submit CSM ARTA form');
+        }
+        console.log('CSM ARTA form submitted successfully:', result);
+      } else if (formData.personalDetails.service_type_id === 2) {
+        // Submit QMS form for off-site services
+        const response = await fetch('/api/forms/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            formId: 3, // QMS form ID
+            serviceId: formData.personalDetails.service_id,
+            personalDetails: formData.personalDetails,
+            qmsCheckmark: formData.qmsCheckmark,
+            qmsRatings: formData.qmsRatings,
+            suggestion: formData.suggestion
+          }),
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to submit QMS form');
+        }
+        console.log('QMS form submitted successfully:', result);
+      } else {
+        throw new Error('Invalid service type');
       }
 
-      // Submit QMS form
-      const qmsResponse = await fetch('/api/forms/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          formId: 3, // QMS form ID
-          serviceId: formData.personalDetails.service_id,
-          personalDetails: formData.personalDetails,
-          qmsCheckmark: formData.qmsCheckmark,
-          qmsRatings: formData.qmsRatings,
-          suggestion: formData.suggestion
-        }),
-      });
-
-      const qmsResult = await qmsResponse.json();
-      if (!qmsResponse.ok) {
-        throw new Error(qmsResult.error || 'Failed to submit QMS form');
-      }
-
-      console.log('Both forms submitted successfully:', { csmResult, qmsResult });
       setShowThankYou(true);
     } catch (error) {
-      console.error('Error submitting forms:', error);
+      console.error('Error submitting form:', error);
       setError(error.message);
     } finally {
       setIsSubmitting(false);
@@ -88,6 +94,18 @@ export default function Review({
   };
 
   const handleEdit = (section) => {
+    // Prevent editing QMS sections for on-site services
+    if (formData.personalDetails.service_type_id === 1 && 
+        (section === 'qms-ratings' || section === 'qms-checkmark')) {
+      return;
+    }
+    
+    // Prevent editing CSM ARTA sections for off-site services
+    if (formData.personalDetails.service_type_id === 2 && 
+        (section === 'csmarta' || section === 'csmarta-ratings')) {
+      return;
+    }
+
     if (section === 'personal') {
       // Navigate back to PersonalDetailsForm
       onEditSection('personal');
