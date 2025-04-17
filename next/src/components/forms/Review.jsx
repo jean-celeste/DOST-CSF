@@ -230,6 +230,12 @@ export default function Review({
     <div className="space-y-4">
       {renderSectionHeader('Personal Details', <CheckCircle2 className="h-5 w-5 text-blue-500" />, 'personal')}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {formData.personalDetails.name && (
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <p className="text-sm font-medium text-gray-500 mb-1">Name</p>
+            <p className="text-base text-gray-900">{formData.personalDetails.name}</p>
+          </div>
+        )}
         <div className="bg-gray-50 p-4 rounded-lg">
           <p className="text-sm font-medium text-gray-500 mb-1">Email</p>
           <p className="text-base text-gray-900 break-words">{formData.personalDetails.email}</p>
@@ -480,7 +486,21 @@ Review.propTypes = {
   onNextStep: PropTypes.func.isRequired,
   onPrevStep: PropTypes.func.isRequired,
   formData: PropTypes.shape({
-    personalDetails: PropTypes.object,
+    personalDetails: PropTypes.shape({
+      name: PropTypes.string,
+      email: PropTypes.string,
+      contact: PropTypes.string,
+      service_id: PropTypes.number,
+      service_name: PropTypes.string,
+      office_name: PropTypes.string,
+      unit_name: PropTypes.string,
+      service_type_id: PropTypes.number,
+      service_type_name: PropTypes.string,
+      customerType: PropTypes.string,
+      externalType: PropTypes.string,
+      sex: PropTypes.string,
+      age: PropTypes.string
+    }),
     csmARTACheckmark: PropTypes.object,
     csmARTARatings: PropTypes.object,
     qmsCheckmark: PropTypes.object,

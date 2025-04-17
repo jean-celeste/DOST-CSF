@@ -33,13 +33,15 @@ export async function POST(request) {
           `UPDATE customer 
            SET phone = $1, 
                sex = $2, 
-               customer_type_id = (SELECT cust_type_id FROM customer_type WHERE cust_type_name = $3),
-               external_type_id = (SELECT external_type_id FROM external_customer_type WHERE external_type_name = $4)
-           WHERE email = $5
+               name = $3,
+               customer_type_id = (SELECT cust_type_id FROM customer_type WHERE cust_type_name = $4),
+               external_type_id = (SELECT external_type_id FROM external_customer_type WHERE external_type_name = $5)
+           WHERE email = $6
            RETURNING customer_id`,
           [
             formData.personalDetails.contact,
             formData.personalDetails.sex,
+            formData.personalDetails.name || null,
             formData.personalDetails.customerType,
             formData.personalDetails.externalType,
             formData.personalDetails.email
@@ -49,16 +51,17 @@ export async function POST(request) {
       } else {
         // Insert new customer
         const insertResult = await client.query(
-          `INSERT INTO customer (email, phone, sex, customer_type_id, external_type_id)
-           VALUES ($1, $2, $3, 
-             (SELECT cust_type_id FROM customer_type WHERE cust_type_name = $4),
-             (SELECT external_type_id FROM external_customer_type WHERE external_type_name = $5)
+          `INSERT INTO customer (email, phone, sex, name, customer_type_id, external_type_id)
+           VALUES ($1, $2, $3, $4, 
+             (SELECT cust_type_id FROM customer_type WHERE cust_type_name = $5),
+             (SELECT external_type_id FROM external_customer_type WHERE external_type_name = $6)
            )
            RETURNING customer_id`,
           [
             formData.personalDetails.email,
             formData.personalDetails.contact,
             formData.personalDetails.sex,
+            formData.personalDetails.name || null,
             formData.personalDetails.customerType,
             formData.personalDetails.externalType
           ]
