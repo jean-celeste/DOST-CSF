@@ -73,6 +73,9 @@ export default function Review({
     } else if (section === 'qms-checkmark') {
       // Navigate back to QMSCheckmark
       onEditSection('qms-checkmark');
+    } else if (section === 'suggestion') {
+      // Navigate back to Suggestion
+      onEditSection('suggestion');
     } else {
       setEditingSection(section);
     }
