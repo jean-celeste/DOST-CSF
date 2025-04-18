@@ -122,6 +122,11 @@ export default function CustomerFeedbackForm() {
 
   const handlePrevStep = () => {
     setFormState(prev => {
+      // If we're at step 1, go back to data privacy consent
+      if (prev.currentStep === 1) {
+        return { ...prev, showMainForm: false };
+      }
+      
       // If we're at step 6 (suggestion), go back to the appropriate previous step based on service type
       if (prev.currentStep === 6) {
         if (personalDetails.service_type_id === 1) {
