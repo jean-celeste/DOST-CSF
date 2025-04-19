@@ -22,13 +22,13 @@ export async function POST(request) {
 
       // 1. Check if customer exists
       const customerCheck = await client.query(
-        `SELECT customer_id FROM customer WHERE email = $1`,
+        `SELECT customer_id FROM customer WHERE email = $1 AND email IS NOT NULL`,
         [formData.personalDetails.email]
       );
 
       let customerId;
-      if (customerCheck.rows.length > 0) {
-        // Update existing customer
+      if (customerCheck.rows.length > 0 && formData.personalDetails.email) {
+        // Update existing customer only if email is provided
         const updateResult = await client.query(
           `UPDATE customer 
            SET phone = $1, 
@@ -58,12 +58,12 @@ export async function POST(request) {
            )
            RETURNING customer_id`,
           [
-            formData.personalDetails.email,
-            formData.personalDetails.contact,
-            formData.personalDetails.sex,
+            formData.personalDetails.email || null,
+            formData.personalDetails.contact || null,
+            formData.personalDetails.sex || null,
             formData.personalDetails.name || null,
-            formData.personalDetails.customerType,
-            formData.personalDetails.externalType
+            formData.personalDetails.customerType || 'Individual', // Default value if not provided
+            formData.personalDetails.externalType || 'External' // Default value if not provided
           ]
         );
         customerId = insertResult.rows[0].customer_id;
