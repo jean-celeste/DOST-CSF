@@ -83,8 +83,24 @@ export async function POST(request) {
         }
         
         if (formData.personalDetails.customerType) {
-          updateFields.push('customer_type_id = (SELECT cust_type_id FROM customer_type WHERE cust_type_name = $' + (updateParams.length + 1) + ')');
-          updateParams.push(formData.personalDetails.customerType);
+          // Get the customer type ID first
+          const customerTypeResult = await client.query(
+            `SELECT cust_type_id, cust_type_name FROM customer_type WHERE cust_type_name = $1`,
+            [formData.personalDetails.customerType]
+          );
+          
+          if (customerTypeResult.rows.length > 0) {
+            const customerTypeId = customerTypeResult.rows[0].cust_type_id;
+            const customerTypeName = customerTypeResult.rows[0].cust_type_name;
+            
+            updateFields.push('customer_type_id = $' + (updateParams.length + 1));
+            updateParams.push(customerTypeId);
+            
+            // If customer type is Internal, explicitly set external_type_id to NULL
+            if (customerTypeName.toLowerCase() === 'internal') {
+              updateFields.push('external_type_id = NULL');
+            }
+          }
         }
         
         if (formData.personalDetails.externalType) {
