@@ -90,14 +90,17 @@ const ProgressIndicator = ({ currentStep, steps, serviceType }) => {
     <div className="relative w-full overflow-hidden">
       {/* Progress Line with Segments */}
       <div className="flex absolute top-3 xs:top-4 left-2 right-2 xs:left-4 xs:right-4 h-[1px] -z-10">
-        {[1, 2, 3, 4, 5].map((step) => (
-          <div 
-            key={`segment-${step}`}
-            className={`flex-1 h-full transition-all duration-300 ease-in-out ${
-              currentStep > step && isStepActive(step) ? 'bg-[#3B82F6]' : 'bg-gray-100'
-            }`}
-          ></div>
-        ))}
+        {[...Array(steps.length - 1)].map((_, index) => {
+          const segmentStep = index + 1;
+          return (
+            <div 
+              key={`segment-${segmentStep}`}
+              className={`flex-1 h-full transition-all duration-300 ease-in-out ${
+                currentStep > segmentStep ? 'bg-[#3B82F6]' : 'bg-gray-100'
+              }`}
+            ></div>
+          );
+        })}
       </div>
       <div className="flex justify-between items-start px-0.5 xs:px-1 relative z-10">
         {steps.map(({ step, mobileTitle }) => {
