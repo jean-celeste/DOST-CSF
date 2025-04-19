@@ -32,17 +32,24 @@ const ProgressIndicator = ({ currentStep, steps, serviceType }) => {
   const DesktopProgress = () => (
     <div className="bg-white/80 rounded-2xl p-6 shadow-sm backdrop-blur-sm">
       <div className="relative">
-        <div className="absolute left-6 top-4 bottom-4 w-0.5 bg-gray-200"></div>
+        {/* Vertical line - ensure it's behind with lower z-index */}
+        <div className="absolute left-6 top-4 bottom-4 w-0.5 bg-gray-100 -z-1"></div>
         <div className="space-y-7">
           {steps.map(({ step, title, description, icon }) => {
             const active = isStepActive(step);
+            const isCompleted = currentStep >= step;
+            const shouldShowBlue = active && isCompleted;
+
             return (
-              <div key={step} className={`relative flex items-start group ${!active ? 'opacity-50' : ''}`}>
+              <div key={step} className="relative flex items-start group">
+                {/* Icon container - always solid */}
                 <div
-                  className={`shrink-0 z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all duration-300 ease-in-out ${
-                    currentStep >= step 
-                      ? "border-blue-500 bg-white text-blue-500 shadow-sm" 
-                      : "border-gray-300 bg-white text-gray-400"
+                  className={`relative shrink-0 z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all duration-300 ease-in-out bg-white ${
+                    shouldShowBlue
+                      ? "border-blue-500 text-blue-500 shadow-sm" 
+                      : active
+                        ? "border-gray-300 text-gray-400"
+                        : "border-gray-200 text-gray-300"
                   }`}
                 >
                   <div className="w-6 h-6 flex items-center justify-center">
@@ -54,16 +61,21 @@ const ProgressIndicator = ({ currentStep, steps, serviceType }) => {
                     {icon === "MessageSquare" && <MessageSquare className="w-full h-full" />}
                   </div>
                 </div>
-                <div className="ml-4 min-w-0 flex-1">
+                {/* Text content - apply opacity only when inactive */}
+                <div className={`ml-4 min-w-0 flex-1`}>
                   <h3 className={`text-sm font-medium transition-all duration-300 ${
-                    currentStep === step 
+                    shouldShowBlue
                       ? "text-blue-500" 
-                      : "text-gray-700 group-hover:text-gray-900"
+                      : active
+                        ? "text-gray-700"
+                        : "text-gray-400"
                   }`}>
                     {title}
-                    {!active && <span className="ml-2 text-xs text-gray-400">(Not applicable)</span>}
+                    {!active && <span className="ml-2 text-xs text-gray-300 italic">(Not applicable)</span>}
                   </h3>
-                  <p className="text-xs text-gray-500 mt-1">{description}</p>
+                  <p className={`text-xs mt-1 ${active ? 'text-gray-500' : 'text-gray-300'}`}>
+                    {description}
+                  </p>
                 </div>
               </div>
             );
@@ -82,7 +94,7 @@ const ProgressIndicator = ({ currentStep, steps, serviceType }) => {
           <div 
             key={`segment-${step}`}
             className={`flex-1 h-full transition-all duration-300 ease-in-out ${
-              currentStep > step ? 'bg-[#3B82F6]' : 'bg-gray-200'
+              currentStep > step && isStepActive(step) ? 'bg-[#3B82F6]' : 'bg-gray-100'
             }`}
           ></div>
         ))}
@@ -90,22 +102,29 @@ const ProgressIndicator = ({ currentStep, steps, serviceType }) => {
       <div className="flex justify-between items-start px-0.5 xs:px-1 relative z-10">
         {steps.map(({ step, mobileTitle }) => {
           const active = isStepActive(step);
+          const isCompleted = currentStep >= step;
+          const shouldShowBlue = active && isCompleted;
+
           return (
-            <div key={step} className={`flex flex-col items-center min-w-[2.5rem] xs:min-w-[3rem] sm:min-w-[3.5rem] ${!active ? 'opacity-50' : ''}`}>
+            <div key={step} className="flex flex-col items-center min-w-[2.5rem] xs:min-w-[3rem] sm:min-w-[3.5rem]">
               <div
-                className={`h-5 w-5 xs:h-6 xs:w-6 sm:h-7 sm:w-7 rounded-full border-[1.5px] flex items-center justify-center transition-all duration-300 ease-in-out leading-none mb-1 ${
-                  currentStep >= step 
-                    ? "border-[#3B82F6] bg-white text-[#3B82F6] shadow-sm" 
-                    : "border-gray-300 bg-white text-gray-400"
+                className={`h-5 w-5 xs:h-6 xs:w-6 sm:h-7 sm:w-7 rounded-full border-[1.5px] flex items-center justify-center transition-all duration-300 ease-in-out leading-none mb-1 bg-white ${
+                  shouldShowBlue
+                    ? "border-[#3B82F6] text-[#3B82F6] shadow-sm" 
+                    : active
+                      ? "border-gray-300 text-gray-400"
+                      : "border-gray-200 text-gray-300"
                 }`}
               >
                 <span className="text-[10px] xs:text-xs sm:text-sm">{step}</span>
               </div>
               <span 
                 className={`text-[7px] xs:text-[8px] sm:text-[9px] text-center whitespace-pre-line leading-tight transition-colors duration-300 ${
-                  currentStep >= step 
-                    ? "text-[#3B82F6] font-medium" 
-                    : "text-gray-500"
+                  shouldShowBlue
+                    ? "text-[#3B82F6] font-medium"
+                    : active
+                      ? "text-gray-500"
+                      : "text-gray-300"
                 }`}
               >
                 {mobileTitle.split('\n').map((line, i) => (
