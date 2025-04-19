@@ -20,7 +20,7 @@ export default function RatingQuestion({
             <svg viewBox="0 0 24 24" className="w-4 h-4 mr-1" fill="none" xmlns="http://www.w3.org/2000/svg">
               <circle cx="12" cy="12" r="11" stroke="currentColor" strokeWidth="2"/>
             </svg>
-            SQD{questionId} / SQD{totalQuestions - 1}
+            {questionId + 1} / {totalQuestions}
           </span>
         </div>
       </div>

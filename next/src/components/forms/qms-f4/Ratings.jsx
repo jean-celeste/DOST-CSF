@@ -98,15 +98,6 @@ export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataCh
 
   return (
     <div className="space-y-8">
-      <div className="space-y-2">
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
-          Service Satisfaction Rating
-        </h2>
-        <p className="text-gray-500">
-          Please rate your satisfaction with our services. Your feedback helps us improve.
-        </p>
-      </div>
-
       <div className="space-y-8">
         {currentQuestions.map((q, index) => (
           <motion.div
