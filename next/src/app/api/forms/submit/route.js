@@ -82,6 +82,11 @@ export async function POST(request) {
           updateParams.push(formData.personalDetails.name);
         }
         
+        if (formData.personalDetails.age) {
+          updateFields.push('age = $' + (updateParams.length + 1));
+          updateParams.push(formData.personalDetails.age);
+        }
+        
         if (formData.personalDetails.customerType) {
           // Get the customer type ID first
           const customerTypeResult = await client.query(
@@ -123,15 +128,15 @@ export async function POST(request) {
         // Insert new customer
         const insertResult = await client.query(
           `INSERT INTO customer (
-            email, phone, sex, name, 
+            email, phone, sex, name, age,
             customer_type_id, external_type_id,
-            created_at, last_updated
+            last_updated
           )
           VALUES (
-            $1, $2, $3, $4, 
-            (SELECT cust_type_id FROM customer_type WHERE cust_type_name = $5),
-            (SELECT external_type_id FROM external_customer_type WHERE external_type_name = $6),
-            NOW(), NOW()
+            $1, $2, $3, $4, $5,
+            (SELECT cust_type_id FROM customer_type WHERE cust_type_name = $6),
+            (SELECT external_type_id FROM external_customer_type WHERE external_type_name = $7),
+            NOW()
           )
           RETURNING customer_id`,
           [
@@ -139,6 +144,7 @@ export async function POST(request) {
             formData.personalDetails.contact || null,
             formData.personalDetails.sex || null,
             formData.personalDetails.name || null,
+            formData.personalDetails.age || null,
             formData.personalDetails.customerType || 'Individual',
             formData.personalDetails.externalType || 'External'
           ]
