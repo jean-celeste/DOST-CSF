@@ -46,3 +46,6 @@ display-services.js
 
 # db
 *.sql
+
+# scripts
+*.test.js

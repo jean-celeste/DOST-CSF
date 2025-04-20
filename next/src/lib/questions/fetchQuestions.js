@@ -24,8 +24,8 @@ export function groupQuestions(questions, formId) {
   } else if (formId === 3) { // QMS form
     // Questions 31-35 are for checkmarks
     const checkmarkQuestions = questions.filter(q => q.question_id >= 31 && q.question_id <= 35);
-    // Questions 26-30 are for ratings
-    const ratingQuestions = questions.filter(q => q.question_id >= 26 && q.question_id <= 30);
+    // Questions 25-30 are for ratings (including question_id=25)
+    const ratingQuestions = questions.filter(q => q.question_id >= 25 && q.question_id <= 30);
     return { checkmarkQuestions, ratingQuestions };
   }
   return { checkmarkQuestions: [], ratingQuestions: [] };
