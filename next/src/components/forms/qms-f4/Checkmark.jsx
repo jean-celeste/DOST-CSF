@@ -43,12 +43,12 @@ export default function Checkmark({
     loadQuestions();
   }, [formId]);
 
-  const handleOptionChange = (option) => {
+  const handleOptionChange = (questionId) => {
     const currentSelections = formData.selections || {}
     onFormDataChange({
       selections: {
         ...currentSelections,
-        [option]: !currentSelections[option]
+        [questionId]: !currentSelections[questionId]
       }
     })
   }
@@ -59,8 +59,8 @@ export default function Checkmark({
     }
   }
 
-  const isOptionSelected = (option) => {
-    return formData.selections?.[option] === true
+  const isOptionSelected = (questionId) => {
+    return formData.selections?.[questionId] === true
   }
 
   if (loading) {
@@ -96,21 +96,21 @@ export default function Checkmark({
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
                 className={`w-full p-6 rounded-xl text-left transition-all border-2
-                  ${isOptionSelected(q.question_text)
+                  ${isOptionSelected(q.question_id)
                     ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-500 shadow-md'
                     : 'bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50/50'
                   }`}
-                onClick={() => handleOptionChange(q.question_text)}
+                onClick={() => handleOptionChange(q.question_id)}
               >
                 <div className="flex items-center justify-between">
                   <span className="text-base font-medium">{q.question_text}</span>
                   <div className={`p-2 rounded-full transition-colors ${
-                    isOptionSelected(q.question_text)
+                    isOptionSelected(q.question_id)
                       ? 'bg-blue-500'
                       : 'bg-gray-100'
                   }`}>
                     <Check className={`h-5 w-5 ${
-                      isOptionSelected(q.question_text)
+                      isOptionSelected(q.question_id)
                         ? 'text-white'
                         : 'text-gray-500'
                     }`} />

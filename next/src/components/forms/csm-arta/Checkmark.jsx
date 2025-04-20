@@ -44,7 +44,7 @@ export default function Checkmark({
     loadQuestions();
   }, [formId]);
 
-  const handleOptionChange = (option) => {
+  const handleOptionChange = (questionId, option) => {
     const newState = {
       ...formData,
       selectedOption: option,
@@ -131,7 +131,7 @@ export default function Checkmark({
                     ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-500 shadow-md' 
                     : 'bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50/50'
                   }`}
-                onClick={() => handleOptionChange(option)}
+                onClick={() => handleOptionChange(questions[0]?.question_id, option)}
               >
                 <div className="flex items-center justify-between">
                   <span className="text-base font-medium">{option}</span>
