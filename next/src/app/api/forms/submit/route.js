@@ -166,8 +166,8 @@ export async function POST(request) {
       // Clean up form data before storing
       const cleanFormData = formData.formId === 1 ? {
         csmARTACheckmark: {
-          selectedOption: formData.csmARTACheckmark?.selectedOption,
-          additionalAnswers: formData.csmARTACheckmark?.additionalAnswers
+          "1": formData.csmARTACheckmark?.selectedOption,
+          ...(formData.csmARTACheckmark?.additionalAnswers || {})
         },
         csmARTARatings: {
           ratings: formData.csmARTARatings?.ratings ? transformRatings(formData.csmARTARatings.ratings) : {}
