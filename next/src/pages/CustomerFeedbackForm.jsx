@@ -5,7 +5,7 @@ import { UserIcon, CheckSquareIcon, SmileIcon, ClipboardListIcon, QrCodeIcon, Me
 import PersonalDetailsForm from '@/components/forms/PersonalDetailsForm'
 import DataPrivacyConsent from '@/components/prompts/DataPrivacyConsent'
 import Review from '@/components/forms/Review'
-import ProgressBar from '@/components/forms/ProgressBar'
+import ProgressIndicator from '@/components/forms/ProgressIndicator'
 import Suggestion from '@/components/forms/Suggestion'
 
 // CSM-ARTA components
@@ -41,35 +41,6 @@ export default function CustomerFeedbackForm() {
   const [qmsRatings, setQMSRatings] = useState(INITIAL_QMS_RATINGS)
   const [suggestion, setSuggestion] = useState(INITIAL_SUGGESTION)
   const [editingSection, setEditingSection] = useState(null)
-
-  // Add function to determine which steps to show based on service type
-  const getVisibleSteps = () => {
-    if (!personalDetails.service_type_id) return FORM_STEPS;
-    
-    // If service is on-site (service_type_id = 1), show only CSM steps (2 and 3)
-    if (personalDetails.service_type_id === 1) {
-      return FORM_STEPS.filter(step => 
-        step.step === 1 || // Personal details
-        step.step === 2 || // CSM Checkmark
-        step.step === 3 || // CSM Ratings
-        step.step === 6 || // Suggestion
-        step.step === 7    // Review
-      );
-    }
-    
-    // If service is off-site (service_type_id = 2), show only QMS steps (4 and 5)
-    if (personalDetails.service_type_id === 2) {
-      return FORM_STEPS.filter(step => 
-        step.step === 1 || // Personal details
-        step.step === 4 || // QMS Ratings
-        step.step === 5 || // QMS Checkmark
-        step.step === 6 || // Suggestion
-        step.step === 7    // Review
-      );
-    }
-    
-    return FORM_STEPS;
-  };
 
   const handleConsent = () => {
     setFormState(prev => ({ ...prev, showMainForm: true }))
@@ -122,6 +93,11 @@ export default function CustomerFeedbackForm() {
 
   const handlePrevStep = () => {
     setFormState(prev => {
+      // If we're at step 1, go back to data privacy consent
+      if (prev.currentStep === 1) {
+        return { ...prev, showMainForm: false };
+      }
+      
       // If we're at step 6 (suggestion), go back to the appropriate previous step based on service type
       if (prev.currentStep === 6) {
         if (personalDetails.service_type_id === 1) {
@@ -229,51 +205,12 @@ export default function CustomerFeedbackForm() {
               </div>
             </div>
 
-            {/* Mobile Progress Steps */}
-            <div className="lg:hidden bg-white/80 rounded-xl p-2 xs:p-3 shadow-sm backdrop-blur-sm mb-3 xs:mb-4">
-              <ProgressBar currentStep={formState.currentStep} steps={FORM_STEPS} />
-            </div>
-
-            {/* Desktop Progress Steps */}
-            <div className="hidden lg:block flex-1">
-              <div className="bg-white/80 rounded-2xl p-6 shadow-sm backdrop-blur-sm">
-                <div className="relative">
-                  <div className="absolute left-6 top-4 bottom-4 w-0.5 bg-gray-200"></div>
-                  <div className="space-y-7">
-                    {getVisibleSteps().map(({ step, title, description, icon }) => (
-                      <div key={step} className="relative flex items-start group">
-                        <div
-                          className={`shrink-0 z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all duration-300 ease-in-out ${
-                            formState.currentStep >= step 
-                              ? "border-blue-500 bg-white text-blue-500 shadow-sm" 
-                              : "border-gray-300 bg-white text-gray-400"
-                          }`}
-                        >
-                          <div className="w-6 h-6 flex items-center justify-center">
-                            {icon === "UserIcon" && <UserIcon className="w-full h-full" />}
-                            {icon === "CheckSquareIcon" && <CheckSquareIcon className="w-full h-full" />}
-                            {icon === "SmileIcon" && <SmileIcon className="w-full h-full" />}
-                            {icon === "QrCodeIcon" && <QrCodeIcon className="w-full h-full" />}
-                            {icon === "ClipboardListIcon" && <ClipboardListIcon className="w-full h-full" />}
-                            {icon === "MessageSquare" && <MessageSquare className="w-full h-full" />}
-                          </div>
-                        </div>
-                        <div className="ml-4 min-w-0 flex-1">
-                          <h3 className={`text-sm font-medium transition-all duration-300 ${
-                            formState.currentStep === step 
-                              ? "text-blue-500" 
-                              : "text-gray-700 group-hover:text-gray-900"
-                          }`}>
-                            {title}
-                          </h3>
-                          <p className="text-xs text-gray-500 mt-1">{description}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
+            {/* Progress Indicator (both mobile and desktop) */}
+            <ProgressIndicator 
+              currentStep={formState.currentStep} 
+              steps={FORM_STEPS} 
+              serviceType={personalDetails.service_type_id}
+            />
 
             {/* Logos at the bottom */}
             <div className="hidden lg:flex justify-center space-x-8 mt-auto pt-6">

@@ -83,7 +83,7 @@ export default function Checkmark({
   const getVisibleQuestions = () => {
     if (!shouldShowAdditionalQuestions) return []
     if (formData.selectedOption === csmArtaOptions.ccAwareness[2]) { // If third option selected
-      return questions.filter(q => q.question_id !== 2)
+      return questions.filter(q => q.question_id === 3) // Only show question 3
     }
     return questions.filter(q => q.question_id > 1)
   }

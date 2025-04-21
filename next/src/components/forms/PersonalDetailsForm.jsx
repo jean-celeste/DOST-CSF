@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Check, ChevronDown, Mail, Phone, Calendar, User, ChevronLeft, ChevronRight, Building2, Users } from 'lucide-react'
+import { Check, ChevronDown, Mail, Phone, Calendar, User, ChevronLeft, ChevronRight, Building2, Users, UserCircle } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { motion } from 'framer-motion'
 import ServiceSelectionModal from './ServiceSelectionModal'
@@ -66,6 +66,30 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
       {/* Form Section - Left side */}
       <div className="md:col-span-8 p-10">
         <div className="space-y-8">
+          {/* Name Field */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Label htmlFor="name" className="text-base font-medium flex items-center gap-2 mb-3">
+              <UserCircle className="h-4 w-4 text-blue-500" />
+              Name <span className="text-gray-400 text-sm">(optional)</span>
+            </Label>
+            <div className="relative">
+              <Input
+                id="name"
+                type="text"
+                placeholder="Enter your name"
+                className="w-full h-12 pl-10 pr-10 rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                value={formData.name || ''}
+                onChange={(e) => handleInputChange('name', e.target.value)}
+              />
+              <UserCircle className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              {formData.name && <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-green-500" />}
+            </div>
+          </motion.div>
+
           {/* Email Address */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -298,6 +322,7 @@ PersonalDetailsForm.propTypes = {
   onNextStep: PropTypes.func.isRequired,
   onPrevStep: PropTypes.func.isRequired,
   formData: PropTypes.shape({
+    name: PropTypes.string,
     email: PropTypes.string,
     contact: PropTypes.string,
     service_id: PropTypes.number,
