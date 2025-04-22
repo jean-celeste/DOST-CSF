@@ -11,8 +11,8 @@ import { Pie, Bar } from 'react-chartjs-2';
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title);
 
-// Custom chart colors
-const chartColors = {
+// Constants
+const CHART_COLORS = {
   primary: [
     'rgba(54, 162, 235, 0.8)',
     'rgba(255, 99, 132, 0.8)',
@@ -29,8 +29,7 @@ const chartColors = {
   ]
 };
 
-// Common chart options
-const commonChartOptions = {
+const CHART_OPTIONS = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
@@ -75,11 +74,82 @@ const commonChartOptions = {
   },
 };
 
+const FormType = {
+  ALL: 'all',
+  CSM: 'csm',
+  QMS: 'qms'
+};
+
+// Utility functions
+const calculateAverageRating = (answers) => {
+  const ratings = Object.entries(answers)
+    .filter(([key]) => key.startsWith('rating_'))
+    .map(([_, value]) => parseInt(value));
+  return ratings.reduce((a, b) => a + b, 0) / ratings.length;
+};
+
+const calculateSatisfactionRate = (responses) => {
+  const satisfiedCount = responses.filter(r => {
+    const avgRating = calculateAverageRating(r.answers);
+    return avgRating >= 4;
+  }).length;
+  return (satisfiedCount / responses.length) * 100;
+};
+
+const getFormSpecificMetrics = (responses) => {
+  const formTypes = [FormType.CSM, FormType.QMS];
+  return formTypes.reduce((acc, type) => {
+    const typeResponses = responses.filter(r => r.form_type === type);
+    acc[type] = {
+      total: typeResponses.length,
+      avgRating: typeResponses.reduce((sum, r) => sum + calculateAverageRating(r.answers), 0) / (typeResponses.length || 1)
+    };
+    return acc;
+  }, {});
+};
+
+const getChartData = (responses) => {
+  const serviceData = responses.reduce((acc, curr) => {
+    acc[curr.service_name] = (acc[curr.service_name] || 0) + 1;
+    return acc;
+  }, {});
+
+  const ratingData = responses.reduce((acc, curr) => {
+    const avgRating = Math.round(calculateAverageRating(curr.answers));
+    acc[avgRating] = (acc[avgRating] || 0) + 1;
+    return acc;
+  }, {});
+
+  return {
+    serviceData: {
+      labels: Object.keys(serviceData),
+      datasets: [{
+        label: 'Service Distribution',
+        data: Object.values(serviceData),
+        backgroundColor: CHART_COLORS.primary.slice(0, Object.keys(serviceData).length),
+        borderColor: CHART_COLORS.border.slice(0, Object.keys(serviceData).length),
+        borderWidth: 1,
+      }]
+    },
+    ratingData: {
+      labels: Object.keys(ratingData).map(rating => `${rating} Stars`),
+      datasets: [{
+        label: 'Rating Distribution',
+        data: Object.values(ratingData),
+        backgroundColor: 'rgba(54, 162, 235, 0.8)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+        borderWidth: 1,
+        borderRadius: 5,
+      }]
+    }
+  };
+};
+
 export default function AdminDashboard() {
   const [responses, setResponses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedForm, setSelectedForm] = useState('all'); // 'all', 'csm', 'qms'
+  const [selectedForm, setSelectedForm] = useState(FormType.ALL);
 
   useEffect(() => {
     fetchData();
@@ -89,7 +159,9 @@ export default function AdminDashboard() {
     try {
       const response = await fetch('/api/admin/responses');
       if (!response.ok) throw new Error('Failed to fetch data');
-      const data = await response.json();
+      const { success, data, error: apiError } = await response.json();
+      
+      if (!success) throw new Error(apiError);
       setResponses(data);
       setLoading(false);
     } catch (err) {
@@ -99,103 +171,20 @@ export default function AdminDashboard() {
   };
 
   const filterResponses = (formType) => {
-    if (formType === 'all') return responses;
+    if (formType === FormType.ALL) return responses;
     return responses.filter(r => r.form_type === formType);
-  };
-
-  const calculateStats = (data) => {
-    const totalResponses = data.length;
-    const averageRating = data.reduce((acc, curr) => {
-      const ratings = Object.entries(curr.answers)
-        .filter(([key]) => key.startsWith('rating_'))
-        .map(([_, value]) => parseInt(value));
-      return acc + (ratings.reduce((a, b) => a + b, 0) / ratings.length);
-    }, 0) / totalResponses;
-
-    const satisfactionRate = (data.filter(r => {
-      const ratings = Object.entries(r.answers)
-        .filter(([key]) => key.startsWith('rating_'))
-        .map(([_, value]) => parseInt(value));
-      return ratings.reduce((a, b) => a + b, 0) / ratings.length >= 4;
-    }).length / totalResponses) * 100;
-
-    // Calculate form-specific metrics
-    const formSpecificMetrics = {
-      csm: {
-        total: data.filter(r => r.form_type === 'csm').length,
-        avgRating: data.filter(r => r.form_type === 'csm').reduce((acc, curr) => {
-          const ratings = Object.entries(curr.answers)
-            .filter(([key]) => key.startsWith('rating_'))
-            .map(([_, value]) => parseInt(value));
-          return acc + (ratings.reduce((a, b) => a + b, 0) / ratings.length);
-        }, 0) / (data.filter(r => r.form_type === 'csm').length || 1)
-      },
-      qms: {
-        total: data.filter(r => r.form_type === 'qms').length,
-        avgRating: data.filter(r => r.form_type === 'qms').reduce((acc, curr) => {
-          const ratings = Object.entries(curr.answers)
-            .filter(([key]) => key.startsWith('rating_'))
-            .map(([_, value]) => parseInt(value));
-          return acc + (ratings.reduce((a, b) => a + b, 0) / ratings.length);
-        }, 0) / (data.filter(r => r.form_type === 'qms').length || 1)
-      }
-    };
-
-    return {
-      totalResponses,
-      averageRating: averageRating.toFixed(2),
-      satisfactionRate: satisfactionRate.toFixed(1),
-      formSpecificMetrics
-    };
-  };
-
-  const getChartData = (data) => {
-    // Service distribution
-    const serviceData = data.reduce((acc, curr) => {
-      acc[curr.service_name] = (acc[curr.service_name] || 0) + 1;
-      return acc;
-    }, {});
-
-    // Rating distribution
-    const ratingData = data.reduce((acc, curr) => {
-      Object.entries(curr.answers)
-        .filter(([key]) => key.startsWith('rating_'))
-        .forEach(([_, value]) => {
-          acc[value] = (acc[value] || 0) + 1;
-        });
-      return acc;
-    }, {});
-
-    return {
-      serviceData: {
-        labels: Object.keys(serviceData),
-        datasets: [{
-          label: 'Service Distribution',
-          data: Object.values(serviceData),
-          backgroundColor: chartColors.primary.slice(0, Object.keys(serviceData).length),
-          borderColor: chartColors.border.slice(0, Object.keys(serviceData).length),
-          borderWidth: 1,
-        }]
-      },
-      ratingData: {
-        labels: Object.keys(ratingData).map(rating => `${rating} Stars`),
-        datasets: [{
-          label: 'Rating Distribution',
-          data: Object.values(ratingData),
-          backgroundColor: 'rgba(54, 162, 235, 0.8)',
-          borderColor: 'rgba(54, 162, 235, 1)',
-          borderWidth: 1,
-          borderRadius: 5,
-        }]
-      }
-    };
   };
 
   if (loading) return <div className="p-8">Loading...</div>;
   if (error) return <div className="p-8 text-red-500">Error: {error}</div>;
 
   const filteredResponses = filterResponses(selectedForm);
-  const stats = calculateStats(filteredResponses);
+  const stats = {
+    totalResponses: filteredResponses.length,
+    averageRating: (filteredResponses.reduce((acc, curr) => acc + calculateAverageRating(curr.answers), 0) / filteredResponses.length).toFixed(2),
+    satisfactionRate: calculateSatisfactionRate(filteredResponses).toFixed(1),
+    formSpecificMetrics: getFormSpecificMetrics(filteredResponses)
+  };
   const chartData = getChartData(filteredResponses);
 
   return (
@@ -203,24 +192,15 @@ export default function AdminDashboard() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
         <div className="flex gap-4 mb-6">
-          <button
-            className={`px-4 py-2 rounded ${selectedForm === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-            onClick={() => setSelectedForm('all')}
-          >
-            All Forms
-          </button>
-          <button
-            className={`px-4 py-2 rounded ${selectedForm === 'csm' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-            onClick={() => setSelectedForm('csm')}
-          >
-            CSM Forms
-          </button>
-          <button
-            className={`px-4 py-2 rounded ${selectedForm === 'qms' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-            onClick={() => setSelectedForm('qms')}
-          >
-            QMS Forms
-          </button>
+          {Object.values(FormType).map(type => (
+            <button
+              key={type}
+              className={`px-4 py-2 rounded ${selectedForm === type ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+              onClick={() => setSelectedForm(type)}
+            >
+              {type.charAt(0).toUpperCase() + type.slice(1)} Forms
+            </button>
+          ))}
         </div>
       </div>
 
@@ -266,14 +246,14 @@ export default function AdminDashboard() {
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold mb-4">Service Distribution</h3>
           <div className="h-[300px]">
-            <Pie data={chartData.serviceData} options={commonChartOptions} />
+            <Pie data={chartData.serviceData} options={CHART_OPTIONS} />
           </div>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold mb-4">Rating Distribution</h3>
           <div className="h-[300px]">
-            <Bar data={chartData.ratingData} options={commonChartOptions} />
+            <Bar data={chartData.ratingData} options={CHART_OPTIONS} />
           </div>
         </div>
       </div>
@@ -292,32 +272,25 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredResponses.slice(0, 10).map((response) => {
-                const ratings = Object.entries(response.answers)
-                  .filter(([key]) => key.startsWith('rating_'))
-                  .map(([_, value]) => parseInt(value));
-                const avgRating = ratings.reduce((a, b) => a + b, 0) / ratings.length;
-
-                return (
-                  <tr key={response.response_id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {new Date(response.submitted_at).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {response.form_type.toUpperCase()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {response.service_name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {response.name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {avgRating.toFixed(1)}
-                    </td>
-                  </tr>
-                );
-              })}
+              {filteredResponses.slice(0, 10).map((response) => (
+                <tr key={response.response_id}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {new Date(response.submitted_at).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {response.form_type.toUpperCase()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {response.service_name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {response.customer_name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {calculateAverageRating(response.answers).toFixed(1)}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

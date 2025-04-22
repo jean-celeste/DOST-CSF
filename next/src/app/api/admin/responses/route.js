@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db/database';
 
-export async function GET() {
+const fetchResponses = async () => {
   try {
     const result = await pool.query(`
       SELECT 
@@ -19,14 +19,10 @@ export async function GET() {
         ct.cust_type_name,
         ect.external_type_name,
         f.form_id,
+        f.form_title as form_name,
         CASE 
-          WHEN f.form_id = 1 THEN 'CSM ARTA'
-          WHEN f.form_id = 3 THEN 'QMS'
-          ELSE 'Unknown'
-        END as form_name,
-        CASE 
-          WHEN f.form_id = 1 THEN 'csm'
-          WHEN f.form_id = 3 THEN 'qms'
+          WHEN f.form_id IN (1, 2) THEN 'csm'
+          WHEN f.form_id IN (3, 4) THEN 'qms'
           ELSE 'unknown'
         END as form_type
       FROM responses r
@@ -40,11 +36,29 @@ export async function GET() {
       ORDER BY r.submitted_at DESC
     `);
 
-    return NextResponse.json(result.rows);
+    return result.rows;
   } catch (error) {
-    console.error('Error fetching responses:', error);
+    console.error('Database error in fetchResponses:', error);
+    throw new Error('Failed to fetch responses from database');
+  }
+};
+
+export async function GET() {
+  try {
+    const responses = await fetchResponses();
+    return NextResponse.json({ 
+      success: true,
+      data: responses,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error in GET /api/admin/responses:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch responses' },
+      { 
+        success: false,
+        error: error.message || 'Failed to fetch responses',
+        timestamp: new Date().toISOString()
+      },
       { status: 500 }
     );
   }

@@ -8,6 +8,46 @@ import { Calendar, TrendingUp, Star, ThumbsUp } from 'lucide-react';
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, LineElement, PointElement);
 
+// Constants
+const FormType = {
+  CSM: 'csm',
+  QMS: 'qms'
+};
+
+const calculateAverageRating = (answers) => {
+  if (!answers) return 0;
+  
+  // For CSM forms
+  if (answers.csmARTARatings?.ratings) {
+    const ratings = Object.values(answers.csmARTARatings.ratings);
+    const ratingValues = {
+      'strongly-agree': 5,
+      'agree': 4,
+      'neutral': 3,
+      'disagree': 2,
+      'strongly-disagree': 1
+    };
+    const sum = ratings.reduce((acc, rating) => acc + (ratingValues[rating] || 0), 0);
+    return sum / ratings.length;
+  }
+  
+  // For QMS forms
+  if (answers.qmsRatings?.ratings) {
+    const ratings = Object.values(answers.qmsRatings.ratings);
+    const ratingValues = {
+      'outstanding': 5,
+      'very-satisfactory': 4,
+      'satisfactory': 3,
+      'unsatisfactory': 2,
+      'poor': 1
+    };
+    const sum = ratings.reduce((acc, rating) => acc + (ratingValues[rating] || 0), 0);
+    return sum / ratings.length;
+  }
+  
+  return 0;
+};
+
 export default function AnalyticsPage() {
   const [responses, setResponses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,7 +62,9 @@ export default function AnalyticsPage() {
     try {
       const response = await fetch('/api/admin/responses');
       if (!response.ok) throw new Error('Failed to fetch data');
-      const data = await response.json();
+      const { success, data, error: apiError } = await response.json();
+      
+      if (!success) throw new Error(apiError);
       setResponses(data);
       setLoading(false);
     } catch (err) {
@@ -57,17 +99,12 @@ export default function AnalyticsPage() {
     const totalResponses = filteredData.length;
     
     const averageRating = filteredData.reduce((acc, curr) => {
-      const ratings = Object.entries(curr.answers)
-        .filter(([key]) => key.startsWith('rating_'))
-        .map(([_, value]) => parseInt(value));
-      return acc + (ratings.reduce((a, b) => a + b, 0) / ratings.length);
+      return acc + calculateAverageRating(curr.answers);
     }, 0) / totalResponses;
 
     const satisfactionRate = (filteredData.filter(r => {
-      const ratings = Object.entries(r.answers)
-        .filter(([key]) => key.startsWith('rating_'))
-        .map(([_, value]) => parseInt(value));
-      return ratings.reduce((a, b) => a + b, 0) / ratings.length >= 4;
+      const avgRating = calculateAverageRating(r.answers);
+      return avgRating >= 4;
     }).length / totalResponses) * 100;
 
     return {
@@ -110,10 +147,7 @@ export default function AnalyticsPage() {
   const getRatingDistribution = (data) => {
     const filteredData = filterResponsesByTimeRange(data);
     const ratingCounts = filteredData.reduce((acc, curr) => {
-      const ratings = Object.entries(curr.answers)
-        .filter(([key]) => key.startsWith('rating_'))
-        .map(([_, value]) => parseInt(value));
-      const avgRating = Math.round(ratings.reduce((a, b) => a + b, 0) / ratings.length);
+      const avgRating = Math.round(calculateAverageRating(curr.answers));
       acc[avgRating] = (acc[avgRating] || 0) + 1;
       return acc;
     }, {});

@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db/database';
 
-export async function GET() {
+const fetchCustomers = async () => {
   try {
-    // Fetch customers with related data
     const result = await pool.query(`
       SELECT 
         c.customer_id,
@@ -25,11 +24,29 @@ export async function GET() {
         c.last_updated DESC
     `);
 
-    return NextResponse.json({ customers: result.rows });
+    return result.rows;
   } catch (error) {
-    console.error('Error fetching customers:', error);
+    console.error('Database error in fetchCustomers:', error);
+    throw new Error('Failed to fetch customers from database');
+  }
+};
+
+export async function GET() {
+  try {
+    const customers = await fetchCustomers();
+    return NextResponse.json({ 
+      success: true,
+      data: { customers },
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error in GET /api/admin/customers:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch customers' },
+      { 
+        success: false,
+        error: error.message || 'Failed to fetch customers',
+        timestamp: new Date().toISOString()
+      },
       { status: 500 }
     );
   }
