@@ -280,9 +280,9 @@ export default function ResponsesPage() {
           <h3 className="text-lg font-semibold text-gray-900 mb-3">Ratings</h3>
           <div className="space-y-3">
             {ratings && Object.entries(ratings).map(([questionId, rating]) => (
-              <div key={questionId} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                <span className="text-gray-700">{getQuestionText(response.form_id, questionId)}</span>
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+              <div key={questionId} className="flex justify-between items-center p-2 bg-gray-50 rounded gap-4">
+                <span className="text-gray-700 flex-1">{getQuestionText(response.form_id, questionId)}</span>
+                <span className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap min-w-[140px] text-center ${
                   rating === 'strongly-agree' || rating === 'outstanding' ? 'bg-green-100 text-green-800' :
                   rating === 'agree' || rating === 'very-satisfactory' ? 'bg-blue-100 text-blue-800' :
                   rating === 'neutral' || rating === 'satisfactory' ? 'bg-yellow-100 text-yellow-800' :
@@ -444,18 +444,19 @@ export default function ResponsesPage() {
 
       {/* Response Details Modal */}
       {selectedResponse && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
+          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto animate-slideUp">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-900">Response Details</h2>
+              <button
+                onClick={() => setSelectedResponse(null)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                aria-label="Close modal"
+              >
+                <X size={24} className="text-gray-500" />
+              </button>
+            </div>
             <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Response Details</h2>
-                <button
-                  onClick={() => setSelectedResponse(null)}
-                  className="text-gray-500 hover:text-gray-700 transition-colors"
-                >
-                  <X size={24} />
-                </button>
-              </div>
               {renderResponseDetails(selectedResponse)}
             </div>
           </div>
