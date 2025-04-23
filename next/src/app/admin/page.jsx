@@ -75,25 +75,61 @@ const CHART_OPTIONS = {
 };
 
 const FormType = {
-  ALL: 'all',
   CSM: 'csm',
   QMS: 'qms'
 };
 
-// Utility functions
-const calculateAverageRating = (answers) => {
-  const ratings = Object.entries(answers)
-    .filter(([key]) => key.startsWith('rating_'))
-    .map(([_, value]) => parseInt(value));
-  return ratings.reduce((a, b) => a + b, 0) / ratings.length;
+const calculateAverageRating = (answers, formType) => {
+  if (!answers) return 0;
+  
+  // For CSM forms
+  if (formType === FormType.CSM && answers.csmARTARatings?.ratings) {
+    const ratings = Object.values(answers.csmARTARatings.ratings);
+    const totalResponses = ratings.length;
+    const naResponses = ratings.filter(r => r === 'na').length;
+    const validResponses = totalResponses - naResponses;
+    
+    if (validResponses === 0) return 0;
+    
+    const positiveResponses = ratings.filter(r => 
+      r === 'strongly-agree' || r === 'agree'
+    ).length;
+    
+    return (positiveResponses / validResponses) * 100;
+  }
+  
+  // For QMS forms
+  if (formType === FormType.QMS && answers.qmsRatings?.ratings) {
+    const ratings = Object.values(answers.qmsRatings.ratings);
+    const ratingValues = {
+      'outstanding': 5,
+      'very-satisfactory': 4,
+      'satisfactory': 3,
+      'unsatisfactory': 2,
+      'poor': 1
+    };
+    const sum = ratings.reduce((acc, rating) => acc + (ratingValues[rating] || 0), 0);
+    return sum / ratings.length;
+  }
+  
+  return 0;
 };
 
-const calculateSatisfactionRate = (responses) => {
-  const satisfiedCount = responses.filter(r => {
-    const avgRating = calculateAverageRating(r.answers);
-    return avgRating >= 4;
-  }).length;
-  return (satisfiedCount / responses.length) * 100;
+const getRatingInterpretation = (score, formType) => {
+  if (formType === FormType.CSM) {
+    if (score >= 95) return 'Outstanding';
+    if (score >= 90) return 'Very Satisfactory';
+    if (score >= 80) return 'Satisfactory';
+    if (score >= 60) return 'Fair';
+    return 'Poor';
+  } else {
+    // QMS interpretation (can be adjusted as needed)
+    if (score >= 4.5) return 'Outstanding';
+    if (score >= 4.0) return 'Very Satisfactory';
+    if (score >= 3.0) return 'Satisfactory';
+    if (score >= 2.0) return 'Fair';
+    return 'Poor';
+  }
 };
 
 const getFormSpecificMetrics = (responses) => {
@@ -102,7 +138,7 @@ const getFormSpecificMetrics = (responses) => {
     const typeResponses = responses.filter(r => r.form_type === type);
     acc[type] = {
       total: typeResponses.length,
-      avgRating: typeResponses.reduce((sum, r) => sum + calculateAverageRating(r.answers), 0) / (typeResponses.length || 1)
+      avgRating: typeResponses.reduce((sum, r) => sum + calculateAverageRating(r.answers, type), 0) / (typeResponses.length || 1)
     };
     return acc;
   }, {});
@@ -115,7 +151,7 @@ const getChartData = (responses) => {
   }, {});
 
   const ratingData = responses.reduce((acc, curr) => {
-    const avgRating = Math.round(calculateAverageRating(curr.answers));
+    const avgRating = Math.round(calculateAverageRating(curr.answers, curr.form_type));
     acc[avgRating] = (acc[avgRating] || 0) + 1;
     return acc;
   }, {});
@@ -149,7 +185,7 @@ export default function AdminDashboard() {
   const [responses, setResponses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedForm, setSelectedForm] = useState(FormType.ALL);
+  const [selectedForm, setSelectedForm] = useState(FormType.CSM);
 
   useEffect(() => {
     fetchData();
@@ -171,8 +207,9 @@ export default function AdminDashboard() {
   };
 
   const filterResponses = (formType) => {
-    if (formType === FormType.ALL) return responses;
-    return responses.filter(r => r.form_type === formType);
+    if (formType === FormType.CSM) return responses.filter(r => r.form_id === 1);
+    if (formType === FormType.QMS) return responses.filter(r => r.form_id === 3);
+    return responses;
   };
 
   if (loading) return <div className="p-8">Loading...</div>;
@@ -181,9 +218,13 @@ export default function AdminDashboard() {
   const filteredResponses = filterResponses(selectedForm);
   const stats = {
     totalResponses: filteredResponses.length,
-    averageRating: (filteredResponses.reduce((acc, curr) => acc + calculateAverageRating(curr.answers), 0) / filteredResponses.length).toFixed(2),
-    satisfactionRate: calculateSatisfactionRate(filteredResponses).toFixed(1),
-    formSpecificMetrics: getFormSpecificMetrics(filteredResponses)
+    averageRating: filteredResponses.reduce((acc, curr) => 
+      acc + calculateAverageRating(curr.answers, selectedForm), 0) / (filteredResponses.length || 1),
+    satisfactionRate: selectedForm === FormType.CSM ? 
+      (filteredResponses.filter(r => {
+        const score = calculateAverageRating(r.answers, selectedForm);
+        return score >= 80; // Satisfactory or above
+      }).length / (filteredResponses.length || 1)) * 100 : 0
   };
   const chartData = getChartData(filteredResponses);
 
@@ -192,13 +233,17 @@ export default function AdminDashboard() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
         <div className="flex gap-4 mb-6">
-          {Object.values(FormType).map(type => (
+          {[FormType.CSM, FormType.QMS].map(type => (
             <button
               key={type}
-              className={`px-4 py-2 rounded ${selectedForm === type ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+              className={`px-4 py-2 rounded-lg transition-colors ${
+                selectedForm === type 
+                  ? 'bg-blue-500 text-white' 
+                  : 'bg-gray-200 hover:bg-gray-300'
+              }`}
               onClick={() => setSelectedForm(type)}
             >
-              {type.charAt(0).toUpperCase() + type.slice(1)} Forms
+              {type.toUpperCase()} Forms
             </button>
           ))}
         </div>
@@ -210,48 +255,76 @@ export default function AdminDashboard() {
             <div>
               <p className="text-gray-500">Total Responses</p>
               <h3 className="text-2xl font-bold">{stats.totalResponses}</h3>
-              <div className="mt-2 text-sm text-gray-600">
-                <p>CSM: {stats.formSpecificMetrics.csm.total}</p>
-                <p>QMS: {stats.formSpecificMetrics.qms.total}</p>
-              </div>
             </div>
             <FileText className="text-blue-500" size={24} />
           </div>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500">Average Rating</p>
-              <h3 className="text-2xl font-bold">{stats.averageRating}</h3>
-              <div className="mt-2 text-sm text-gray-600">
-                <p>CSM: {stats.formSpecificMetrics.csm.avgRating.toFixed(2)}</p>
-                <p>QMS: {stats.formSpecificMetrics.qms.avgRating.toFixed(2)}</p>
+
+        {selectedForm === FormType.CSM ? (
+          <>
+            <div className="bg-white p-6 rounded-lg shadow">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-500">CSM Average Rating</p>
+                  <h3 className="text-2xl font-bold">{stats.averageRating.toFixed(2)}%</h3>
+                  <p className="text-sm text-gray-500">
+                    {getRatingInterpretation(stats.averageRating, selectedForm)}
+                  </p>
+                </div>
+                <Star className="text-yellow-500" size={24} />
               </div>
             </div>
-            <Star className="text-yellow-500" size={24} />
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500">Satisfaction Rate</p>
-              <h3 className="text-2xl font-bold">{stats.satisfactionRate}%</h3>
+            <div className="bg-white p-6 rounded-lg shadow">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-500">CSM Satisfaction Rate</p>
+                  <h3 className="text-2xl font-bold">{stats.satisfactionRate.toFixed(1)}%</h3>
+                </div>
+                <ThumbsUp className="text-green-500" size={24} />
+              </div>
             </div>
-            <ThumbsUp className="text-green-500" size={24} />
-          </div>
-        </div>
+          </>
+        ) : (
+          <>
+            <div className="bg-white p-6 rounded-lg shadow">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-500">QMS Average Rating</p>
+                  <h3 className="text-2xl font-bold">{stats.averageRating.toFixed(2)}</h3>
+                  <p className="text-sm text-gray-500">
+                    {getRatingInterpretation(stats.averageRating, selectedForm)}
+                  </p>
+                </div>
+                <Star className="text-yellow-500" size={24} />
+              </div>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-500">QMS Performance</p>
+                  <h3 className="text-2xl font-bold">Coming Soon</h3>
+                </div>
+                <TrendingUp className="text-green-500" size={24} />
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
         <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-4">Service Distribution</h3>
+          <h3 className="text-lg font-semibold mb-4">
+            {selectedForm === FormType.CSM ? 'CSM Service Distribution' : 'QMS Service Distribution'}
+          </h3>
           <div className="h-[300px]">
             <Pie data={chartData.serviceData} options={CHART_OPTIONS} />
           </div>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-4">Rating Distribution</h3>
+          <h3 className="text-lg font-semibold mb-4">
+            {selectedForm === FormType.CSM ? 'CSM Rating Distribution' : 'QMS Rating Distribution'}
+          </h3>
           <div className="h-[300px]">
             <Bar data={chartData.ratingData} options={CHART_OPTIONS} />
           </div>
@@ -259,16 +332,17 @@ export default function AdminDashboard() {
       </div>
 
       <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-semibold mb-4">Recent Responses</h3>
+        <h3 className="text-lg font-semibold mb-4">
+          {selectedForm === FormType.CSM ? 'CSM Recent Responses' : 'QMS Recent Responses'}
+        </h3>
         <div className="overflow-x-auto">
           <table className="min-w-full">
             <thead>
               <tr className="bg-gray-50">
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Form Type</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Average Rating</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -278,16 +352,15 @@ export default function AdminDashboard() {
                     {new Date(response.submitted_at).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {response.form_type.toUpperCase()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
                     {response.service_name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {response.customer_name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {calculateAverageRating(response.answers).toFixed(1)}
+                    {selectedForm === FormType.CSM 
+                      ? `${calculateAverageRating(response.answers, selectedForm).toFixed(2)}%`
+                      : calculateAverageRating(response.answers, selectedForm).toFixed(2)}
                   </td>
                 </tr>
               ))}
