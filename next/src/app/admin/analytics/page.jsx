@@ -307,15 +307,15 @@ export default function AnalyticsPage() {
             <p className="text-gray-500 mt-1">Monitor and analyze customer feedback</p>
           </div>
           <div className="flex items-center gap-4">
-            <select
+          <select
               className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value)}
-            >
-              <option value="week">Last 7 Days</option>
-              <option value="month">Last 30 Days</option>
-              <option value="year">Last 12 Months</option>
-            </select>
+            value={timeRange}
+            onChange={(e) => setTimeRange(e.target.value)}
+          >
+            <option value="week">Last 7 Days</option>
+            <option value="month">Last 30 Days</option>
+            <option value="year">Last 12 Months</option>
+          </select>
             <div className="flex bg-white rounded-lg p-1 border border-gray-200">
               {[FormType.CSM, FormType.QMS].map((type) => (
                 <button
@@ -336,11 +336,11 @@ export default function AnalyticsPage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {selectedFormType === FormType.CSM ? (
-            <>
+        {selectedFormType === FormType.CSM ? (
+          <>
               <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between">
-                  <div>
+              <div className="flex items-center justify-between">
+                <div>
                     <p className="text-gray-500 text-sm font-medium">CSM Average Rating</p>
                     <h3 className="text-3xl font-bold mt-1">{stats.csmStats.averageRating}%</h3>
                     <p className="text-sm text-gray-500 mt-1">{stats.csmStats.interpretation}</p>
@@ -351,23 +351,23 @@ export default function AnalyticsPage() {
                 </div>
               </div>
               <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between">
-                  <div>
+              <div className="flex items-center justify-between">
+                <div>
                     <p className="text-gray-500 text-sm font-medium">Total Responses</p>
                     <h3 className="text-3xl font-bold mt-1">{stats.totalResponses}</h3>
                     <p className="text-sm text-gray-500 mt-1">All time</p>
                   </div>
                   <div className="bg-purple-50 p-3 rounded-full">
                     <Calendar className="text-purple-500" size={24} />
-                  </div>
                 </div>
               </div>
-            </>
-          ) : (
-            <>
+            </div>
+          </>
+        ) : (
+          <>
               <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between">
-                  <div>
+              <div className="flex items-center justify-between">
+                <div>
                     <p className="text-gray-500 text-sm font-medium">QMS Average Rating</p>
                     <h3 className="text-3xl font-bold mt-1">{stats.qmsStats.averageRating}</h3>
                   </div>
@@ -377,19 +377,19 @@ export default function AnalyticsPage() {
                 </div>
               </div>
               <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between">
-                  <div>
+              <div className="flex items-center justify-between">
+                <div>
                     <p className="text-gray-500 text-sm font-medium">QMS Performance</p>
                     <h3 className="text-3xl font-bold mt-1">Coming Soon</h3>
-                  </div>
-                  <div className="bg-green-50 p-3 rounded-full">
-                    <TrendingUp className="text-green-500" size={24} />
-                  </div>
                 </div>
+                  <div className="bg-green-50 p-3 rounded-full">
+                <TrendingUp className="text-green-500" size={24} />
+                  </div>
               </div>
-            </>
-          )}
-        </div>
+            </div>
+          </>
+        )}
+      </div>
 
         {/* SQD Scores Section */}
         {selectedFormType === FormType.CSM && (
@@ -464,47 +464,47 @@ export default function AnalyticsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              {selectedFormType === FormType.CSM ? 'CSM Service Distribution' : 'QMS Service Distribution'}
-            </h3>
-            <div className="h-[300px]">
-              <Pie data={getServiceDistribution(filteredResponses)} options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: {
-                    position: 'bottom',
-                  },
+            {selectedFormType === FormType.CSM ? 'CSM Service Distribution' : 'QMS Service Distribution'}
+          </h3>
+            <div className="h-[400px]">
+            <Pie data={getServiceDistribution(filteredResponses)} options={{
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: 'bottom',
                 },
-              }} />
-            </div>
+              },
+            }} />
           </div>
+        </div>
 
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              {selectedFormType === FormType.CSM ? 'CSM Rating Distribution' : 'QMS Rating Distribution'}
-            </h3>
-            <div className="h-[300px]">
-              <Bar data={getRatingDistribution(filteredResponses)} options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: {
-                    display: false,
+            {selectedFormType === FormType.CSM ? 'CSM Rating Distribution' : 'QMS Rating Distribution'}
+          </h3>
+          <div className="h-[300px]">
+            <Bar data={getRatingDistribution(filteredResponses)} options={{
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: false,
+                },
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: {
+                    stepSize: 1,
                   },
                 },
-                scales: {
-                  y: {
-                    beginAtZero: true,
-                    ticks: {
-                      stepSize: 1,
-                    },
-                  },
-                },
-              }} />
-            </div>
+              },
+            }} />
           </div>
+        </div>
         </div>
       </div>
     </div>
   );
-}
+} 
