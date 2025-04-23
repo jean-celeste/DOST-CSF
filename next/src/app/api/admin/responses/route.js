@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import pool from '@/lib/db/database';
+import { executeQuery } from '@/lib/db/utils';
 
 const fetchResponses = async () => {
   try {
-    const result = await pool.query(`
+    const query = `
       SELECT 
         r.response_id,
         r.submitted_at,
@@ -34,8 +34,9 @@ const fetchResponses = async () => {
       LEFT JOIN external_customer_type ect ON c.external_type_id = ect.external_type_id
       JOIN forms f ON r.form_id = f.form_id
       ORDER BY r.submitted_at DESC
-    `);
+    `;
 
+    const result = await executeQuery(query);
     return result.rows;
   } catch (error) {
     console.error('Database error in fetchResponses:', error);
@@ -48,7 +49,7 @@ export async function GET() {
     const responses = await fetchResponses();
     return NextResponse.json({ 
       success: true,
-      data: responses,
+      data: responses,  // Return the array directly
       timestamp: new Date().toISOString()
     });
   } catch (error) {
@@ -62,4 +63,4 @@ export async function GET() {
       { status: 500 }
     );
   }
-} 
+}
