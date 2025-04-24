@@ -8,7 +8,9 @@ import {
   LayoutDashboard, 
   BarChart3, 
   Settings,
-  LogOut
+  LogOut,
+  Home,
+  MessageSquare
 } from 'lucide-react';
 
 export default function AdminLayout({ children }) {
@@ -44,10 +46,27 @@ export default function AdminLayout({ children }) {
     return null;
   }
 
-  const navItems = [
-    { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/admin/ratings', label: 'Ratings', icon: BarChart3 },
-    { href: '/admin/settings', label: 'Settings', icon: Settings },
+  const navigationItems = [
+    {
+      name: 'Dashboard',
+      href: '/admin',
+      icon: Home,
+    },
+    {
+      name: 'Responses',
+      href: '/admin/responses',
+      icon: MessageSquare,
+    },
+    {
+      name: 'Analytics',
+      href: '/admin/analytics',
+      icon: BarChart3,
+    },
+    {
+      name: 'Settings',
+      href: '/admin/settings',
+      icon: Settings,
+    },
   ];
 
   return (
@@ -60,7 +79,7 @@ export default function AdminLayout({ children }) {
           </div>
           
           <nav className="flex-1 px-4 space-y-1">
-            {navItems.map((item) => {
+            {navigationItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
               return (
@@ -74,7 +93,7 @@ export default function AdminLayout({ children }) {
                   }`}
                 >
                   <Icon className="w-5 h-5 mr-3" />
-                  {item.label}
+                  {item.name}
                 </Link>
               );
             })}

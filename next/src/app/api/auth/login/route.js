@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import pool from '@/lib/db/database';
+import { executeQuery } from '@/lib/db/utils';
 
 export async function POST(request) {
   try {
@@ -12,7 +12,7 @@ export async function POST(request) {
     });
 
     // Query the database to check admin credentials
-    const result = await pool.query(
+    const result = await executeQuery(
       'SELECT * FROM admins WHERE username = $1 AND password = $2',
       [username, password]
     );

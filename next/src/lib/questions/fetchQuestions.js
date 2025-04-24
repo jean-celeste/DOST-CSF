@@ -15,17 +15,23 @@ export function groupQuestions(questions, formId) {
   console.log('Grouping questions for formId:', formId);
   console.log('All questions:', questions);
   
+  // Convert questions object to array of {question_id, question_text} objects
+  const questionsArray = Object.entries(questions.data).map(([question_id, question_text]) => ({
+    question_id: parseInt(question_id),
+    question_text
+  }));
+  
   if (formId === 1) { // CSM ARTA form
-    const checkmarkQuestions = questions.filter(q => q.question_id <= 3);
-    const ratingQuestions = questions.filter(q => q.question_id > 3);
+    const checkmarkQuestions = questionsArray.filter(q => q.question_id <= 3);
+    const ratingQuestions = questionsArray.filter(q => q.question_id > 3);
     console.log('CSM ARTA checkmark questions:', checkmarkQuestions);
     console.log('CSM ARTA rating questions:', ratingQuestions);
     return { checkmarkQuestions, ratingQuestions };
   } else if (formId === 3) { // QMS form
     // Questions 31-35 are for checkmarks
-    const checkmarkQuestions = questions.filter(q => q.question_id >= 31 && q.question_id <= 35);
+    const checkmarkQuestions = questionsArray.filter(q => q.question_id >= 31 && q.question_id <= 35);
     // Questions 25-30 are for ratings (including question_id=25)
-    const ratingQuestions = questions.filter(q => q.question_id >= 25 && q.question_id <= 30);
+    const ratingQuestions = questionsArray.filter(q => q.question_id >= 25 && q.question_id <= 30);
     return { checkmarkQuestions, ratingQuestions };
   }
   return { checkmarkQuestions: [], ratingQuestions: [] };

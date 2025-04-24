@@ -6,6 +6,17 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url)
     const formId = searchParams.get('formId')
 
+    if (!formId) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: 'Form ID is required',
+          timestamp: new Date().toISOString()
+        },
+        { status: 400 }
+      )
+    }
+
     const query = `
       SELECT 
         q.question_id,
@@ -16,12 +27,24 @@ export async function GET(request) {
     `
     
     const result = await executeQuery(query, [formId])
-    
-    return NextResponse.json(result.rows)
+    const questions = result.rows.reduce((acc, row) => {
+      acc[row.question_id] = row.question_text
+      return acc
+    }, {})
+
+    return NextResponse.json({ 
+      success: true,
+      data: questions,
+      timestamp: new Date().toISOString()
+    })
   } catch (error) {
-    console.error('Error fetching questions:', error)
+    console.error('Error in GET /api/questions:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch questions' },
+      { 
+        success: false,
+        error: error.message || 'Failed to fetch questions',
+        timestamp: new Date().toISOString()
+      },
       { status: 500 }
     )
   }
