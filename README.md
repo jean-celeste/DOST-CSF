@@ -56,24 +56,32 @@ DOST-CSF/
 ```json
 {
   "csmARTACheckmark": {
-    "selectedOption": "string",
-    "additionalAnswers": {
-      "question_id": "answer"
-    }
+    "1": "answer",
+    "2": "answer",
+    "3": "answer"
   },
   "csmARTARatings": {
     "ratings": {
-      "question_id": "rating_value"
+      "4": "rating_value",
+      "5": "rating_value",
+      // ...
+      "12": "rating_value"
     }
   },
   "qmsCheckmark": {
     "selections": {
-      "question_text": boolean
+      "31": true,
+      "32": true,
+      // ...
+      "35": true
     }
   },
   "qmsRatings": {
     "ratings": {
-      "question_id": "rating_value"
+      "25": "rating_value",
+      "26": "rating_value",
+      // ...
+      "30": "rating_value"
     }
   },
   "suggestion": {
