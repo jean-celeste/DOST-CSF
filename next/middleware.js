@@ -4,9 +4,6 @@ import { verifyToken } from './src/lib/auth/jwt';
 // Define protected routes (API and admin panel)
 const protectedApiRoutes = [
   '/api/admin',
-  '/api/forms/submit',
-  '/api/services',
-  '/api/questions',
 ];
 const protectedAdminRoutes = [
   '/admin',
