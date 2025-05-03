@@ -1,7 +1,20 @@
 import { NextResponse } from 'next/server'
 import { executeQuery } from '@/lib/db/utils'
 
+import { verifyToken } from '@/lib/auth/jwt';
+
 export async function GET(request) {
+  // Auth check
+  const authHeader = request.headers.get('authorization');
+  if (!authHeader) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  try {
+    verifyToken(authHeader.replace('Bearer ', ''));
+  } catch {
+    return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+  }
+
   try {
     const { searchParams } = new URL(request.url)
     const formId = searchParams.get('formId')

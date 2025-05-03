@@ -40,9 +40,10 @@ export default function AdminLogin() {
       console.log('API Response:', data);
 
       if (data.success) {
-        // Store admin data in localStorage (excluding sensitive info)
+        // Store admin data and token in localStorage (excluding sensitive info)
         localStorage.setItem('isAdmin', 'true');
         localStorage.setItem('adminData', JSON.stringify(data.admin));
+        localStorage.setItem('token', data.token);
         router.push('/admin');
       } else {
         setError(data.message || 'Invalid credentials');
