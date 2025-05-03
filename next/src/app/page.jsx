@@ -1,5 +1,5 @@
 'use client'
-import CustomerFeedbackForm from '@/pages/CustomerFeedbackForm'
+import CustomerFeedbackForm from '@/components/CustomerFeedbackForm'
 
 export default function Home() {
   return (
