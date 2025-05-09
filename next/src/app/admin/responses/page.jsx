@@ -59,7 +59,12 @@ export default function ResponsesPage() {
 
   const fetchQuestions = async (formId) => {
     try {
-      const response = await fetch(`/api/questions?formId=${formId}`);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/questions?formId=${formId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       if (!response.ok) throw new Error('Failed to fetch questions');
       const { success, data, error: apiError } = await response.json();
       
@@ -73,7 +78,12 @@ export default function ResponsesPage() {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('/api/admin/responses');
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/admin/responses', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       if (!response.ok) throw new Error('Failed to fetch data');
       const { success, data, error: apiError } = await response.json();
       

@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db/database';
 
+import { verifyToken } from '@/lib/auth/jwt';
+
 export async function POST(request) {
   try {
     const formData = await request.json();

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { executeQuery } from '@/lib/db/utils';
+import { signToken } from '@/lib/auth/jwt';
 
 export async function POST(request) {
   try {
@@ -27,10 +28,12 @@ export async function POST(request) {
       // Admin found - return success with admin data (excluding password)
       const admin = result.rows[0];
       const { password: _, ...adminWithoutPassword } = admin;
-      
+      // Issue JWT token
+      const token = signToken({ id: admin.admin_id, username: admin.username, role: 'admin' });
       return NextResponse.json({
         success: true,
-        admin: adminWithoutPassword
+        admin: adminWithoutPassword,
+        token
       });
     } else {
       // No admin found with these credentials

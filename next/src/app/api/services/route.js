@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { executeQuery } from '@/lib/db/utils'
 
-export async function GET() {
+export async function GET(request) {
   try {
     const query = `
       SELECT 
@@ -29,4 +29,4 @@ export async function GET() {
       { status: 500 }
     )
   }
-} 
+}
