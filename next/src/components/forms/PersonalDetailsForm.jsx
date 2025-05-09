@@ -64,24 +64,24 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
   return (
     <div className="grid grid-cols-1 md:grid-cols-12 gap-0 bg-white rounded-xl shadow-lg overflow-hidden">
       {/* Form Section - Left side */}
-      <div className="md:col-span-8 p-10">
-        <div className="space-y-8">
+      <div className="md:col-span-8 p-6 sm:p-8">
+        <div className="space-y-6 sm:space-y-8">
           {/* Name Field */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <Label htmlFor="name" className="text-base font-medium flex items-center gap-2 mb-3">
+            <Label htmlFor="name" className="text-sm sm:text-base font-medium flex items-center gap-2 mb-2 sm:mb-3">
               <UserCircle className="h-4 w-4 text-blue-500" />
-              Name <span className="text-gray-400 text-sm">(optional)</span>
+              Name <span className="text-gray-400 text-xs sm:text-sm">(optional)</span>
             </Label>
             <div className="relative">
               <Input
                 id="name"
                 type="text"
                 placeholder="Enter your name"
-                className="w-full h-12 pl-10 pr-10 rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                className="w-full h-9 pl-8 pr-8 text-xs sm:text-sm rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                 value={formData.name || ''}
                 onChange={(e) => handleInputChange('name', e.target.value)}
               />
@@ -96,16 +96,16 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <Label htmlFor="email" className="text-base font-medium flex items-center gap-2 mb-3">
+            <Label htmlFor="email" className="text-sm sm:text-base font-medium flex items-center gap-2 mb-2 sm:mb-3">
               <Mail className="h-4 w-4 text-blue-500" />
-              Email Address <span className="text-gray-400 text-sm">(optional)</span>
+              Email Address <span className="text-gray-400 text-xs sm:text-sm">(optional)</span>
             </Label>
             <div className="relative">
               <Input
                 id="email"
                 type="email"
                 placeholder="Enter your email address"
-                className="w-full h-12 pl-10 pr-10 rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                className="w-full h-9 pl-8 pr-8 text-xs sm:text-sm rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
               />
@@ -120,7 +120,7 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.1 }}
           >
-            <Label htmlFor="contact" className="text-base font-medium flex items-center gap-2 mb-3">
+            <Label htmlFor="contact" className="text-sm sm:text-base font-medium flex items-center gap-2 mb-2 sm:mb-3">
               <Phone className="h-4 w-4 text-blue-500" />
               Contact Number
             </Label>
@@ -128,7 +128,7 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
               <Input
                 id="contact"
                 placeholder="09123456789"
-                className={`w-full h-12 pl-10 pr-10 rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500 ${
+                className={`w-full h-9 pl-8 pr-8 text-xs sm:text-sm rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500 ${
                   missingFields.includes('contact') ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
                 }`}
                 value={formData.contact}
@@ -145,7 +145,7 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.2 }}
           >
-            <Label htmlFor="age" className="text-base font-medium flex items-center gap-2 mb-3">
+            <Label htmlFor="age" className="text-sm sm:text-base font-medium flex items-center gap-2 mb-2 sm:mb-3">
               <Calendar className="h-4 w-4 text-blue-500" />
               Age
             </Label>
@@ -154,7 +154,7 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
                 id="age"
                 type="number"
                 placeholder="Enter your age"
-                className={`w-full h-12 pl-10 pr-10 rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500 ${
+                className={`w-full h-9 pl-8 pr-8 text-xs sm:text-sm rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500 ${
                   missingFields.includes('age') ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
                 }`}
                 value={formData.age}
@@ -173,24 +173,24 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.3 }}
           >
-            <Label className="text-base font-medium flex items-center gap-2 mb-3">
+            <Label className="text-sm sm:text-base font-medium flex items-center gap-2 mb-2 sm:mb-3">
               <User className="h-4 w-4 text-blue-500" />
               Sex
             </Label>
-            <div className={`grid grid-cols-3 gap-4 ${missingFields.includes('sex') ? 'ring-2 ring-red-500 rounded-xl p-1' : ''}`}>
+            <div className={`grid grid-cols-3 gap-2 sm:gap-4 ${missingFields.includes('sex') ? 'ring-2 ring-red-500 rounded-xl p-1' : ''}`}>
               {['male', 'female', 'prefer-not'].map((option) => (
                 <motion.button
                   key={option}
                   whileHover={{ scale: 1.02, y: -2 }}
                   whileTap={{ scale: 0.98 }}
-                  className={`p-4 rounded-xl text-center transition-all border
+                  className={`p-2 sm:p-4 rounded-xl text-center transition-all border
                     ${formData.sex === option 
                       ? 'bg-blue-100 border-blue-500 shadow-md' 
                       : 'bg-white border-gray-200 hover:border-blue-400 hover:shadow-sm'
                     }`}
                   onClick={() => handleInputChange('sex', option)}
                 >
-                  <span className="text-base capitalize">{option === 'prefer-not' ? 'Prefer not to say' : option}</span>
+                  <span className="text-xs sm:text-base capitalize">{option === 'prefer-not' ? 'Prefer not to say' : option}</span>
                 </motion.button>
               ))}
             </div>
@@ -202,14 +202,14 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.4 }}
           >
-            <Label className="text-base font-medium flex items-center gap-2 mb-3">
+            <Label className="text-sm sm:text-base font-medium flex items-center gap-2 mb-2 sm:mb-3">
               <span className="text-blue-500">🛠️</span>
               Services Availed
             </Label>
             <motion.button
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
-              className={`w-full p-4 rounded-xl text-left transition-all border ${
+              className={`w-full p-3 text-xs sm:text-sm rounded-xl text-left transition-all border ${
                 formData.service_id 
                   ? 'bg-blue-100 border-blue-500 shadow-md' 
                   : `bg-white ${missingFields.includes('service_id') ? 'border-red-500' : 'border-gray-200'} hover:border-blue-400 hover:shadow-sm`
@@ -220,8 +220,8 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
                 {formData.service_name ? (
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-gray-900 font-medium">{formData.service_name}</span>
-                      <span className="text-sm text-gray-500">
+                      <span className="text-gray-900 font-medium text-xs sm:text-sm">{formData.service_name}</span>
+                      <span className="text-xs sm:text-sm text-gray-500">
                         ({formData.customerType === 'internal' ? 'Internal Customer' : 
                           formData.externalType === 'citizen' ? 'Citizen' :
                           formData.externalType === 'business' ? 'Business' :
@@ -229,7 +229,7 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
                       </span>
                     </div>
                     {formData.office_name && (
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
                         <span className="flex items-center gap-1">
                           <Building2 className="h-4 w-4" />
                           {formData.office_name}
@@ -244,7 +244,7 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
                     )}
                   </div>
                 ) : (
-                  <span className="text-gray-500">Select a service</span>
+                  <span className="text-gray-500 text-xs sm:text-sm">Select a service</span>
                 )}
                 <ChevronDown className="h-5 w-5 text-gray-400" />
               </div>
@@ -253,7 +253,7 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
         </div>
 
         {/* Navigation Buttons */}
-        <div className="flex justify-between mt-20">
+        <div className="flex justify-between mt-12 sm:mt-20">
           <motion.div
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}

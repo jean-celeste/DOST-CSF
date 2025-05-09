@@ -4,7 +4,8 @@ import { executeQuery } from '@/lib/db/utils';
 const fetchResponses = async () => {
   try {
     const query = `
-      SELECT * FROM admin_responses_view ORDER BY submitted_at DESC
+      SELECT * FROM response_view
+      ORDER BY submitted_at DESC;
     `;
 
     const result = await executeQuery(query);
