@@ -71,12 +71,14 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
     if (isOpen) {
       fetchServices()
     }
-  }, [isOpen])
+  }, [isOpen, customerType])
 
   const fetchServices = async () => {
     try {
       setIsLoading(true)
-      const response = await fetch('/api/services')
+      // Add customerType as a query parameter if set
+      const url = customerType ? `/api/services?customerType=${customerType}` : '/api/services'
+      const response = await fetch(url)
       if (!response.ok) throw new Error('Failed to fetch services')
       const data = await response.json()
       setServices(data)
@@ -99,12 +101,15 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
     if (!customerType) return []
     
     return services.filter(service => {
-      const matchesSearch = service.service_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          service.description.toLowerCase().includes(searchQuery.toLowerCase())
-      
+      const name = service.service_name || ''
+      const desc = service.description || ''
+      const matchesSearch =
+        name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        desc.toLowerCase().includes(searchQuery.toLowerCase())
+
       const matchesOffice = !selectedOffice || service.office_name === selectedOffice
       const matchesUnit = !selectedUnit || service.unit_name === selectedUnit
-      
+
       return matchesSearch && matchesOffice && matchesUnit
     })
   }
