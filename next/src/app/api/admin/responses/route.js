@@ -4,7 +4,7 @@ import { executeQuery } from '@/lib/db/utils';
 const fetchResponses = async () => {
   try {
     const query = `
-      SELECT * FROM response_view
+      SELECT * FROM response_details_view
       ORDER BY submitted_at DESC;
     `;
 
