@@ -114,10 +114,16 @@ export default function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState('month');
   const [selectedFormType, setSelectedFormType] = useState(FormType.CSM);
   const [questions, setQuestions] = useState({});
+  const [sqdStats, setSqdStats] = useState({});
 
   useEffect(() => {
     fetchData();
-  }, []);
+    // Fetch SQD stats only for CSM
+    if (selectedFormType === FormType.CSM) {
+      fetchSQDStats();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedFormType]);
 
   const fetchQuestions = async (formId) => {
     try {
@@ -163,6 +169,29 @@ export default function AnalyticsPage() {
     }
   };
 
+  const fetchSQDStats = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/admin/csm-sqd-positive', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch SQD stats');
+      const { success, data } = await response.json();
+      if (success) {
+        // Convert array to object keyed by question_id for easier access
+        const sqdObj = {};
+        data.forEach(row => {
+          sqdObj[row.question_id] = row.percentage_positive;
+        });
+        setSqdStats(sqdObj);
+      }
+    } catch (err) {
+      setSqdStats({});
+    }
+  };
+
   const filterResponsesByFormType = (data) => {
     return data.filter(response => {
       if (selectedFormType === FormType.CSM) return response.form_id === 1;
@@ -195,30 +224,22 @@ export default function AnalyticsPage() {
   const calculateStats = (data) => {
     const filteredData = filterResponsesByTimeRange(data);
     const totalResponses = filteredData.length;
-    
     // Separate CSM and QMS responses
     const csmResponses = filteredData.filter(r => r.form_id === 1);
     const qmsResponses = filteredData.filter(r => r.form_id === 3);
-
     // Calculate CSM stats
     const csmAverageRating = csmResponses.reduce((acc, curr) => {
       return acc + calculateAverageRating(curr.answers, FormType.CSM);
     }, 0) / (csmResponses.length || 1);
-
-    // Calculate SQD scores
-    const sqdScores = calculateSQDScores(csmResponses);
-
     // Calculate QMS stats (keeping existing calculation for now)
     const qmsAverageRating = qmsResponses.reduce((acc, curr) => {
       return acc + calculateAverageRating(curr.answers, FormType.QMS);
     }, 0) / (qmsResponses.length || 1);
-
     return {
       totalResponses,
       csmStats: {
         averageRating: csmAverageRating.toFixed(2),
-        interpretation: getRatingInterpretation(csmAverageRating),
-        sqdScores
+        interpretation: getRatingInterpretation(csmAverageRating)
       },
       qmsStats: {
         averageRating: qmsAverageRating.toFixed(2)
@@ -425,7 +446,7 @@ export default function AnalyticsPage() {
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Object.entries(stats.csmStats.sqdScores).map(([questionId, score]) => (
+              {Object.entries(sqdStats).map(([questionId, score]) => (
                 <div key={questionId} className="bg-gray-50 p-6 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors">
                   <div className="flex items-start gap-3 mb-4">
                     <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap">
@@ -455,7 +476,7 @@ export default function AnalyticsPage() {
                           />
                         </div>
                         <span className="ml-4 text-lg font-semibold min-w-[60px] text-right">
-                          {score.toFixed(1)}%
+                          {Number(score).toFixed(1)}%
                         </span>
                       </div>
                     )}

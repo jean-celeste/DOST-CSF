@@ -1,21 +1,5 @@
 import { NextResponse } from 'next/server';
 import { executeQuery } from '@/lib/db/utils';
-
-const fetchResponses = async () => {
-  try {
-    const query = `
-      SELECT * FROM response_details_view
-      ORDER BY submitted_at DESC;
-    `;
-
-    const result = await executeQuery(query);
-    return result.rows;
-  } catch (error) {
-    console.error('Database error in fetchResponses:', error);
-    throw new Error('Failed to fetch responses from database');
-  }
-};
-
 import { verifyToken } from '@/lib/auth/jwt';
 
 export async function GET(request) {
@@ -31,21 +15,22 @@ export async function GET(request) {
   }
 
   try {
-    const responses = await fetchResponses();
+    const query = 'SELECT * FROM csm_sqd_positive_percentage ORDER BY question_id;';
+    const result = await executeQuery(query);
     return NextResponse.json({ 
       success: true,
-      data: responses,  // Return the array directly
+      data: result.rows,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('Error in GET /api/admin/responses:', error);
+    console.error('Error in GET /api/admin/csm-sqd-positive:', error);
     return NextResponse.json(
       { 
         success: false,
-        error: error.message || 'Failed to fetch responses',
+        error: error.message || 'Failed to fetch SQD stats',
         timestamp: new Date().toISOString()
       },
       { status: 500 }
     );
   }
-}
+} 
