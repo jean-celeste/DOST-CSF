@@ -38,8 +38,8 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
       unit_name: serviceData.unit_name,
       service_type_id: serviceData.service_type_id,
       service_type_name: serviceData.service_type_name,
-      customerType: serviceData.customerType,
-      externalType: serviceData.externalType
+      clientType: serviceData.clientType,
+      externalClientType: serviceData.externalClientType
     };
     console.log('Updating form data to:', updatedFormData);
     onFormDataChange(updatedFormData);
@@ -222,10 +222,10 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
                     <div className="flex items-center gap-2">
                       <span className="text-gray-900 font-medium text-xs sm:text-sm">{formData.service_name}</span>
                       <span className="text-xs sm:text-sm text-gray-500">
-                        ({formData.customerType === 'internal' ? 'Internal Customer' : 
-                          formData.externalType === 'citizen' ? 'Citizen' :
-                          formData.externalType === 'business' ? 'Business' :
-                          formData.externalType === 'government' ? 'Government' : 'External Customer'})
+                        ({formData.clientType === 'internal' ? 'Internal Client' : 
+                          formData.externalClientType === 'citizen' ? 'Citizen' :
+                          formData.externalClientType === 'business' ? 'Business' :
+                          formData.externalClientType === 'government' ? 'Government' : 'External Client'})
                       </span>
                     </div>
                     {formData.office_name && (
@@ -300,7 +300,7 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
           className="text-center space-y-3"
         >
           <h2 className="text-2xl font-bold text-gray-900">Department of Science and Technology V</h2>
-          <p className="text-gray-600">Customer Feedback Form</p>
+          <p className="text-gray-600">Client Feedback Form</p>
         </motion.div>
       </div>
 

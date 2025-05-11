@@ -346,7 +346,7 @@ export default function AdminDashboard() {
               <tr className="bg-gray-50">
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
               </tr>
             </thead>
@@ -360,7 +360,7 @@ export default function AdminDashboard() {
                     {response.service_name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {response.customer_name}
+                    {response.client_name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {selectedForm === FormType.CSM 

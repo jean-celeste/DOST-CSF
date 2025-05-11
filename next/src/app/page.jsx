@@ -1,10 +1,10 @@
 'use client'
-import CustomerFeedbackForm from '@/components/CustomerFeedbackForm'
+import ClientFeedbackForm from '@/components/ClientFeedbackForm'
 
 export default function Home() {
   return (
     <main>
-      <CustomerFeedbackForm />
+      <ClientFeedbackForm />
     </main>
   )
 } 

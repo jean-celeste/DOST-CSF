@@ -113,9 +113,9 @@ export default function ResponsesPage() {
   const filteredResponses = responses.filter(response => {
     if (!response || typeof response !== 'object') return false;
 
-    const name = response.customer_name || '';
+    const name = response.client_name || '';
     const serviceName = response.service_name || '';
-    const email = response.customer_email || '';
+    const email = response.client_email || '';
     const formType = response.form_type || '';
     const submittedAt = response.submitted_at || '';
 
@@ -136,7 +136,7 @@ export default function ResponsesPage() {
 
   const handleExport = () => {
     const csvContent = [
-      ['Date', 'Form Type', 'Service', 'Customer', 'Email', 'Average Rating', 'Comments'],
+      ['Date', 'Form Type', 'Service', 'Client', 'Email', 'Average Rating', 'Comments'],
       ...filteredResponses.map(response => {
         if (!response || typeof response !== 'object') return [];
         
@@ -148,8 +148,8 @@ export default function ResponsesPage() {
           new Date(response.submitted_at || '').toLocaleDateString(),
           (response.form_type || '').toUpperCase(),
           response.service_name || '',
-          response.customer_name || '',
-          response.customer_email || '',
+          response.client_name || '',
+          response.client_email || '',
           avgRating.toFixed(1),
           comments
         ];
@@ -205,22 +205,22 @@ export default function ResponsesPage() {
           </div>
         </div>
 
-        {/* Customer and Service Information */}
+        {/* Client and Service Information */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white p-4 rounded-lg border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">Customer Information</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">Client Information</h3>
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-gray-600">Name:</span>
-                <span className="font-medium">{response.customer_name}</span>
+                <span className="font-medium">{response.client_name}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Email:</span>
-                <span className="font-medium">{response.customer_email}</span>
+                <span className="font-medium">{response.client_email}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Phone:</span>
-                <span className="font-medium">{response.customer_phone || '-'}</span>
+                <span className="font-medium">{response.client_phone || '-'}</span>
               </div>
             </div>
           </div>
@@ -248,7 +248,7 @@ export default function ResponsesPage() {
         {checkmarkSelections && (
           <div className="bg-white p-4 rounded-lg border border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900 mb-3">
-              {isCSM ? 'Customer Feedback' : 'Selected Criteria'}
+              {isCSM ? 'Client Feedback' : 'Selected Criteria'}
             </h3>
             <div className="space-y-4">
               {isCSM ? (
@@ -410,7 +410,7 @@ export default function ResponsesPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Form Type</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
@@ -431,10 +431,10 @@ export default function ResponsesPage() {
                       {response.service_name || '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {response.customer_name || '-'}
+                      {response.client_name || '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {response.customer_email || '-'}
+                      {response.client_email || '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <button

@@ -55,8 +55,8 @@ const ConfirmationDialog = ({ isOpen, onClose, onConfirm, title, message }) => {
 
 export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect, selectedService }) {
   const [step, setStep] = useState(1)
-  const [customerType, setCustomerType] = useState(null)
-  const [externalType, setExternalType] = useState(null)
+  const [clientType, setClientType] = useState(null)
+  const [externalClientType, setExternalClientType] = useState(null)
   const [selectedOffice, setSelectedOffice] = useState(null)
   const [selectedUnit, setSelectedUnit] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -71,13 +71,13 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
     if (isOpen) {
       fetchServices()
     }
-  }, [isOpen, customerType])
+  }, [isOpen, clientType])
 
   const fetchServices = async () => {
     try {
       setIsLoading(true)
-      // Add customerType as a query parameter if set
-      const url = customerType ? `/api/services?customerType=${customerType}` : '/api/services'
+      // Add clientType as a query parameter if set
+      const url = clientType ? `/api/services?clientType=${clientType}` : '/api/services'
       const response = await fetch(url)
       if (!response.ok) throw new Error('Failed to fetch services')
       const data = await response.json()
@@ -98,7 +98,7 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
 
   // Get filtered services based on selected filters
   const getFilteredServices = () => {
-    if (!customerType) return []
+    if (!clientType) return []
     
     return services.filter(service => {
       const name = service.service_name || ''
@@ -118,8 +118,8 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
   useEffect(() => {
     if (!isOpen) {
       setStep(1)
-      setCustomerType(null)
-      setExternalType(null)
+      setClientType(null)
+      setExternalClientType(null)
       setSelectedOffice(null)
       setSelectedUnit(null)
       setSearchQuery('')
@@ -127,7 +127,7 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
     }
   }, [isOpen])
 
-  // Set initial customer type and external type based on selected service
+  // Set initial client type and external type based on selected service
   useEffect(() => {
     if (selectedService?.name) {
       // Find the service in the data structure
@@ -137,7 +137,7 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
             for (const unit of office.units) {
               const service = unit.services.find(s => s.name === selectedService.name);
               if (service) {
-                setCustomerType('internal');
+                setClientType('internal');
                 setSelectedOffice(office);
                 setSelectedUnit(unit);
                 setStep(2);
@@ -151,8 +151,8 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
               for (const unit of office.units) {
                 const service = unit.services.find(s => s.name === selectedService.name);
                 if (service) {
-                  setCustomerType('external');
-                  setExternalType(category);
+                  setClientType('external');
+                  setExternalClientType(category);
                   setSelectedOffice(office);
                   setSelectedUnit(unit);
                   setStep(2);
@@ -184,23 +184,23 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, step, onClose])
 
-  const handleCustomerTypeSelect = async (type) => {
+  const handleClientTypeSelect = async (type) => {
     setIsLoading(true)
-    console.log('Customer Type Selected:', type)
-    setCustomerType(type)
+    console.log('Client Type Selected:', type)
+    setClientType(type)
     await new Promise(resolve => setTimeout(resolve, 150))
     if (type === 'internal') {
       setStep(2)
     } else {
-      setExternalType(null)
+      setExternalClientType(null)
     }
     setIsLoading(false)
   }
 
-  const handleExternalTypeSelect = async (type) => {
+  const handleExternalClientTypeSelect = async (type) => {
     setIsLoading(true)
-    console.log('External Customer Type Selected:', type)
-    setExternalType(type)
+    console.log('External Client Type Selected:', type)
+    setExternalClientType(type)
     await new Promise(resolve => setTimeout(resolve, 150))
     setStep(2)
     setIsLoading(false)
@@ -216,8 +216,8 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
         unit_name: service.unit_name,
         service_type_id: service.service_type_id,
         service_type_name: service.service_type_name,
-        customerType,
-        externalType
+        clientType,
+        externalClientType
       };
       
       console.log('Service Selected in Modal:', serviceData);
@@ -237,7 +237,7 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
 
   const getSteps = () => {
     return [
-      { id: 1, label: 'Customer Type' },
+      { id: 1, label: 'Client Type' },
       { id: 2, label: 'Select Service' }
     ]
   }
@@ -269,27 +269,27 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
             transition={{ duration: 0.2 }}
             className="space-y-6 md:space-y-8"
           >
-            {/* Customer Type Selection */}
+            {/* Client Type Selection */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
               <motion.button
                 whileHover={{ scale: 1.001 }}
                 whileTap={{ scale: 0.995 }}
                 transition={{ duration: 0.1 }}
                 className={`group p-6 sm:p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative
-                  ${customerType === 'internal' 
+                  ${clientType === 'internal' 
                     ? 'border-blue-500 bg-blue-50' 
                     : 'border-gray-200 hover:border-blue-500'
                   }`}
-                onClick={() => handleCustomerTypeSelect('internal')}
+                onClick={() => handleClientTypeSelect('internal')}
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="relative flex flex-col items-center">
                   <div className="p-4 rounded-full bg-blue-50 group-hover:bg-blue-100 transition-colors mb-4">
                     <Building2 className="h-10 w-10 text-blue-500" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Internal Customer</h3>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Internal Client</h3>
                   <p className="text-sm text-gray-500 text-center">DOST V Employee</p>
-                  {customerType === 'internal' && (
+                  {clientType === 'internal' && (
                     <div className="mt-4 text-blue-500">
                       <ChevronRight className="h-5 w-5" />
                     </div>
@@ -301,20 +301,20 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                 whileTap={{ scale: 0.995 }}
                 transition={{ duration: 0.1 }}
                 className={`group p-6 sm:p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative
-                  ${customerType === 'external' 
+                  ${clientType === 'external' 
                     ? 'border-blue-500 bg-blue-50' 
                     : 'border-gray-200 hover:border-blue-500'
                   }`}
-                onClick={() => handleCustomerTypeSelect('external')}
+                onClick={() => handleClientTypeSelect('external')}
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="relative flex flex-col items-center">
                   <div className="p-4 rounded-full bg-blue-50 group-hover:bg-blue-100 transition-colors mb-4">
                     <Users className="h-10 w-10 text-blue-500" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">External Customer</h3>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">External Client</h3>
                   <p className="text-sm text-gray-500 text-center">Public/Client</p>
-                  {customerType === 'external' && (
+                  {clientType === 'external' && (
                     <div className="mt-4 text-blue-500">
                       <ChevronRight className="h-5 w-5" />
                     </div>
@@ -325,7 +325,7 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
 
             {/* External Type Selection */}
             <AnimatePresence>
-              {customerType === 'external' && (
+              {clientType === 'external' && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
@@ -338,7 +338,7 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                       <div className="p-2 rounded-lg bg-blue-50">
                         <Users className="h-5 w-5 text-blue-500" />
                       </div>
-                      <h3 className="font-semibold text-lg">Select External Customer Type</h3>
+                      <h3 className="font-semibold text-lg">Select External Client Type</h3>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                       {[
@@ -352,11 +352,11 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                           whileTap={{ scale: 0.98 }}
                           transition={{ duration: 0.1 }}
                           className={`group p-6 sm:p-8 rounded-xl border-2 transition-all bg-white hover:shadow-lg relative overflow-hidden
-                            ${externalType === id 
+                            ${externalClientType === id 
                               ? 'border-blue-500 bg-blue-50' 
                               : 'border-gray-200 hover:border-blue-500'
                             }`}
-                          onClick={() => handleExternalTypeSelect(id)}
+                          onClick={() => handleExternalClientTypeSelect(id)}
                         >
                           <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                           <div className="relative flex flex-col items-center">
@@ -365,7 +365,7 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                             </div>
                             <h3 className="text-lg font-semibold text-gray-900 mb-1">{title}</h3>
                             <p className="text-sm text-gray-500 text-center">{description}</p>
-                            {externalType === id && (
+                            {externalClientType === id && (
                               <div className="mt-3 text-blue-500">
                                 <ChevronRight className="h-5 w-5" />
                               </div>
@@ -549,7 +549,7 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
           <DialogHeader className="mb-4">
             <div className="flex justify-between items-center">
               <DialogTitle className="text-2xl font-bold text-gray-900">
-                {step === 1 && 'Select Customer Type'}
+                {step === 1 && 'Select Client Type'}
                 {step === 2 && 'Select Service'}
               </DialogTitle>
             </div>

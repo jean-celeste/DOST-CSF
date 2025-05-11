@@ -124,14 +124,14 @@ export const PersonalDetailsSection = ({ formData, onEdit, editingSection, onCan
         <p className="text-base text-gray-900">{formData.personalDetails.contact}</p>
       </div>
       <div className="bg-gray-50 p-4 rounded-lg md:col-span-2">
-        <p className="text-sm font-medium text-gray-500 mb-1">Customer Type</p>
+        <p className="text-sm font-medium text-gray-500 mb-1">Client Type</p>
         <p className="text-base text-gray-900">
-          {formData.personalDetails.customerType === 'internal' ? 'Internal Customer' : 
-           formData.personalDetails.customerType === 'external' ? 
-           `External Customer (${formData.personalDetails.externalType === 'citizen' ? 'Citizen' :
-            formData.personalDetails.externalType === 'business' ? 'Business' :
-            formData.personalDetails.externalType === 'government' ? 'Government' : 'External'})` : 
-           'External Customer'}
+          {formData.personalDetails.clientType === 'internal' ? 'Internal Client' : 
+           formData.personalDetails.clientType === 'external' ? 
+           `External Client (${formData.personalDetails.externalClientType === 'citizen' ? 'Citizen' :
+            formData.personalDetails.externalClientType === 'business' ? 'Business' :
+            formData.personalDetails.externalClientType === 'government' ? 'Government' : 'External'})` : 
+           'External Client'}
         </p>
       </div>
       <div className="bg-gray-50 p-4 rounded-lg md:col-span-2">

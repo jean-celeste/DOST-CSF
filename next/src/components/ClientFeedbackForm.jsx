@@ -28,7 +28,7 @@ import {
   INITIAL_SUGGESTION
 } from '@/constants/formSteps'
 
-export default function CustomerFeedbackForm() {
+export default function ClientFeedbackForm() {
   const [formState, setFormState] = useState({
     ...INITIAL_FORM_STATE,
     currentFormId: 1,
@@ -201,7 +201,7 @@ export default function CustomerFeedbackForm() {
               </div>
               <div>
                 <h1 className="text-lg font-bold leading-tight">Department of Science and Technology V</h1>
-                <p className="text-base text-gray-600">Customer Feedback Form</p>
+                <p className="text-base text-gray-600">Client Feedback Form</p>
               </div>
             </div>
 

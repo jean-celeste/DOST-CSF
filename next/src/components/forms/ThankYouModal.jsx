@@ -73,7 +73,7 @@ const ThankYouModal = ({ isOpen, onClose, onNewForm }) => {
           </h2>
           
           <p className="text-gray-600 mb-6">
-            Your input helps us improve our services and better serve our customers.
+            Your input helps us improve our services and better serve our clients.
             We truly appreciate your time and valuable feedback.
           </p>
 

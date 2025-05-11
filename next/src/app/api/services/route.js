@@ -3,14 +3,14 @@ import { executeQuery } from '@/lib/db/utils'
 
 export async function GET(request) {
   try {
-    // Get customerType from query params
+    // Get clientType from query params
     const { searchParams } = new URL(request.url)
-    const customerType = searchParams.get('customerType')
+    const clientType = searchParams.get('clientType')
 
-    // Map customerType string to customer_type_id
-    let customerTypeId = null
-    if (customerType === 'internal') customerTypeId = 1
-    if (customerType === 'external') customerTypeId = 2
+    // Map clientType string to client_type_id
+    let clientTypeId = null
+    if (clientType === 'internal') clientTypeId = 1
+    if (clientType === 'external') clientTypeId = 2
 
     // Build query with optional filtering
     let query = `
@@ -27,8 +27,8 @@ export async function GET(request) {
       LEFT JOIN offices o ON s.office_id = o.office_id
       LEFT JOIN unit u ON s.unit_id = u.unit_id
     `
-    if (customerTypeId) {
-      query += ` WHERE s.customer_type_id = ${customerTypeId}`
+    if (clientTypeId) {
+      query += ` INNER JOIN service_client_type sct ON s.service_id = sct.service_id WHERE sct.client_type_id = ${clientTypeId}`
     }
     query += ' ORDER BY s.service_name'
 

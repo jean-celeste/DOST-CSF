@@ -22,12 +22,12 @@ export async function POST(request) {
         throw new Error('Invalid form ID or form is not active');
       }
 
-      // 1. Find or create customer
-      let customerId = null;
+      // 1. Find or create client
+      let clientId = null;
       
-      // Only search for existing customer if we have identifiers
+      // Only search for existing client if we have identifiers
       if (formData.personalDetails.email || formData.personalDetails.name || formData.personalDetails.contact) {
-        // Build a simple query to find existing customer
+        // Build a simple query to find existing client
         const searchConditions = [];
         const searchParams = [];
         
@@ -47,20 +47,20 @@ export async function POST(request) {
         }
         
         if (searchConditions.length > 0) {
-          const customerCheck = await client.query(
-            `SELECT customer_id FROM customer WHERE ${searchConditions.join(' OR ')} LIMIT 1`,
+          const clientCheck = await client.query(
+            `SELECT client_id FROM client WHERE ${searchConditions.join(' OR ')} LIMIT 1`,
             searchParams
           );
           
-          if (customerCheck.rows.length > 0) {
-            customerId = customerCheck.rows[0].customer_id;
+          if (clientCheck.rows.length > 0) {
+            clientId = clientCheck.rows[0].client_id;
           }
         }
       }
       
-      // 2. Update or insert customer
-      if (customerId) {
-        // Update existing customer - only update fields that are provided
+      // 2. Update or insert client
+      if (clientId) {
+        // Update existing client - only update fields that are provided
         const updateFields = [];
         const updateParams = [];
         
@@ -89,29 +89,29 @@ export async function POST(request) {
           updateParams.push(formData.personalDetails.age);
         }
         
-        if (formData.personalDetails.customerType) {
-          // Get the customer type ID first
-          const customerTypeResult = await client.query(
-            `SELECT cust_type_id, cust_type_name FROM customer_type WHERE cust_type_name = $1`,
-            [formData.personalDetails.customerType]
+        if (formData.personalDetails.clientType) {
+          // Get the client type ID first
+          const clientTypeResult = await client.query(
+            `SELECT client_type_id, client_type_name FROM client_type WHERE client_type_name = $1`,
+            [formData.personalDetails.clientType]
           );
           
-          if (customerTypeResult.rows.length > 0) {
-            const customerTypeId = customerTypeResult.rows[0].cust_type_id;
-            const customerTypeName = customerTypeResult.rows[0].cust_type_name;
+          if (clientTypeResult.rows.length > 0) {
+            const clientTypeId = clientTypeResult.rows[0].client_type_id;
+            const clientTypeName = clientTypeResult.rows[0].client_type_name;
             
-            updateFields.push('customer_type_id = $' + (updateParams.length + 1));
-            updateParams.push(customerTypeId);
+            updateFields.push('client_type_id = $' + (updateParams.length + 1));
+            updateParams.push(clientTypeId);
             
-            // If customer type is Internal, explicitly set external_type_id to NULL
-            if (customerTypeName.toLowerCase() === 'internal') {
+            // If client type is Internal, explicitly set external_type_id to NULL
+            if (clientTypeName.toLowerCase() === 'internal') {
               updateFields.push('external_type_id = NULL');
             }
           }
         }
         
         if (formData.personalDetails.externalType) {
-          updateFields.push('external_type_id = (SELECT external_type_id FROM external_customer_type WHERE external_type_name = $' + (updateParams.length + 1) + ')');
+          updateFields.push('external_type_id = (SELECT external_type_id FROM external_client_type WHERE external_type_name = $' + (updateParams.length + 1) + ')');
           updateParams.push(formData.personalDetails.externalType);
         }
         
@@ -119,40 +119,40 @@ export async function POST(request) {
         updateFields.push('last_updated = NOW()');
         
         if (updateFields.length > 0) {
-          updateParams.push(customerId);
+          updateParams.push(clientId);
           
           await client.query(
-            `UPDATE customer SET ${updateFields.join(', ')} WHERE customer_id = $${updateParams.length}`,
+            `UPDATE client SET ${updateFields.join(', ')} WHERE client_id = $${updateParams.length}`,
             updateParams
           );
         }
       } else {
-        // Insert new customer
+        // Insert new client
         const insertResult = await client.query(
-          `INSERT INTO customer (
+          `INSERT INTO client (
             email, phone, sex, name, age,
-            customer_type_id, external_type_id,
+            client_type_id, external_type_id,
             last_updated
           )
           VALUES (
             $1, $2, $3, $4, $5,
-            (SELECT cust_type_id FROM customer_type WHERE cust_type_name = $6),
-            (SELECT external_type_id FROM external_customer_type WHERE external_type_name = $7),
+            (SELECT client_type_id FROM client_type WHERE client_type_name = $6),
+            (SELECT external_type_id FROM external_client_type WHERE external_type_name = $7),
             NOW()
           )
-          RETURNING customer_id`,
+          RETURNING client_id`,
           [
             formData.personalDetails.email || null,
             formData.personalDetails.contact || null,
             formData.personalDetails.sex || null,
             formData.personalDetails.name || null,
             formData.personalDetails.age || null,
-            formData.personalDetails.customerType || 'Individual',
+            formData.personalDetails.clientType || 'Individual',
             formData.personalDetails.externalType || 'External'
           ]
         );
         
-        customerId = insertResult.rows[0].customer_id;
+        clientId = insertResult.rows[0].client_id;
       }
 
       // Transform question numbers to question_ids
@@ -196,7 +196,7 @@ export async function POST(request) {
         `INSERT INTO responses (
           form_id,
           service_id,
-          customer_id,
+          client_id,
           submitted_at,
           answers
         ) VALUES ($1, $2, $3, NOW(), $4)
@@ -204,7 +204,7 @@ export async function POST(request) {
         [
           formData.formId,
           formData.personalDetails.service_id,
-          customerId,
+          clientId,
           JSON.stringify(cleanFormData)
         ]
       );
