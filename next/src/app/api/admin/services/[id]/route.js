@@ -1,0 +1,99 @@
+import { NextResponse } from 'next/server';
+import { executeQuery } from '@/lib/db/utils';
+import { verifyToken } from '@/lib/auth/jwt';
+
+// Helper: Auth check
+async function checkAuth(request) {
+  const authHeader = request.headers.get('authorization');
+  if (!authHeader) return false;
+  try {
+    verifyToken(authHeader.replace('Bearer ', ''));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// GET: Get a single service by ID
+export async function GET(request, { params }) {
+  if (!(await checkAuth(request))) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+  const { id } = params;
+  try {
+    const query = `
+      SELECT 
+        s.service_id,
+        s.service_name,
+        s.description,
+        s.service_type_id,
+        st.service_type_name,
+        s.office_id,
+        o.office_name,
+        s.unit_id,
+        u.unit_name
+      FROM services s
+      LEFT JOIN services_types st ON s.service_type_id = st.service_type_id
+      LEFT JOIN offices o ON s.office_id = o.office_id
+      LEFT JOIN unit u ON s.unit_id = u.unit_id
+      WHERE s.service_id = $1
+    `;
+    const result = await executeQuery(query, [id]);
+    if (result.rows.length === 0) {
+      return NextResponse.json({ success: false, error: 'Service not found' }, { status: 404 });
+    }
+    return NextResponse.json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    console.error('Error fetching service:', error);
+    return NextResponse.json({ success: false, error: 'Failed to fetch service' }, { status: 500 });
+  }
+}
+
+// PUT: Update a service by ID
+export async function PUT(request, { params }) {
+  if (!(await checkAuth(request))) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+  const { id } = params;
+  try {
+    const body = await request.json();
+    const { service_name, description, service_type_id, office_id, unit_id } = body;
+    if (!service_name || !service_type_id || !office_id) {
+      return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
+    }
+    const updateQuery = `
+      UPDATE services
+      SET service_name = $1, description = $2, service_type_id = $3, office_id = $4, unit_id = $5
+      WHERE service_id = $6
+      RETURNING *
+    `;
+    const values = [service_name, description, service_type_id, office_id, unit_id || null, id];
+    const result = await executeQuery(updateQuery, values);
+    if (result.rows.length === 0) {
+      return NextResponse.json({ success: false, error: 'Service not found' }, { status: 404 });
+    }
+    return NextResponse.json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    console.error('Error updating service:', error);
+    return NextResponse.json({ success: false, error: 'Failed to update service' }, { status: 500 });
+  }
+}
+
+// DELETE: Remove a service by ID
+export async function DELETE(request, { params }) {
+  if (!(await checkAuth(request))) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+  const { id } = params;
+  try {
+    const deleteQuery = 'DELETE FROM services WHERE service_id = $1 RETURNING *';
+    const result = await executeQuery(deleteQuery, [id]);
+    if (result.rows.length === 0) {
+      return NextResponse.json({ success: false, error: 'Service not found' }, { status: 404 });
+    }
+    return NextResponse.json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    console.error('Error deleting service:', error);
+    return NextResponse.json({ success: false, error: 'Failed to delete service' }, { status: 500 });
+  }
+} 
