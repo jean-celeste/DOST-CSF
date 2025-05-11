@@ -15,11 +15,11 @@ async function checkAuth(request) {
 }
 
 // GET: Get a single service by ID
-export async function GET(request, { params }) {
+export async function GET(request, context) {
   if (!(await checkAuth(request))) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
-  const { id } = params;
+  const { id } = await context.params;
   try {
     const query = `
       SELECT 
@@ -50,11 +50,11 @@ export async function GET(request, { params }) {
 }
 
 // PUT: Update a service by ID
-export async function PUT(request, { params }) {
+export async function PUT(request, context) {
   if (!(await checkAuth(request))) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
-  const { id } = params;
+  const { id } = await context.params;
   try {
     const body = await request.json();
     const { service_name, description, service_type_id, office_id, unit_id } = body;
@@ -80,11 +80,11 @@ export async function PUT(request, { params }) {
 }
 
 // DELETE: Remove a service by ID
-export async function DELETE(request, { params }) {
+export async function DELETE(request, context) {
   if (!(await checkAuth(request))) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
-  const { id } = params;
+  const { id } = await context.params;
   try {
     const deleteQuery = 'DELETE FROM services WHERE service_id = $1 RETURNING *';
     const result = await executeQuery(deleteQuery, [id]);
