@@ -220,8 +220,7 @@ Review.propTypes = {
       unit_name: PropTypes.string,
       service_type_id: PropTypes.number,
       service_type_name: PropTypes.string,
-      customerType: PropTypes.string,
-      externalType: PropTypes.string,
+      clientType: PropTypes.string,
       sex: PropTypes.string,
       age: PropTypes.string
     }),

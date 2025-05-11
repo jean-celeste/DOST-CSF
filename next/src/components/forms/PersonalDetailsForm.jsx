@@ -38,8 +38,7 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
       unit_name: serviceData.unit_name,
       service_type_id: serviceData.service_type_id,
       service_type_name: serviceData.service_type_name,
-      clientType: serviceData.clientType,
-      externalClientType: serviceData.externalClientType
+      clientType: serviceData.clientType
     };
     console.log('Updating form data to:', updatedFormData);
     onFormDataChange(updatedFormData);
@@ -222,10 +221,10 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
                     <div className="flex items-center gap-2">
                       <span className="text-gray-900 font-medium text-xs sm:text-sm">{formData.service_name}</span>
                       <span className="text-xs sm:text-sm text-gray-500">
-                        ({formData.clientType === 'internal' ? 'Internal Client' : 
-                          formData.externalClientType === 'citizen' ? 'Citizen' :
-                          formData.externalClientType === 'business' ? 'Business' :
-                          formData.externalClientType === 'government' ? 'Government' : 'External Client'})
+                        {formData.clientType === 'internal' ? 'Internal Client' :
+                          formData.clientType === 'citizen' ? 'Citizen' :
+                          formData.clientType === 'business' ? 'Business' :
+                          formData.clientType === 'government' ? 'Government' : 'External Client'}
                       </span>
                     </div>
                     {formData.office_name && (
@@ -331,7 +330,8 @@ PersonalDetailsForm.propTypes = {
     unit_name: PropTypes.string,
     service_type_name: PropTypes.string,
     sex: PropTypes.string,
-    age: PropTypes.string
+    age: PropTypes.string,
+    clientType: PropTypes.string
   }).isRequired,
   onFormDataChange: PropTypes.func.isRequired,
   isReviewMode: PropTypes.bool
