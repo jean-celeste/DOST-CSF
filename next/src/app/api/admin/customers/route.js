@@ -12,14 +12,11 @@ const fetchClients = async () => {
         c.sex,
         c.age,
         c.last_updated,
-        ct.client_type_name,
-        ect.external_type_name
+        ct.client_type_name
       FROM 
         client c
       LEFT JOIN 
         client_type ct ON c.client_type_id = ct.client_type_id
-      LEFT JOIN 
-        external_client_type ect ON c.external_type_id = ect.external_type_id
       ORDER BY 
         c.last_updated DESC
     `);

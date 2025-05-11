@@ -92,27 +92,14 @@ export async function POST(request) {
         if (formData.personalDetails.clientType) {
           // Get the client type ID first
           const clientTypeResult = await client.query(
-            `SELECT client_type_id, client_type_name FROM client_type WHERE client_type_name = $1`,
+            `SELECT client_type_id FROM client_type WHERE client_type_name = $1`,
             [formData.personalDetails.clientType]
           );
-          
           if (clientTypeResult.rows.length > 0) {
             const clientTypeId = clientTypeResult.rows[0].client_type_id;
-            const clientTypeName = clientTypeResult.rows[0].client_type_name;
-            
             updateFields.push('client_type_id = $' + (updateParams.length + 1));
             updateParams.push(clientTypeId);
-            
-            // If client type is Internal, explicitly set external_type_id to NULL
-            if (clientTypeName.toLowerCase() === 'internal') {
-              updateFields.push('external_type_id = NULL');
-            }
           }
-        }
-        
-        if (formData.personalDetails.externalType) {
-          updateFields.push('external_type_id = (SELECT external_type_id FROM external_client_type WHERE external_type_name = $' + (updateParams.length + 1) + ')');
-          updateParams.push(formData.personalDetails.externalType);
         }
         
         // Always update the timestamp
@@ -128,16 +115,20 @@ export async function POST(request) {
         }
       } else {
         // Insert new client
+        const clientTypeResult = await client.query(
+          `SELECT client_type_id FROM client_type WHERE client_type_name = $1`,
+          [formData.personalDetails.clientType]
+        );
+        const clientTypeId = clientTypeResult.rows.length > 0 ? clientTypeResult.rows[0].client_type_id : null;
         const insertResult = await client.query(
           `INSERT INTO client (
             email, phone, sex, name, age,
-            client_type_id, external_type_id,
+            client_type_id,
             last_updated
           )
           VALUES (
             $1, $2, $3, $4, $5,
-            (SELECT client_type_id FROM client_type WHERE client_type_name = $6),
-            (SELECT external_type_id FROM external_client_type WHERE external_type_name = $7),
+            $6,
             NOW()
           )
           RETURNING client_id`,
@@ -147,8 +138,7 @@ export async function POST(request) {
             formData.personalDetails.sex || null,
             formData.personalDetails.name || null,
             formData.personalDetails.age || null,
-            formData.personalDetails.clientType || 'Individual',
-            formData.personalDetails.externalType || 'External'
+            clientTypeId
           ]
         );
         
