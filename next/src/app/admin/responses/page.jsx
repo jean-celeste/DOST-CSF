@@ -9,39 +9,13 @@ const FormType = {
   QMS: 'qms'
 };
 
-// const calculateAverageRating = (answers) => {
-//   if (!answers) return 0;
-  
-//   // For CSM forms
-//   if (answers.csmARTARatings?.ratings) {
-//     const ratings = Object.values(answers.csmARTARatings.ratings);
-//     const ratingValues = {
-//       'strongly-agree': 5,
-//       'agree': 4,
-//       'neutral': 3,
-//       'disagree': 2,
-//       'strongly-disagree': 1
-//     };
-//     const sum = ratings.reduce((acc, rating) => acc + (ratingValues[rating] || 0), 0);
-//     return sum / ratings.length;
-//   }
-  
-//   // For QMS forms
-//   if (answers.qmsRatings?.ratings) {
-//     const ratings = Object.values(answers.qmsRatings.ratings);
-//     const ratingValues = {
-//       'outstanding': 5,
-//       'very-satisfactory': 4,
-//       'satisfactory': 3,
-//       'unsatisfactory': 2,
-//       'poor': 1
-//     };
-//     const sum = ratings.reduce((acc, rating) => acc + (ratingValues[rating] || 0), 0);
-//     return sum / ratings.length;
-//   }
-  
-//   return 0;
-// };
+function Spinner() {
+  return (
+    <div className="flex justify-center items-center h-16">
+      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+  );
+}
 
 export default function ResponsesPage() {
   const [responses, setResponses] = useState([]);
@@ -52,6 +26,8 @@ export default function ResponsesPage() {
   const [dateFilter, setDateFilter] = useState('all');
   const [selectedResponse, setSelectedResponse] = useState(null);
   const [questions, setQuestions] = useState({});
+  const [downloadingExcel, setDownloadingExcel] = useState(false);
+  const [downloadError, setDownloadError] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -161,6 +137,58 @@ export default function ResponsesPage() {
     link.href = URL.createObjectURL(blob);
     link.download = `responses_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
+  };
+
+  const handleExportExcel = async () => {
+    setDownloadingExcel(true);
+    setDownloadError(false);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/admin/reports/responses', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!res.ok) {
+        let errorMsg = 'Failed to download Excel report';
+        try {
+          const errorData = await res.json();
+          if (errorData && errorData.error) {
+            errorMsg = `Failed to download Excel report: ${errorData.error}`;
+          }
+        } catch (parseError) {
+          console.warn('Could not parse error response from backend for Excel download:', parseError);
+        }
+        throw new Error(errorMsg);
+      }
+      
+      const blob = await res.blob();
+      const contentDisposition = res.headers.get('Content-Disposition');
+      let filename = 'responses_report.xlsx';
+
+      if (contentDisposition) {
+        const filenameRegex = /filename[^;=\n]*=(?:(['"])(.*?)\1|([^;\n]*))/i;
+        const matches = filenameRegex.exec(contentDisposition);
+        if (matches != null) {
+          filename = matches[2] || matches[3] || filename;
+        }
+      }
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Download error:', err);
+      setDownloadError(true);
+    } finally {
+      setDownloadingExcel(false);
+    }
   };
 
   const renderRatingValue = (rating) => {
@@ -349,7 +377,7 @@ export default function ResponsesPage() {
     );
   };
 
-  if (loading) return <div className="p-8">Loading...</div>;
+  if (loading) return <Spinner />;
   if (error) return <div className="p-8 text-red-500">Error: {error}</div>;
 
   return (
@@ -397,6 +425,14 @@ export default function ResponsesPage() {
             >
               <Download size={20} />
               Export CSV
+            </button>
+            <button
+              onClick={handleExportExcel}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+              disabled={downloadingExcel}
+            >
+              {downloadingExcel ? <Spinner /> : <Download size={20} />}
+              Export Excel
             </button>
           </div>
         </div>
@@ -469,6 +505,25 @@ export default function ResponsesPage() {
             <div className="p-6">
               {renderResponseDetails(selectedResponse)}
             </div>
+          </div>
+        </div>
+      )}
+
+      {downloadError && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
+            <h2 className="text-lg font-bold mb-2">Download Blocked</h2>
+            <p className="mb-4 text-gray-700">
+              Your browser has blocked multiple downloads. To enable this feature, please allow multiple downloads in your browser settings.<br /><br />
+              <span className="font-semibold">Chrome:</span> Settings &rarr; Privacy and security &rarr; Site Settings &rarr; Additional permissions &rarr; Automatic downloads.<br />
+              <span className="font-semibold">Edge:</span> Settings &rarr; Cookies and site permissions &rarr; Automatic downloads.
+            </p>
+            <button
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              onClick={() => setDownloadError(false)}
+            >
+              Close
+            </button>
           </div>
         </div>
       )}
