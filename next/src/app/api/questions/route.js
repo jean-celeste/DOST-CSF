@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { executeQuery } from '@/lib/db/utils'
 
-import { verifyToken } from '@/lib/auth/jwt';
+// import { verifyToken } from '@/lib/auth/jwt';
 
 export async function GET(request) {
   try {

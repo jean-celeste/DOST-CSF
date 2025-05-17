@@ -1,22 +1,12 @@
 import { NextResponse } from 'next/server';
 import { executeQuery } from '@/lib/db/utils';
-import { verifyToken } from '@/lib/auth/jwt';
-
-// Helper: Auth check
-async function checkAuth(request) {
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader) return false;
-  try {
-    verifyToken(authHeader.replace('Bearer ', ''));
-    return true;
-  } catch {
-    return false;
-  }
-}
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 // GET: Get a single service by ID
 export async function GET(request, context) {
-  if (!(await checkAuth(request))) {
+  const session = await getServerSession(authOptions);
+  if (!session || session.user.role !== "admin") {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
   const { id } = await context.params;
@@ -51,7 +41,8 @@ export async function GET(request, context) {
 
 // PUT: Update a service by ID
 export async function PUT(request, context) {
-  if (!(await checkAuth(request))) {
+  const session = await getServerSession(authOptions);
+  if (!session || session.user.role !== "admin") {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
   const { id } = await context.params;
@@ -81,7 +72,8 @@ export async function PUT(request, context) {
 
 // DELETE: Remove a service by ID
 export async function DELETE(request, context) {
-  if (!(await checkAuth(request))) {
+  const session = await getServerSession(authOptions);
+  if (!session || session.user.role !== "admin") {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
   const { id } = await context.params;

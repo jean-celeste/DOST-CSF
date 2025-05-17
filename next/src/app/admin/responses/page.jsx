@@ -35,12 +35,7 @@ export default function ResponsesPage() {
 
   const fetchQuestions = async (formId) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/questions?formId=${formId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await fetch(`/api/questions?formId=${formId}`);
       if (!response.ok) throw new Error('Failed to fetch questions');
       const { success, data, error: apiError } = await response.json();
       
@@ -54,12 +49,7 @@ export default function ResponsesPage() {
 
   const fetchData = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/admin/responses', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await fetch('/api/admin/responses');
       if (!response.ok) throw new Error('Failed to fetch data');
       const { success, data, error: apiError } = await response.json();
       
@@ -143,12 +133,7 @@ export default function ResponsesPage() {
     setDownloadingExcel(true);
     setDownloadError(false);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/admin/reports/responses', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const res = await fetch('/api/admin/reports/responses');
       
       if (!res.ok) {
         let errorMsg = 'Failed to download Excel report';

@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db/database';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 const fetchClients = async () => {
   try {
@@ -28,20 +30,11 @@ const fetchClients = async () => {
   }
 };
 
-import { verifyToken } from '@/lib/auth/jwt';
-
 export async function GET(request) {
-  // Auth check
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader) {
+  const session = await getServerSession(authOptions);
+  if (!session || session.user.role !== "admin") {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  try {
-    verifyToken(authHeader.replace('Bearer ', ''));
-  } catch {
-    return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-  }
-
   try {
     const clients = await fetchClients();
     return NextResponse.json({ 

@@ -34,12 +34,7 @@ export default function AdminServicesPage() {
     setLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/admin/services', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await fetch('/api/admin/services');
       const data = await response.json();
       if (!data.success) throw new Error(data.error || 'Failed to fetch services');
       setServices(data.data);
@@ -58,18 +53,15 @@ export default function AdminServicesPage() {
   const handleEdit = async (service) => {
     setEditModalLoading(true);
     try {
-      const token = localStorage.getItem('token');
       // Fetch service data
-      const serviceRes = await fetch(`/api/admin/services/${service.service_id}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const serviceRes = await fetch(`/api/admin/services/${service.service_id}`);
       const serviceData = await serviceRes.json();
       if (!serviceData.success) throw new Error(serviceData.error || 'Failed to fetch service');
 
       // Fetch dropdowns
       const [officesRes, typesRes] = await Promise.all([
-        fetch('/api/admin/offices', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('/api/admin/services_types', { headers: { Authorization: `Bearer ${token}` } }),
+        fetch('/api/admin/offices'),
+        fetch('/api/admin/services_types'),
       ]);
       const officesData = await officesRes.json();
       const typesData = await typesRes.json();
@@ -77,9 +69,7 @@ export default function AdminServicesPage() {
       // Fetch units for the selected office
       let unitsData = { data: [] };
       if (serviceData.data.office_id) {
-        const unitsRes = await fetch(`/api/admin/units?office_id=${serviceData.data.office_id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const unitsRes = await fetch(`/api/admin/units?office_id=${serviceData.data.office_id}`);
         unitsData = await unitsRes.json();
       }
 
@@ -104,7 +94,6 @@ export default function AdminServicesPage() {
     setFormLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem('token');
       const method = editingService ? 'PUT' : 'POST';
       const url = editingService
         ? `/api/admin/services/${editingService.service_id}`
@@ -112,8 +101,7 @@ export default function AdminServicesPage() {
       const response = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(form)
       });
@@ -133,12 +121,8 @@ export default function AdminServicesPage() {
     setDeleteLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`/api/admin/services/${deletingService.service_id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        method: 'DELETE'
       });
       const data = await response.json();
       if (!data.success) throw new Error(data.error || 'Failed to delete service');
@@ -158,10 +142,7 @@ export default function AdminServicesPage() {
       return;
     }
     try {
-      const token = localStorage.getItem('token');
-      const unitsRes = await fetch(`/api/admin/units?office_id=${officeId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const unitsRes = await fetch(`/api/admin/units?office_id=${officeId}`);
       const unitsData = await unitsRes.json();
       setUnits(unitsData.data || []);
     } catch (err) {
