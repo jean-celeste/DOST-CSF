@@ -32,6 +32,8 @@ export default function ResponsesPage() {
   const [questions, setQuestions] = useState({});
   const [downloadingExcel, setDownloadingExcel] = useState(false);
   const [downloadError, setDownloadError] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchData();
@@ -202,29 +204,66 @@ export default function ResponsesPage() {
     return ratingMap[rating] || rating;
   };
 
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedForm, dateFilter]);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredResponses.length / itemsPerPage);
+  const paginatedResponses = filteredResponses.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   if (loading) return <Spinner />;
   if (error) return <div className="p-8 text-red-500">Error: {error}</div>;
 
   return (
-    <div className="p-8">
+    <div className="p-6 max-w-[1400px] mx-auto">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-4">Form Responses</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">Form Responses</h1>
+          <div className="flex gap-2">
+            <Button
+              onClick={handleExport}
+              variant="outline"
+              className="h-10 px-4 border-blue-500 text-blue-500 hover:bg-blue-50 flex items-center gap-2"
+            >
+              <Download size={18} />
+              Export CSV
+            </Button>
+            <Button
+              onClick={handleExportExcel}
+              variant="outline"
+              className="h-10 px-4 border-green-600 text-green-600 hover:bg-green-50 flex items-center gap-2"
+              disabled={downloadingExcel}
+            >
+              {downloadingExcel ? <Spinner /> : <Download size={18} />}
+              Export Excel
+            </Button>
+          </div>
+        </div>
         
-        <div className="flex flex-col md:flex-row gap-4 mb-6 items-center">
-          <div className="relative w-full md:w-3/5">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6 items-start bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+          <div className="relative md:col-span-6">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <Input
               type="text"
-              placeholder="Search responses..."
-              className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Search by name, service, email or phone..."
+              className="w-full h-10 pl-10 pr-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           
-          <div className="flex md:ml-auto gap-4">
+          <div className="flex gap-3 md:col-span-6 w-full">
             <select
-              className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 h-10 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700"
               value={selectedForm}
               onChange={(e) => setSelectedForm(e.target.value)}
             >
@@ -234,7 +273,7 @@ export default function ResponsesPage() {
             </select>
 
             <select
-              className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 h-10 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700"
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
             >
@@ -243,58 +282,76 @@ export default function ResponsesPage() {
               <option value="week">Last 7 Days</option>
               <option value="month">Last 30 Days</option>
             </select>
-
-            <Button
-              onClick={handleExport}
-              variant="default"
-              size="lg"
-              className="bg-blue-500 hover:bg-blue-600 text-white"
-            >
-              <Download size={20} />
-              Export CSV
-            </Button>
-            <Button
-              onClick={handleExportExcel}
-              variant="default"
-              size="lg"
-              className="bg-green-600 hover:bg-green-700 text-white"
-              disabled={downloadingExcel}
-            >
-              {downloadingExcel ? <Spinner /> : <Download size={20} />}
-              Export Excel
-            </Button>
           </div>
         </div>
       </div>
 
-      {/* Use ResponsesTable component */}
-      <ResponsesTable responses={filteredResponses} onViewDetails={handleViewDetails} />
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100">
+        <ResponsesTable responses={paginatedResponses} onViewDetails={handleViewDetails} />
+        
+        {/* Pagination */}
+        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
+          <div className="flex items-center text-sm text-gray-500">
+            Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredResponses.length)} of {filteredResponses.length} results
+          </div>
+          <div className="flex gap-2">
+            {[...Array(totalPages)].map((_, i) => (
+              <Button
+                key={i + 1}
+                onClick={() => handlePageChange(i + 1)}
+                variant={currentPage === i + 1 ? "default" : "outline"}
+                className={`px-3 py-1 text-sm ${
+                  currentPage === i + 1 
+                    ? "bg-blue-500 text-white hover:bg-blue-600" 
+                    : "text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                {i + 1}
+              </Button>
+            ))}
+          </div>
+        </div>
+      </div>
 
       {/* Response Details Modal */}
       {selectedResponse && (
         <ResponseDetailsModal 
           response={selectedResponse} 
           onClose={() => setSelectedResponse(null)}
-          getQuestionText={getQuestionText} // Pass necessary props
-          renderRatingValue={renderRatingValue} // Pass necessary props
+          getQuestionText={getQuestionText}
+          renderRatingValue={renderRatingValue}
         />
       )}
 
       {downloadError && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
           <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
-            <h2 className="text-lg font-bold mb-2">Download Blocked</h2>
-            <p className="mb-4 text-gray-700">
-              Your browser has blocked multiple downloads. To enable this feature, please allow multiple downloads in your browser settings.<br /><br />
-              <span className="font-semibold">Chrome:</span> Settings &rarr; Privacy and security &rarr; Site Settings &rarr; Additional permissions &rarr; Automatic downloads.<br />
-              <span className="font-semibold">Edge:</span> Settings &rarr; Cookies and site permissions &rarr; Automatic downloads.
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-bold text-gray-900">Download Blocked</h2>
+              <button
+                onClick={() => setDownloadError(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <p className="mb-4 text-gray-600 leading-relaxed">
+              Your browser has blocked multiple downloads. To enable this feature, please allow multiple downloads in your browser settings.
             </p>
-            <button
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            <div className="space-y-2 mb-4 text-sm text-gray-600">
+              <p>
+                <span className="font-semibold">Chrome:</span> Settings → Privacy and security → Site Settings → Additional permissions → Automatic downloads
+              </p>
+              <p>
+                <span className="font-semibold">Edge:</span> Settings → Cookies and site permissions → Automatic downloads
+              </p>
+            </div>
+            <Button
+              className="w-full bg-blue-600 text-white hover:bg-blue-700"
               onClick={() => setDownloadError(false)}
             >
               Close
-            </button>
+            </Button>
           </div>
         </div>
       )}
