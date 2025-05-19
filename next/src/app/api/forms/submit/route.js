@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db/database';
+import { encrypt } from '@/lib/cryptoUtils'; // Import the encrypt function
 
 // import { verifyToken } from '@/lib/auth/jwt';
 
@@ -8,12 +9,12 @@ export async function POST(request) {
     const formData = await request.json();
     
     // Start a transaction
-    const client = await pool.connect();
+    const clientDB = await pool.connect(); // Renamed to clientDB to avoid conflict with 'client' table alias
     try {
-      await client.query('BEGIN');
+      await clientDB.query('BEGIN');
 
       // Validate form_id exists
-      const formCheck = await client.query(
+      const formCheck = await clientDB.query(
         `SELECT form_id FROM forms WHERE form_id = $1 AND status_id = 1`, // Check if form is active
         [formData.formId]
       );
@@ -25,7 +26,9 @@ export async function POST(request) {
       // 1. Find or create client
       let clientId = null;
       
-      // Only search for existing client if we have identifiers
+      // IMPORTANT: The following search logic will NOT reliably find clients
+      // if their name, email, or contact fields are encrypted in the database.
+      // This section is left as is for now but needs to be addressed for robust client matching.
       if (formData.personalDetails.email || formData.personalDetails.name || formData.personalDetails.contact) {
         // Build a simple query to find existing client
         const searchConditions = [];
@@ -33,21 +36,24 @@ export async function POST(request) {
         
         if (formData.personalDetails.email) {
           searchConditions.push('email = $' + (searchParams.length + 1));
-          searchParams.push(formData.personalDetails.email);
+          // For searching, you'd ideally search against encrypted values if possible,
+          // or use a different strategy like a hashed, searchable field.
+          // For now, this search will likely fail for encrypted emails.
+          searchParams.push(encrypt(formData.personalDetails.email)); // Attempt to search with encrypted value
         }
         
         if (formData.personalDetails.name) {
           searchConditions.push('name = $' + (searchParams.length + 1));
-          searchParams.push(formData.personalDetails.name);
+          searchParams.push(encrypt(formData.personalDetails.name)); // Attempt to search with encrypted value
         }
         
         if (formData.personalDetails.contact) {
           searchConditions.push('phone = $' + (searchParams.length + 1));
-          searchParams.push(formData.personalDetails.contact);
+          searchParams.push(encrypt(formData.personalDetails.contact)); // Attempt to search with encrypted value
         }
         
         if (searchConditions.length > 0) {
-          const clientCheck = await client.query(
+          const clientCheck = await clientDB.query(
             `SELECT client_id FROM client WHERE ${searchConditions.join(' OR ')} LIMIT 1`,
             searchParams
           );
@@ -63,64 +69,68 @@ export async function POST(request) {
         // Update existing client - only update fields that are provided
         const updateFields = [];
         const updateParams = [];
-        
+        let paramIndex = 1;
+
         if (formData.personalDetails.email) {
-          updateFields.push('email = $' + (updateParams.length + 1));
-          updateParams.push(formData.personalDetails.email);
+          updateFields.push(`email = $${paramIndex++}`);
+          updateParams.push(encrypt(formData.personalDetails.email));
         }
         
         if (formData.personalDetails.contact) {
-          updateFields.push('phone = $' + (updateParams.length + 1));
-          updateParams.push(formData.personalDetails.contact);
+          updateFields.push(`phone = $${paramIndex++}`);
+          updateParams.push(encrypt(formData.personalDetails.contact));
         }
         
         if (formData.personalDetails.sex) {
-          updateFields.push('sex = $' + (updateParams.length + 1));
+          updateFields.push(`sex = $${paramIndex++}`);
           updateParams.push(formData.personalDetails.sex);
         }
         
         if (formData.personalDetails.name) {
-          updateFields.push('name = $' + (updateParams.length + 1));
-          updateParams.push(formData.personalDetails.name);
+          updateFields.push(`name = $${paramIndex++}`);
+          updateParams.push(encrypt(formData.personalDetails.name));
         }
         
         if (formData.personalDetails.age) {
-          updateFields.push('age = $' + (updateParams.length + 1));
+          updateFields.push(`age = $${paramIndex++}`);
           updateParams.push(formData.personalDetails.age);
         }
         
         if (formData.personalDetails.clientType) {
-          // Get the client type ID first
-          const clientTypeResult = await client.query(
+          const clientTypeResult = await clientDB.query(
             `SELECT client_type_id FROM client_type WHERE client_type_name = $1`,
             [formData.personalDetails.clientType]
           );
           if (clientTypeResult.rows.length > 0) {
             const clientTypeId = clientTypeResult.rows[0].client_type_id;
-            updateFields.push('client_type_id = $' + (updateParams.length + 1));
+            updateFields.push(`client_type_id = $${paramIndex++}`);
             updateParams.push(clientTypeId);
           }
         }
         
-        // Always update the timestamp
         updateFields.push('last_updated = NOW()');
         
-        if (updateFields.length > 0) {
+        if (updateParams.length > 0) { // Check if there are any actual fields to update besides timestamp
           updateParams.push(clientId);
           
-          await client.query(
-            `UPDATE client SET ${updateFields.join(', ')} WHERE client_id = $${updateParams.length}`,
+          await clientDB.query(
+            `UPDATE client SET ${updateFields.join(', ')} WHERE client_id = $${paramIndex++}`,
             updateParams
           );
         }
       } else {
         // Insert new client
-        const clientTypeResult = await client.query(
+        const clientTypeResult = await clientDB.query(
           `SELECT client_type_id FROM client_type WHERE client_type_name = $1`,
           [formData.personalDetails.clientType]
         );
         const clientTypeId = clientTypeResult.rows.length > 0 ? clientTypeResult.rows[0].client_type_id : null;
-        const insertResult = await client.query(
+        
+        const encryptedEmail = encrypt(formData.personalDetails.email || null);
+        const encryptedContact = encrypt(formData.personalDetails.contact || null);
+        const encryptedName = encrypt(formData.personalDetails.name || null);
+
+        const insertResult = await clientDB.query(
           `INSERT INTO client (
             email, phone, sex, name, age,
             client_type_id,
@@ -133,10 +143,10 @@ export async function POST(request) {
           )
           RETURNING client_id`,
           [
-            formData.personalDetails.email || null,
-            formData.personalDetails.contact || null,
+            encryptedEmail,
+            encryptedContact,
             formData.personalDetails.sex || null,
-            formData.personalDetails.name || null,
+            encryptedName,
             formData.personalDetails.age || null,
             clientTypeId
           ]
@@ -182,7 +192,7 @@ export async function POST(request) {
       };
 
       // 2. Insert response
-      const responseResult = await client.query(
+      const responseResult = await clientDB.query(
         `INSERT INTO responses (
           form_id,
           service_id,
@@ -199,17 +209,17 @@ export async function POST(request) {
         ]
       );
 
-      await client.query('COMMIT');
+      await clientDB.query('COMMIT');
       
       return NextResponse.json({ 
         success: true, 
         responseId: responseResult.rows[0].response_id 
       });
     } catch (error) {
-      await client.query('ROLLBACK');
+      await clientDB.query('ROLLBACK');
       throw error;
     } finally {
-      client.release();
+      clientDB.release();
     }
   } catch (error) {
     console.error('Form submission error:', error);
@@ -218,4 +228,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-} 
+}

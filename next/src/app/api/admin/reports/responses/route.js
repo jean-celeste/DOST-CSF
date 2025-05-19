@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { executeQuery } from '@/lib/db/utils';
 import ExcelJS from 'exceljs';
+import { decrypt } from '@/lib/cryptoUtils'; // Import the decrypt function
 
 export const dynamic = 'force-dynamic'; // Ensure this route is always dynamic
 
@@ -81,15 +82,21 @@ export async function GET() {
       const suggestion = answers.suggestion || {};
       const ratings = (answers.csmARTARatings && answers.csmARTARatings.ratings) || {};
       const checkmark = answers.csmARTACheckmark || {};
+
+      // Decrypt sensitive fields
+      const clientName = row.client_name ? decrypt(row.client_name) : 'N/A';
+      const clientEmail = row.client_email ? decrypt(row.client_email) : 'N/A';
+      const clientPhone = row.client_phone ? decrypt(row.client_phone) : 'N/A';
+
       worksheet.addRow({
         response_id: row.response_id,
         submitted_at: row.submitted_at,
         service_name: row.service_name,
         office_name: row.office_name,
         unit_name: row.unit_name,
-        client_name: row.client_name,
-        client_email: row.client_email,
-        client_phone: row.client_phone,
+        client_name: clientName,
+        client_email: clientEmail,
+        client_phone: clientPhone,
         client_type_name: row.client_type_name,
         form_name: row.form_name,
         form_type: row.form_type,
@@ -129,4 +136,4 @@ export async function GET() {
     console.error('Error generating Excel report:', error);
     return NextResponse.json({ error: 'Failed to generate report' }, { status: 500 });
   }
-} 
+}
