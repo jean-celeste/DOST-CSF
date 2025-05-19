@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { Search, Download, X, Eye, CalendarDays, ListFilter, FileText, FileSpreadsheet, Check } from 'lucide-react'; // Updated icons
+import { Input } from '@/components/ui/input';
 import ResponsesTable from '@/components/admin/ResponsesTable';
 import ResponseDetailsModal from '@/components/admin/ResponseDetailsModal';
+import { Button } from '@/components/ui/button';
 
 // Constants
 const FormType = {
@@ -208,10 +210,10 @@ export default function ResponsesPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold mb-4">Form Responses</h1>
         
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
+        <div className="flex flex-col md:flex-row gap-4 mb-6 items-center">
+          <div className="relative w-full md:w-3/5">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-            <input
+            <Input
               type="text"
               placeholder="Search responses..."
               className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -220,7 +222,7 @@ export default function ResponsesPage() {
             />
           </div>
           
-          <div className="flex gap-4">
+          <div className="flex md:ml-auto gap-4">
             <select
               className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={selectedForm}
@@ -242,21 +244,25 @@ export default function ResponsesPage() {
               <option value="month">Last 30 Days</option>
             </select>
 
-            <button
+            <Button
               onClick={handleExport}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              variant="default"
+              size="lg"
+              className="bg-blue-500 hover:bg-blue-600 text-white"
             >
               <Download size={20} />
               Export CSV
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleExportExcel}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+              variant="default"
+              size="lg"
+              className="bg-green-600 hover:bg-green-700 text-white"
               disabled={downloadingExcel}
             >
               {downloadingExcel ? <Spinner /> : <Download size={20} />}
               Export Excel
-            </button>
+            </Button>
           </div>
         </div>
       </div>
