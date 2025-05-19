@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { executeQuery } from "@/lib/db/utils";
+import bcrypt from 'bcrypt'; // Import bcrypt
 
 export const authOptions = {
   providers: [
@@ -11,14 +12,27 @@ export const authOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        const result = await executeQuery(
-          'SELECT * FROM admins WHERE username = $1 AND password = $2',
-          [credentials.username, credentials.password]
-        );
-        if (result.rows.length > 0) {
-          const admin = result.rows[0];
-          return { id: admin.admin_id, username: admin.username, role: "admin" };
+        if (!credentials || !credentials.username || !credentials.password) {
+          return null;
         }
+        // First, find the user by username
+        const userResult = await executeQuery(
+          'SELECT * FROM admins WHERE username = $1',
+          [credentials.username]
+        );
+
+        if (userResult.rows.length > 0) {
+          const admin = userResult.rows[0];
+          
+          // compare the provided password with the stored hashed password
+          const passwordMatch = await bcrypt.compare(credentials.password, admin.password);
+
+          if (passwordMatch) {
+            // If passwords match, return the user object for NextAuth
+            return { id: admin.admin_id, username: admin.username, role: "admin" };
+          }
+        }
+        // If user not found or password doesn't match, return null
         return null;
       }
     })
