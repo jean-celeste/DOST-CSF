@@ -61,21 +61,30 @@ export default function Checkmark({
 
   // Use index for selectedOption
   const handleOptionChange = (optionIndex) => {
+    // Compute which additional questions should be visible for this option index
+    let visibleQuestionIds = [];
+    if (optionIndex === 3) { // last option
+      visibleQuestionIds = [];
+    } else if (optionIndex === 2) { // third option
+      visibleQuestionIds = [3]; // Only question 3
+    } else {
+      visibleQuestionIds = [2, 3]; // Both questions 2 and 3
+    }
+
+    // Clean up additionalAnswers: keep only those for visible questions
+    const cleanedAdditionalAnswers = Object.fromEntries(
+      Object.entries(formData.additionalAnswers || {}).filter(
+        ([qid]) => visibleQuestionIds.includes(Number(qid))
+      )
+    );
+
     const englishValue = csmArtaOptions.ccAwareness[optionIndex];
-    const newState = {
+    onFormDataChange({
       ...formData,
       selectedOption: englishValue, // store the English value
       selectedOptionIndex: optionIndex, // store the index for UI
-      additionalAnswers: { ...formData.additionalAnswers }
-    };
-
-    if (optionIndex === 3) { // last option
-      newState.additionalAnswers = {};
-    } else if (optionIndex === 2) { // third option
-      delete newState.additionalAnswers[1]; // Reset question1 answer but keep question2
-    }
-
-    onFormDataChange(newState);
+      additionalAnswers: cleanedAdditionalAnswers
+    });
   };
 
   const handleAdditionalOptionChange = (questionId, optionIndex) => {
