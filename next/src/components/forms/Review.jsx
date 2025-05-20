@@ -23,7 +23,8 @@ export default function Review({
   onEditSection, 
   onNewForm,
   formId,
-  formType 
+  formType,
+  language
 }) {
   const [editingSection, setEditingSection] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -119,6 +120,7 @@ export default function Review({
             editingSection={editingSection}
             onCancelEdit={handleCancelEdit}
             onSaveEdit={handleSaveEdit}
+            language={language}
           />
         </motion.div>
 
@@ -134,6 +136,7 @@ export default function Review({
             editingSection={editingSection}
             onCancelEdit={handleCancelEdit}
             onSaveEdit={handleSaveEdit}
+            language={language}
           />
         </motion.div>
 
@@ -233,5 +236,6 @@ Review.propTypes = {
   onEditSection: PropTypes.func.isRequired,
   onNewForm: PropTypes.func.isRequired,
   formId: PropTypes.number.isRequired,
-  formType: PropTypes.string.isRequired
+  formType: PropTypes.string.isRequired,
+  language: PropTypes.string.isRequired
 }; 

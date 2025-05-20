@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, CheckCircle2, Star, Pencil, X, MessageSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import { csmArtaOptions, csmArtaOptionsFilipino } from '@/lib/options/csm-arta-options';
 
 //Animated emojis
 const heartEyesFace = "/assets/emojis/smiling_face_with_heart-eyes_animated.png";
@@ -105,6 +106,29 @@ export const renderSectionHeader = (title, icon, section, onEdit, editingSection
   </div>
 );
 
+// Helper to map English answer to Tagalog
+const mapToTagalog = (answer, type) => {
+  if (!answer) return answer;
+  if (type === 'ccAwareness') {
+    const idx = csmArtaOptions.ccAwareness.indexOf(answer);
+    return idx !== -1 ? csmArtaOptionsFilipino.ccAwareness[idx] : answer;
+  } else if (type === 'ccVisibility') {
+    const idx = csmArtaOptions.ccVisibility.indexOf(answer);
+    return idx !== -1 ? csmArtaOptionsFilipino.ccVisibility[idx] : answer;
+  } else if (type === 'ccHelpfulness') {
+    const idx = csmArtaOptions.ccHelpfulness.indexOf(answer);
+    return idx !== -1 ? csmArtaOptionsFilipino.ccHelpfulness[idx] : answer;
+  } else if (type === 'ratingOptions') {
+    const found = csmArtaOptions.ratingOptions.find(opt => opt.value === answer || opt.label === answer);
+    if (found) {
+      const fil = csmArtaOptionsFilipino.ratingOptions.find(opt => opt.value === found.value);
+      return fil ? fil.label : answer;
+    }
+    return answer;
+  }
+  return answer;
+};
+
 export const PersonalDetailsSection = ({ formData, onEdit, editingSection, onCancelEdit, onSaveEdit }) => (
   <div className="space-y-4">
     {renderSectionHeader('Personal Details', <CheckCircle2 className="h-5 w-5 text-blue-500" />, 'personal', onEdit, editingSection, onCancelEdit, onSaveEdit)}
@@ -157,7 +181,7 @@ export const PersonalDetailsSection = ({ formData, onEdit, editingSection, onCan
   </div>
 );
 
-export const CSMARTACheckmarkSection = ({ formData, onEdit, editingSection, onCancelEdit, onSaveEdit }) => (
+export const CSMARTACheckmarkSection = ({ formData, onEdit, editingSection, onCancelEdit, onSaveEdit, language }) => (
   <div className="space-y-4">
     {renderSectionHeader('Citizen\'s Charter', <CheckCircle2 className="h-5 w-5 text-blue-500" />, 'csmarta', onEdit, editingSection, onCancelEdit, onSaveEdit)}
     <div className="space-y-4">
@@ -165,24 +189,27 @@ export const CSMARTACheckmarkSection = ({ formData, onEdit, editingSection, onCa
         <p className="text-sm font-medium text-gray-500 mb-2">Main Selection</p>
         <div className="flex items-center space-x-2">
           <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-          <p className="text-base text-gray-900">{formData.csmARTACheckmark.selectedOption}</p>
+          <p className="text-base text-gray-900">{language === 'fil' ? mapToTagalog(formData.csmARTACheckmark.selectedOption, 'ccAwareness') : formData.csmARTACheckmark.selectedOption}</p>
         </div>
       </div>
 
-      {Object.entries(formData.csmARTACheckmark.additionalAnswers || {}).map(([questionId, answer]) => (
-        <div key={questionId} className="bg-gray-50 p-4 rounded-lg">
-          <p className="text-sm font-medium text-gray-500 mb-2">Additional Question {questionId}</p>
-          <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-            <p className="text-base text-gray-900">{answer}</p>
+      {Object.entries(formData.csmARTACheckmark.additionalAnswers || {}).map(([questionId, answer]) => {
+        let type = questionId === '2' ? 'ccVisibility' : 'ccHelpfulness';
+        return (
+          <div key={questionId} className="bg-gray-50 p-4 rounded-lg">
+            <p className="text-sm font-medium text-gray-500 mb-2">Additional Question {questionId}</p>
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+              <p className="text-base text-gray-900">{language === 'fil' ? mapToTagalog(answer, type) : answer}</p>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   </div>
 );
 
-export const CSMARTARatingsSection = ({ formData, onEdit, editingSection, onCancelEdit, onSaveEdit }) => (
+export const CSMARTARatingsSection = ({ formData, onEdit, editingSection, onCancelEdit, onSaveEdit, language }) => (
   <div className="space-y-4">
     {renderSectionHeader('Service Ratings', <Star className="h-5 w-5 text-yellow-400" />, 'csmarta-ratings', onEdit, editingSection, onCancelEdit, onSaveEdit)}
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -191,7 +218,7 @@ export const CSMARTARatingsSection = ({ formData, onEdit, editingSection, onCanc
           <p className="text-sm font-medium text-gray-500 mb-2">SQD {index}</p>
           <div className="flex items-center space-x-2">
             {renderEmoji(value, 'csm')}
-            <p className="text-base text-gray-900">{value}</p>
+            <p className="text-base text-gray-900">{language === 'fil' ? mapToTagalog(value, 'ratingOptions') : value}</p>
           </div>
         </div>
       ))}
@@ -303,7 +330,8 @@ CSMARTACheckmarkSection.propTypes = {
   onEdit: PropTypes.func.isRequired,
   editingSection: PropTypes.string,
   onCancelEdit: PropTypes.func.isRequired,
-  onSaveEdit: PropTypes.func.isRequired
+  onSaveEdit: PropTypes.func.isRequired,
+  language: PropTypes.string
 };
 
 CSMARTARatingsSection.propTypes = {
@@ -311,7 +339,8 @@ CSMARTARatingsSection.propTypes = {
   onEdit: PropTypes.func.isRequired,
   editingSection: PropTypes.string,
   onCancelEdit: PropTypes.func.isRequired,
-  onSaveEdit: PropTypes.func.isRequired
+  onSaveEdit: PropTypes.func.isRequired,
+  language: PropTypes.string
 };
 
 QMSCheckmarkSection.propTypes = {

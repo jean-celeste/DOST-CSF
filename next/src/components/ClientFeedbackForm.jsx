@@ -314,6 +314,7 @@ export default function ClientFeedbackForm() {
                 onNewForm={handleNewForm}
                 formId={formState.currentFormId}
                 formType={formState.formType}
+                language={language}
               />
             )}
           </div>
