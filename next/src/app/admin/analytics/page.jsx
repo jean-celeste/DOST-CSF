@@ -190,7 +190,7 @@ export default function AnalyticsPage() {
   const filterResponsesByFormType = (data) => {
     return data.filter(response => {
       if (selectedFormType === FormType.CSM) return response.form_id === 1;
-      if (selectedFormType === FormType.QMS) return response.form_id === 3;
+      if (selectedFormType === FormType.QMS) return response.form_id === 2;
       return true;
     });
   };
@@ -221,7 +221,7 @@ export default function AnalyticsPage() {
     const totalResponses = filteredData.length;
     // Separate CSM and QMS responses
     const csmResponses = filteredData.filter(r => r.form_id === 1);
-    const qmsResponses = filteredData.filter(r => r.form_id === 3);
+    const qmsResponses = filteredData.filter(r => r.form_id === 2);
     // Calculate CSM stats
     const csmAverageRating = csmResponses.reduce((acc, curr) => {
       return acc + calculateAverageRating(curr.answers, FormType.CSM);

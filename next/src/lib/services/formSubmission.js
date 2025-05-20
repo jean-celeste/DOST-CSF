@@ -31,7 +31,7 @@ export async function submitForm(formData) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          formId: 3, // QMS form ID
+          formId: 2, // QMS form ID
           serviceId: formData.personalDetails.service_id,
           personalDetails: formData.personalDetails,
           qmsCheckmark: formData.qmsCheckmark,

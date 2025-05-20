@@ -218,7 +218,7 @@ export default function AdminDashboard() {
 
   const filterResponses = (formType) => {
     if (formType === FormType.CSM) return responses.filter(r => r.form_id === 1);
-    if (formType === FormType.QMS) return responses.filter(r => r.form_id === 3);
+    if (formType === FormType.QMS) return responses.filter(r => r.form_id === 2);
     return responses;
   };
 

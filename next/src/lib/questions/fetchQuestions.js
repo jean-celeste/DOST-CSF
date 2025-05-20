@@ -27,11 +27,11 @@ export function groupQuestions(questions, formId) {
     console.log('CSM ARTA checkmark questions:', checkmarkQuestions);
     console.log('CSM ARTA rating questions:', ratingQuestions);
     return { checkmarkQuestions, ratingQuestions };
-  } else if (formId === 3) { // QMS form
-    // Questions 31-35 are for checkmarks
-    const checkmarkQuestions = questionsArray.filter(q => q.question_id >= 31 && q.question_id <= 35);
-    // Questions 25-30 are for ratings (including question_id=25)
-    const ratingQuestions = questionsArray.filter(q => q.question_id >= 25 && q.question_id <= 30);
+  } else if (formId === 2) { // QMS form
+    // Questions 13-17 are for checkmarks
+    const checkmarkQuestions = questionsArray.filter(q => q.question_id >= 13 && q.question_id <= 17);
+    // Questions 18-23 are for ratings (including question_id=25)
+    const ratingQuestions = questionsArray.filter(q => q.question_id >= 18 && q.question_id <= 29);
     return { checkmarkQuestions, ratingQuestions };
   }
   return { checkmarkQuestions: [], ratingQuestions: [] };
