@@ -12,12 +12,19 @@ import LoadingSpinner from '@/components/forms-resources/LoadingSpinner';
 import { csmArtaRatingsFilipino } from '@/lib/constants/csmArtaQuestionsFilipino';
 
 
-export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataChange, isReviewMode, formId = 1 }) {
+export default function Ratings({
+  onNextStep,
+  onPrevStep,
+  formData,
+  onFormDataChange,
+  isReviewMode,
+  formId = 1,
+  language,
+  toggleLanguage
+}) {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [language, setLanguage] = useState('en');
-  const toggleLanguage = () => setLanguage(l => l === 'en' ? 'fil' : 'en');
 
   useEffect(() => {
     const loadQuestions = async () => {
@@ -191,5 +198,7 @@ Ratings.propTypes = {
   }).isRequired,
   onFormDataChange: PropTypes.func.isRequired,
   isReviewMode: PropTypes.bool,
-  formId: PropTypes.number
+  formId: PropTypes.number,
+  language: PropTypes.string.isRequired,
+  toggleLanguage: PropTypes.func.isRequired
 };

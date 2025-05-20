@@ -16,14 +16,13 @@ export default function Checkmark({
   formData,
   onFormDataChange,
   isReviewMode = false,
-  formId = 1 // Default to CSM ARTA form
+  formId = 1, // Default to CSM ARTA form
+  language,
+  toggleLanguage
 }) {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [language, setLanguage] = useState('en');
-
-  const toggleLanguage = () => setLanguage(l => l === 'en' ? 'fil' : 'en');
 
   useEffect(() => {
     const loadQuestions = async () => {
@@ -255,5 +254,7 @@ Checkmark.propTypes = {
   }).isRequired,
   onFormDataChange: PropTypes.func.isRequired,
   isReviewMode: PropTypes.bool,
-  formId: PropTypes.number
+  formId: PropTypes.number,
+  language: PropTypes.string.isRequired,
+  toggleLanguage: PropTypes.func.isRequired
 }

@@ -41,6 +41,8 @@ export default function ClientFeedbackForm() {
   const [qmsRatings, setQMSRatings] = useState(INITIAL_QMS_RATINGS)
   const [suggestion, setSuggestion] = useState(INITIAL_SUGGESTION)
   const [editingSection, setEditingSection] = useState(null)
+  const [language, setLanguage] = useState('en')
+  const toggleLanguage = () => setLanguage(l => l === 'en' ? 'fil' : 'en')
 
   const handleConsent = () => {
     setFormState(prev => ({ ...prev, showMainForm: true }))
@@ -251,6 +253,8 @@ export default function ClientFeedbackForm() {
                 formData={csmARTACheckmark}
                 onFormDataChange={setCSMARTACheckmark}
                 isReviewMode={editingSection === 'csmarta'}
+                language={language}
+                toggleLanguage={toggleLanguage}
               />
             )}
             {formState.currentStep === 3 && personalDetails.service_type_id === 1 && (
@@ -260,6 +264,8 @@ export default function ClientFeedbackForm() {
                 formData={csmARTARatings}
                 onFormDataChange={setCSMARTARatings}
                 isReviewMode={editingSection === 'csmarta-ratings'}
+                language={language}
+                toggleLanguage={toggleLanguage}
               />
             )}
             {formState.currentStep === 4 && personalDetails.service_type_id === 2 && (
