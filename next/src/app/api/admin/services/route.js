@@ -43,7 +43,7 @@ export async function POST(request) {
   }
   try {
     const body = await request.json();
-    const { service_name, description, service_type_id, office_id, unit_id } = body;
+    const { service_name, description, service_type_id, office_id, unit_id, client_types } = body;
     if (!service_name || !service_type_id || !office_id) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
     }
@@ -54,7 +54,18 @@ export async function POST(request) {
     `;
     const values = [service_name, description, service_type_id, office_id, unit_id || null];
     const result = await executeQuery(insertQuery, values);
-    return NextResponse.json({ success: true, data: result.rows[0] });
+    const newService = result.rows[0];
+    // Step 4: Insert into service_client_type for each client_type_id
+    if (Array.isArray(client_types) && client_types.length > 0) {
+      const insertClientTypePromises = client_types.map(clientTypeId =>
+        executeQuery(
+          'INSERT INTO service_client_type (service_id, client_type_id) VALUES ($1, $2)',
+          [newService.service_id, clientTypeId]
+        )
+      );
+      await Promise.all(insertClientTypePromises);
+    }
+    return NextResponse.json({ success: true, data: newService });
   } catch (error) {
     console.error('Error creating service:', error);
     return NextResponse.json({ success: false, error: 'Failed to create service' }, { status: 500 });

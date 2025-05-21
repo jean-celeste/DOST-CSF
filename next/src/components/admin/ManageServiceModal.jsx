@@ -19,6 +19,7 @@ export default function ManageServiceModal({
   const [serviceTypes, setServiceTypes] = useState([]);
   const [units, setUnits] = useState([]);
   const [currentService, setCurrentService] = useState(null);
+  const [clientTypes, setClientTypes] = useState([]);
 
   useEffect(() => {
     if (isOpen) {
@@ -28,19 +29,23 @@ export default function ManageServiceModal({
 
       const fetchData = async () => {
         try {
-          const [officesRes, typesRes] = await Promise.all([
+          const [officesRes, typesRes, clientTypesRes] = await Promise.all([
             fetch('/api/admin/offices'),
             fetch('/api/admin/services_types'),
+            fetch('/api/admin/client_type'),
           ]);
 
           const officesData = await officesRes.json();
           const typesData = await typesRes.json();
+          const clientTypesData = await clientTypesRes.json();
 
           if (!officesData.success) throw new Error(officesData.error || 'Failed to fetch offices');
           if (!typesData.success) throw new Error(typesData.error || 'Failed to fetch service types');
+          if (!clientTypesData.success) throw new Error(clientTypesData.error || 'Failed to fetch client types');
           
           setOffices(officesData.data || []);
           setServiceTypes(typesData.data || []);
+          setClientTypes(clientTypesData.data || []);
 
           // If editing and office_id is present, fetch initial units
           if (serviceToEdit && serviceToEdit.office_id) {
@@ -56,6 +61,7 @@ export default function ManageServiceModal({
           setOffices([]);
           setServiceTypes([]);
           setUnits([]);
+          setClientTypes([]);
         } finally {
           setInternalLoading(false);
         }
@@ -70,6 +76,7 @@ export default function ManageServiceModal({
       setServiceTypes([]);
       setUnits([]);
       setCurrentService(null);
+      setClientTypes([]);
     }
   }, [isOpen, serviceToEdit]);
 
@@ -114,7 +121,7 @@ export default function ManageServiceModal({
          <div className="text-red-500 p-4">Error: {error} <button onClick={onClose} className="text-blue-500 underline ml-2">Close</button></div>
       ) : (
         <ServiceForm
-          initialValues={currentService} // Use currentService which is set from serviceToEdit
+          initialValues={currentService ?? {}} // Always pass an object, never null
           onSubmit={onSubmit}
           onCancel={onClose}
           loading={isFormSubmitting} // This is the loading state for the actual form submission
@@ -122,6 +129,7 @@ export default function ManageServiceModal({
           serviceTypes={serviceTypes}
           units={units}
           onOfficeChange={handleOfficeChange}
+          clientTypes={clientTypes}
         />
       )}
     </EditServiceModal>

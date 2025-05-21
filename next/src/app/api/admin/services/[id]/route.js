@@ -32,7 +32,11 @@ export async function GET(request, context) {
     if (result.rows.length === 0) {
       return NextResponse.json({ success: false, error: 'Service not found' }, { status: 404 });
     }
-    return NextResponse.json({ success: true, data: result.rows[0] });
+    const service = result.rows[0];
+    // Fetch associated client types
+    const clientTypesResult = await executeQuery('SELECT ct.client_type_id, ct.client_type_name FROM service_client_type sct JOIN client_type ct ON sct.client_type_id = ct.client_type_id WHERE sct.service_id = $1', [id]);
+    service.client_types = clientTypesResult.rows;
+    return NextResponse.json({ success: true, data: service });
   } catch (error) {
     console.error('Error fetching service:', error);
     return NextResponse.json({ success: false, error: 'Failed to fetch service' }, { status: 500 });
@@ -48,7 +52,7 @@ export async function PUT(request, context) {
   const { id } = await context.params;
   try {
     const body = await request.json();
-    const { service_name, description, service_type_id, office_id, unit_id } = body;
+    const { service_name, description, service_type_id, office_id, unit_id, client_types } = body;
     if (!service_name || !service_type_id || !office_id) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
     }
@@ -63,7 +67,23 @@ export async function PUT(request, context) {
     if (result.rows.length === 0) {
       return NextResponse.json({ success: false, error: 'Service not found' }, { status: 404 });
     }
-    return NextResponse.json({ success: true, data: result.rows[0] });
+    const updatedService = result.rows[0];
+    // Step 4: Update service_client_type mapping
+    if (Array.isArray(client_types)) {
+      // Remove all old mappings
+      await executeQuery('DELETE FROM service_client_type WHERE service_id = $1', [id]);
+      // Insert new mappings
+      if (client_types.length > 0) {
+        const insertClientTypePromises = client_types.map(clientTypeId =>
+          executeQuery(
+            'INSERT INTO service_client_type (service_id, client_type_id) VALUES ($1, $2)',
+            [id, clientTypeId]
+          )
+        );
+        await Promise.all(insertClientTypePromises);
+      }
+    }
+    return NextResponse.json({ success: true, data: updatedService });
   } catch (error) {
     console.error('Error updating service:', error);
     return NextResponse.json({ success: false, error: 'Failed to update service' }, { status: 500 });

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
-export default function ServiceForm({ initialValues = {}, onSubmit, onCancel, loading, offices = [], serviceTypes = [], units = [], onOfficeChange }) {
+export default function ServiceForm({ initialValues = {}, onSubmit, onCancel, loading, offices = [], serviceTypes = [], units = [], onOfficeChange, clientTypes = [] }) {
   const [form, setForm] = useState({
     service_name: '',
     description: '',
@@ -12,13 +12,17 @@ export default function ServiceForm({ initialValues = {}, onSubmit, onCancel, lo
     ...initialValues,
   });
   const [error, setError] = useState(null);
+  const [selectedClientTypes, setSelectedClientTypes] = useState([]);
 
-  // Update form when initialValues change (for edit)
   useEffect(() => {
     setForm(f => ({ ...f, ...initialValues }));
+    if (Array.isArray(initialValues.client_types)) {
+      setSelectedClientTypes(initialValues.client_types.map(ct => ct.client_type_id));
+    } else {
+      setSelectedClientTypes([]);
+    }
   }, [initialValues]);
 
-  // Handle input changes
   const handleChange = e => {
     const { name, value } = e.target;
     setForm(f => ({ ...f, [name]: value }));
@@ -28,10 +32,17 @@ export default function ServiceForm({ initialValues = {}, onSubmit, onCancel, lo
     }
   };
 
-  // Handle submit
+  const handleClientTypeChange = (clientTypeId) => {
+    setSelectedClientTypes(prev =>
+      prev.includes(clientTypeId)
+        ? prev.filter(id => id !== clientTypeId)
+        : [...prev, clientTypeId]
+    );
+  };
+
   const handleSubmit = e => {
     e.preventDefault();
-    onSubmit(form);
+    onSubmit({ ...form, client_types: selectedClientTypes });
   };
 
   return (
@@ -71,6 +82,23 @@ export default function ServiceForm({ initialValues = {}, onSubmit, onCancel, lo
             <option key={unit.unit_id} value={unit.unit_id}>{unit.unit_name}</option>
           ))}
         </select>
+      </div>
+      <div>
+        <label className="block font-medium mb-1">Client Types</label>
+        <div className="flex flex-wrap gap-4">
+          {clientTypes.map(type => (
+            <label key={type.client_type_id} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                value={type.client_type_id}
+                checked={selectedClientTypes.includes(type.client_type_id)}
+                onChange={() => handleClientTypeChange(type.client_type_id)}
+                disabled={loading}
+              />
+              {type.client_type_name.charAt(0).toUpperCase() + type.client_type_name.slice(1)}
+            </label>
+          ))}
+        </div>
       </div>
       <div className="flex gap-2 justify-end">
         <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>Cancel</Button>
