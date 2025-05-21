@@ -114,7 +114,7 @@ export default function ResponseDetailsModal({ response, onClose, getQuestionTex
                             <div className="bg-green-100 text-green-800 rounded-full p-1 mr-3">
                               <Check size={16} />
                             </div>
-                            <span className="text-gray-700">{criteria}</span>
+                            <span className="text-gray-700">{getQuestionText(response.form_id, criteria)}</span>
                           </div>
                         )
                       ))
