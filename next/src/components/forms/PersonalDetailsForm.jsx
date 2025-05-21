@@ -19,7 +19,6 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
       ...formData,
       [field]: value
     }
-    console.log('Form Data Updated:', updatedData)
     onFormDataChange(updatedData)
     
     // Remove field from missing fields if it's now populated
@@ -29,7 +28,6 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
   }
 
   const handleServiceSelect = (serviceData) => {
-    console.log('Received service data in form:', serviceData);
     const updatedFormData = {
       ...formData,
       service_id: serviceData.service_id,
@@ -40,7 +38,7 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
       service_type_name: serviceData.service_type_name,
       clientType: serviceData.clientType
     };
-    console.log('Updating form data to:', updatedFormData);
+
     onFormDataChange(updatedFormData);
     setIsServicesDialogOpen(false);
   }
@@ -55,8 +53,6 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
       return;
     }
 
-    console.log('Form Data Before Next:', formData);
-    console.log('Service Type ID:', formData.service_type_id);
     onNextStep();
   }
 
