@@ -29,12 +29,9 @@ export default function Ratings({
   useEffect(() => {
     const loadQuestions = async () => {
       try {
-        console.log('Fetching questions for formId:', formId);
         const fetchedQuestions = await fetchQuestions(formId);
-        console.log('Fetched questions:', fetchedQuestions);
         
         const { ratingQuestions } = groupQuestions(fetchedQuestions, formId);
-        console.log('Grouped rating questions:', ratingQuestions);
         
         setQuestions(ratingQuestions);
         setError(null);
@@ -50,7 +47,6 @@ export default function Ratings({
   }, [formId]);
 
   const handleRatingSelect = (questionKey, value) => {
-    console.log('Rating selected:', { questionKey, value });
     onFormDataChange({
       ...formData,
       ratings: {
@@ -113,10 +109,6 @@ export default function Ratings({
     formData.currentPage * questionsPerPage,
     (formData.currentPage + 1) * questionsPerPage
   );
-
-  console.log('Rendering with questions:', ratingQuestions);
-  console.log('Current page:', formData.currentPage);
-  console.log('Current questions:', currentQuestions);
 
   return (
     <div className="space-y-8">

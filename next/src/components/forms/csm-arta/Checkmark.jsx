@@ -27,12 +27,9 @@ export default function Checkmark({
   useEffect(() => {
     const loadQuestions = async () => {
       try {
-        console.log('Fetching questions for formId:', formId);
         const fetchedQuestions = await fetchQuestions(formId);
-        console.log('Fetched questions:', fetchedQuestions);
         
         const { checkmarkQuestions } = groupQuestions(fetchedQuestions, formId);
-        console.log('Grouped checkmark questions:', checkmarkQuestions);
         
         setQuestions(checkmarkQuestions);
         setError(null);
@@ -139,8 +136,6 @@ export default function Checkmark({
       </div>
     );
   }
-
-  console.log('Rendering with questions:', questions);
 
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden">

@@ -38,7 +38,6 @@ export async function GET(request) {
       query += ` INNER JOIN service_client_type sct ON s.service_id = sct.service_id WHERE sct.client_type_id = ${clientTypeId}`;
     }
     query += ' ORDER BY s.service_name';
-    console.log('Final SQL query:', query);
     const result = await executeQuery(query);
     return NextResponse.json(result.rows);
   } catch (error) {

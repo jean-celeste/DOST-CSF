@@ -78,7 +78,6 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
       setIsLoading(true)
       // Use the correct client type for filtering
       const typeToSend = overrideType || (clientType === 'internal' ? 'internal' : externalSubtype);
-      console.log('Fetching services for type:', typeToSend);
       const url = typeToSend ? `/api/services?clientType=${typeToSend}` : '/api/services';
       const response = await fetch(url)
       if (!response.ok) throw new Error('Failed to fetch services')
