@@ -1,10 +1,14 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function SettingsPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [settings, setSettings] = useState({
     adminEmail: 'admin@example.com',
     notificationEnabled: true,
@@ -12,6 +16,15 @@ export default function SettingsPage() {
     exportFrequency: 'weekly',
     minimumRatingThreshold: 3.5
   });
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.replace("/admin/login");
+    }
+  }, [status, router]);
+
+  if (status === "loading") return <div>Loading...</div>;
+  if (!session) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();

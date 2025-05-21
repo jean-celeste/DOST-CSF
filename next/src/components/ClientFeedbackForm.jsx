@@ -28,7 +28,7 @@ import {
   INITIAL_SUGGESTION
 } from '@/constants/formSteps'
 
-export default function CustomerFeedbackForm() {
+export default function ClientFeedbackForm() {
   const [formState, setFormState] = useState({
     ...INITIAL_FORM_STATE,
     currentFormId: 1,
@@ -41,6 +41,8 @@ export default function CustomerFeedbackForm() {
   const [qmsRatings, setQMSRatings] = useState(INITIAL_QMS_RATINGS)
   const [suggestion, setSuggestion] = useState(INITIAL_SUGGESTION)
   const [editingSection, setEditingSection] = useState(null)
+  const [language, setLanguage] = useState('en')
+  const toggleLanguage = () => setLanguage(l => l === 'en' ? 'fil' : 'en')
 
   const handleConsent = () => {
     setFormState(prev => ({ ...prev, showMainForm: true }))
@@ -201,7 +203,7 @@ export default function CustomerFeedbackForm() {
               </div>
               <div>
                 <h1 className="text-lg font-bold leading-tight">Department of Science and Technology V</h1>
-                <p className="text-base text-gray-600">Customer Feedback Form</p>
+                <p className="text-base text-gray-600">Client Feedback Form</p>
               </div>
             </div>
 
@@ -251,6 +253,8 @@ export default function CustomerFeedbackForm() {
                 formData={csmARTACheckmark}
                 onFormDataChange={setCSMARTACheckmark}
                 isReviewMode={editingSection === 'csmarta'}
+                language={language}
+                toggleLanguage={toggleLanguage}
               />
             )}
             {formState.currentStep === 3 && personalDetails.service_type_id === 1 && (
@@ -260,6 +264,8 @@ export default function CustomerFeedbackForm() {
                 formData={csmARTARatings}
                 onFormDataChange={setCSMARTARatings}
                 isReviewMode={editingSection === 'csmarta-ratings'}
+                language={language}
+                toggleLanguage={toggleLanguage}
               />
             )}
             {formState.currentStep === 4 && personalDetails.service_type_id === 2 && (
@@ -308,6 +314,7 @@ export default function CustomerFeedbackForm() {
                 onNewForm={handleNewForm}
                 formId={formState.currentFormId}
                 formType={formState.formType}
+                language={language}
               />
             )}
           </div>

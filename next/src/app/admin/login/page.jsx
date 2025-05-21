@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { signIn } from "next-auth/react";
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -16,44 +17,19 @@ export default function AdminLogin() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     setIsLoading(true);
-
-    // Debug: Log credentials
-    console.log('Login attempt with credentials:', {
+    setError('');
+    const res = await signIn("credentials", {
+      redirect: false,
       username: credentials.username,
-      password: credentials.password
+      password: credentials.password,
     });
-
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(credentials),
-      });
-
-      const data = await response.json();
-
-      // Debug: Log API response
-      console.log('API Response:', data);
-
-      if (data.success) {
-        // Store admin data and token in localStorage (excluding sensitive info)
-        localStorage.setItem('isAdmin', 'true');
-        localStorage.setItem('adminData', JSON.stringify(data.admin));
-        localStorage.setItem('token', data.token);
-        router.push('/admin');
-      } else {
-        setError(data.message || 'Invalid credentials');
-      }
-    } catch (err) {
-      setError('An error occurred during login');
-      console.error('Login error:', err);
-    } finally {
-      setIsLoading(false);
+    if (res?.error) {
+      setError("Invalid credentials");
+    } else {
+      router.push("/admin");
     }
+    setIsLoading(false);
   };
 
   return (

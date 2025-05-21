@@ -14,7 +14,7 @@ export default function Checkmark({
   formData,
   onFormDataChange,
   isReviewMode = false,
-  formId = 3 // Default to QMS form
+  formId = 2 // Default to QMS form
 }) {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);

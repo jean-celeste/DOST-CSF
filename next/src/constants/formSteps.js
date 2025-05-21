@@ -68,7 +68,7 @@ export const INITIAL_PERSONAL_DETAILS = {
 }
 
 export const INITIAL_CSM_ARTA_CHECKMARK = {
-  selectedOption: '',
+  selectedOption: undefined,
   additionalAnswers: {}
 }
 

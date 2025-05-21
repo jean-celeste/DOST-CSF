@@ -6,12 +6,22 @@ import { Button } from "@/components/ui/button";
 import RatingQuestion from '@/components/forms-resources/RatingQuestion';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { csmArtaOptions } from '@/lib/options/csm-arta-options';
+import { csmArtaOptions, csmArtaOptionsFilipino } from '@/lib/options/csm-arta-options';
 import { fetchQuestions, groupQuestions } from '@/lib/questions/fetchQuestions';
 import LoadingSpinner from '@/components/forms-resources/LoadingSpinner';
+import { csmArtaRatingsFilipino } from '@/lib/constants/csmArtaQuestionsFilipino';
 
 
-export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataChange, isReviewMode, formId = 1 }) {
+export default function Ratings({
+  onNextStep,
+  onPrevStep,
+  formData,
+  onFormDataChange,
+  isReviewMode,
+  formId = 1,
+  language,
+  toggleLanguage
+}) {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -85,27 +95,36 @@ export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataCh
     );
   }
 
-  const questionsPerPage = 3;
-  const totalPages = Math.ceil(questions.length / questionsPerPage);
+  // Select questions based on language
+  const ratingQuestions = language === 'en'
+    ? questions
+    : csmArtaRatingsFilipino.map((q, i) => ({
+        ...questions[i],
+        question_text: q
+      }));
 
-  const currentQuestions = questions.slice(
+  // Select options based on language
+  const options = language === 'en' ? csmArtaOptions : csmArtaOptionsFilipino;
+
+  const questionsPerPage = 3;
+  const totalPages = Math.ceil(ratingQuestions.length / questionsPerPage);
+
+  const currentQuestions = ratingQuestions.slice(
     formData.currentPage * questionsPerPage,
     (formData.currentPage + 1) * questionsPerPage
   );
 
-  console.log('Rendering with questions:', questions);
+  console.log('Rendering with questions:', ratingQuestions);
   console.log('Current page:', formData.currentPage);
   console.log('Current questions:', currentQuestions);
 
   return (
     <div className="space-y-8">
-      <div className="space-y-2">
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
-          Service Satisfaction Rating
-        </h2>
-        <p className="text-gray-500">
-          Please rate your satisfaction with our services. Your feedback helps us improve.
-        </p>
+      {/* Language Toggle Button */}
+      <div className="flex justify-end mb-4">
+        <Button onClick={toggleLanguage} variant="outline">
+          {language === 'en' ? 'Filipino' : 'English'}
+        </Button>
       </div>
 
       <div className="space-y-8">
@@ -120,10 +139,10 @@ export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataCh
             <RatingQuestion
               question={q.question_text}
               questionId={formData.currentPage * questionsPerPage + index}
-              totalQuestions={questions.length}
+              totalQuestions={ratingQuestions.length}
               selectedRating={formData.ratings[`question${q.question_id}`]}
               onRatingSelect={(value) => handleRatingSelect(`question${q.question_id}`, value)}
-              emojiOptions={csmArtaOptions.ratingOptions}
+              emojiOptions={options.ratingOptions}
               showEmoji={true}
             />
           </motion.div>
@@ -179,5 +198,7 @@ Ratings.propTypes = {
   }).isRequired,
   onFormDataChange: PropTypes.func.isRequired,
   isReviewMode: PropTypes.bool,
-  formId: PropTypes.number
+  formId: PropTypes.number,
+  language: PropTypes.string.isRequired,
+  toggleLanguage: PropTypes.func.isRequired
 };

@@ -10,8 +10,12 @@ import {
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function RatingsPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [ratings, setRatings] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRating, setFilterRating] = useState('all');
@@ -19,6 +23,12 @@ export default function RatingsPage() {
     key: 'date',
     direction: 'desc'
   });
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.replace("/admin/login");
+    }
+  }, [status, router]);
 
   useEffect(() => {
     // TODO: Fetch real data from your API
@@ -75,6 +85,9 @@ export default function RatingsPage() {
     { value: 'fair', label: 'Fair' },
     { value: 'unsatisfactory', label: 'Unsatisfactory' }
   ];
+
+  if (status === "loading") return <div>Loading...</div>;
+  if (!session) return null;
 
   return (
     <div className="space-y-8">

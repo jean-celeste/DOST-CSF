@@ -1,19 +1,20 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db/database';
+import { encrypt, hash } from '@/lib/cryptoUtils'; // Import the encrypt and hash functions
 
-import { verifyToken } from '@/lib/auth/jwt';
+// import { verifyToken } from '@/lib/auth/jwt';
 
 export async function POST(request) {
   try {
     const formData = await request.json();
     
     // Start a transaction
-    const client = await pool.connect();
+    const clientDB = await pool.connect(); // Renamed to clientDB to avoid conflict with 'client' table alias
     try {
-      await client.query('BEGIN');
+      await clientDB.query('BEGIN');
 
       // Validate form_id exists
-      const formCheck = await client.query(
+      const formCheck = await clientDB.query(
         `SELECT form_id FROM forms WHERE form_id = $1 AND status_id = 1`, // Check if form is active
         [formData.formId]
       );
@@ -22,137 +23,148 @@ export async function POST(request) {
         throw new Error('Invalid form ID or form is not active');
       }
 
-      // 1. Find or create customer
-      let customerId = null;
+      // 1. Find or create client
+      let clientId = null;
       
-      // Only search for existing customer if we have identifiers
       if (formData.personalDetails.email || formData.personalDetails.name || formData.personalDetails.contact) {
-        // Build a simple query to find existing customer
+        // Build a simple query to find existing client
         const searchConditions = [];
         const searchParams = [];
         
         if (formData.personalDetails.email) {
-          searchConditions.push('email = $' + (searchParams.length + 1));
-          searchParams.push(formData.personalDetails.email);
+          searchConditions.push('email_hash = $' + (searchParams.length + 1));
+          searchParams.push(hash(formData.personalDetails.email)); // Search with hash value
         }
         
         if (formData.personalDetails.name) {
-          searchConditions.push('name = $' + (searchParams.length + 1));
-          searchParams.push(formData.personalDetails.name);
+          searchConditions.push('name_hash = $' + (searchParams.length + 1));
+          searchParams.push(hash(formData.personalDetails.name)); // Search with hash value
         }
         
         if (formData.personalDetails.contact) {
-          searchConditions.push('phone = $' + (searchParams.length + 1));
-          searchParams.push(formData.personalDetails.contact);
+          searchConditions.push('phone_hash = $' + (searchParams.length + 1));
+          searchParams.push(hash(formData.personalDetails.contact)); // Search with hash value
         }
         
         if (searchConditions.length > 0) {
-          const customerCheck = await client.query(
-            `SELECT customer_id FROM customer WHERE ${searchConditions.join(' OR ')} LIMIT 1`,
+          const clientCheck = await clientDB.query(
+            `SELECT client_id FROM client WHERE ${searchConditions.join(' OR ')} LIMIT 1`,
             searchParams
           );
           
-          if (customerCheck.rows.length > 0) {
-            customerId = customerCheck.rows[0].customer_id;
+          if (clientCheck.rows.length > 0) {
+            clientId = clientCheck.rows[0].client_id;
           }
         }
       }
       
-      // 2. Update or insert customer
-      if (customerId) {
-        // Update existing customer - only update fields that are provided
+      // 2. Update or insert client
+      if (clientId) {
+        // Update existing client - only update fields that are provided
         const updateFields = [];
         const updateParams = [];
-        
+        let paramIndex = 1;
+
         if (formData.personalDetails.email) {
-          updateFields.push('email = $' + (updateParams.length + 1));
-          updateParams.push(formData.personalDetails.email);
+          updateFields.push(`email = $${paramIndex}`);
+          updateParams.push(encrypt(formData.personalDetails.email));
+          paramIndex++;
+          updateFields.push(`email_hash = $${paramIndex}`);
+          updateParams.push(hash(formData.personalDetails.email));
+          paramIndex++;
         }
         
         if (formData.personalDetails.contact) {
-          updateFields.push('phone = $' + (updateParams.length + 1));
-          updateParams.push(formData.personalDetails.contact);
+          updateFields.push(`phone = $${paramIndex}`);
+          updateParams.push(encrypt(formData.personalDetails.contact));
+          paramIndex++;
+          updateFields.push(`phone_hash = $${paramIndex}`);
+          updateParams.push(hash(formData.personalDetails.contact));
+          paramIndex++;
         }
         
         if (formData.personalDetails.sex) {
-          updateFields.push('sex = $' + (updateParams.length + 1));
+          updateFields.push(`sex = $${paramIndex++}`);
           updateParams.push(formData.personalDetails.sex);
         }
         
         if (formData.personalDetails.name) {
-          updateFields.push('name = $' + (updateParams.length + 1));
-          updateParams.push(formData.personalDetails.name);
+          updateFields.push(`name = $${paramIndex}`);
+          updateParams.push(encrypt(formData.personalDetails.name));
+          paramIndex++;
+          updateFields.push(`name_hash = $${paramIndex}`);
+          updateParams.push(hash(formData.personalDetails.name));
+          paramIndex++;
         }
         
         if (formData.personalDetails.age) {
-          updateFields.push('age = $' + (updateParams.length + 1));
+          updateFields.push(`age = $${paramIndex++}`);
           updateParams.push(formData.personalDetails.age);
         }
         
-        if (formData.personalDetails.customerType) {
-          // Get the customer type ID first
-          const customerTypeResult = await client.query(
-            `SELECT cust_type_id, cust_type_name FROM customer_type WHERE cust_type_name = $1`,
-            [formData.personalDetails.customerType]
+        if (formData.personalDetails.clientType) {
+          const clientTypeResult = await clientDB.query(
+            `SELECT client_type_id FROM client_type WHERE client_type_name = $1`,
+            [formData.personalDetails.clientType]
           );
-          
-          if (customerTypeResult.rows.length > 0) {
-            const customerTypeId = customerTypeResult.rows[0].cust_type_id;
-            const customerTypeName = customerTypeResult.rows[0].cust_type_name;
-            
-            updateFields.push('customer_type_id = $' + (updateParams.length + 1));
-            updateParams.push(customerTypeId);
-            
-            // If customer type is Internal, explicitly set external_type_id to NULL
-            if (customerTypeName.toLowerCase() === 'internal') {
-              updateFields.push('external_type_id = NULL');
-            }
+          if (clientTypeResult.rows.length > 0) {
+            const clientTypeId = clientTypeResult.rows[0].client_type_id;
+            updateFields.push(`client_type_id = $${paramIndex++}`);
+            updateParams.push(clientTypeId);
           }
         }
         
-        if (formData.personalDetails.externalType) {
-          updateFields.push('external_type_id = (SELECT external_type_id FROM external_customer_type WHERE external_type_name = $' + (updateParams.length + 1) + ')');
-          updateParams.push(formData.personalDetails.externalType);
-        }
-        
-        // Always update the timestamp
         updateFields.push('last_updated = NOW()');
         
-        if (updateFields.length > 0) {
-          updateParams.push(customerId);
+        if (updateParams.length > 0) { // Check if there are any actual fields to update besides timestamp
+          updateParams.push(clientId);
           
-          await client.query(
-            `UPDATE customer SET ${updateFields.join(', ')} WHERE customer_id = $${updateParams.length}`,
+          await clientDB.query(
+            `UPDATE client SET ${updateFields.join(', ')} WHERE client_id = $${paramIndex++}`,
             updateParams
           );
         }
       } else {
-        // Insert new customer
-        const insertResult = await client.query(
-          `INSERT INTO customer (
-            email, phone, sex, name, age,
-            customer_type_id, external_type_id,
+        // Insert new client
+        const clientTypeResult = await clientDB.query(
+          `SELECT client_type_id FROM client_type WHERE client_type_name = $1`,
+          [formData.personalDetails.clientType]
+        );
+        const clientTypeId = clientTypeResult.rows.length > 0 ? clientTypeResult.rows[0].client_type_id : null;
+        
+        const encryptedEmail = encrypt(formData.personalDetails.email || null);
+        const encryptedContact = encrypt(formData.personalDetails.contact || null);
+        const encryptedName = encrypt(formData.personalDetails.name || null);
+        const emailHash = hash(formData.personalDetails.email || null);
+        const phoneHash = hash(formData.personalDetails.contact || null);
+        const nameHash = hash(formData.personalDetails.name || null);
+
+        const insertResult = await clientDB.query(
+          `INSERT INTO client (
+            email, email_hash, phone, phone_hash, sex, name, name_hash, age,
+            client_type_id,
             last_updated
           )
           VALUES (
-            $1, $2, $3, $4, $5,
-            (SELECT cust_type_id FROM customer_type WHERE cust_type_name = $6),
-            (SELECT external_type_id FROM external_customer_type WHERE external_type_name = $7),
+            $1, $2, $3, $4, $5, $6, $7, $8,
+            $9,
             NOW()
           )
-          RETURNING customer_id`,
+          RETURNING client_id`,
           [
-            formData.personalDetails.email || null,
-            formData.personalDetails.contact || null,
+            encryptedEmail,
+            emailHash,
+            encryptedContact,
+            phoneHash,
             formData.personalDetails.sex || null,
-            formData.personalDetails.name || null,
+            encryptedName,
+            nameHash,
             formData.personalDetails.age || null,
-            formData.personalDetails.customerType || 'Individual',
-            formData.personalDetails.externalType || 'External'
+            clientTypeId
           ]
         );
         
-        customerId = insertResult.rows[0].customer_id;
+        clientId = insertResult.rows[0].client_id;
       }
 
       // Transform question numbers to question_ids
@@ -192,11 +204,11 @@ export async function POST(request) {
       };
 
       // 2. Insert response
-      const responseResult = await client.query(
+      const responseResult = await clientDB.query(
         `INSERT INTO responses (
           form_id,
           service_id,
-          customer_id,
+          client_id,
           submitted_at,
           answers
         ) VALUES ($1, $2, $3, NOW(), $4)
@@ -204,22 +216,22 @@ export async function POST(request) {
         [
           formData.formId,
           formData.personalDetails.service_id,
-          customerId,
+          clientId,
           JSON.stringify(cleanFormData)
         ]
       );
 
-      await client.query('COMMIT');
+      await clientDB.query('COMMIT');
       
       return NextResponse.json({ 
         success: true, 
         responseId: responseResult.rows[0].response_id 
       });
     } catch (error) {
-      await client.query('ROLLBACK');
+      await clientDB.query('ROLLBACK');
       throw error;
     } finally {
-      client.release();
+      clientDB.release();
     }
   } catch (error) {
     console.error('Form submission error:', error);
@@ -228,4 +240,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-} 
+}

@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, LineElement, PointElement } from 'chart.js';
 import { Pie, Bar, Line } from 'react-chartjs-2';
 import { Calendar, TrendingUp, Star, ThumbsUp } from 'lucide-react';
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, LineElement, PointElement);
@@ -108,6 +110,8 @@ const calculateSQDScores = (responses) => {
 };
 
 export default function AnalyticsPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [responses, setResponses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -115,6 +119,12 @@ export default function AnalyticsPage() {
   const [selectedFormType, setSelectedFormType] = useState(FormType.CSM);
   const [questions, setQuestions] = useState({});
   const [sqdStats, setSqdStats] = useState({});
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.replace("/admin/login");
+    }
+  }, [status, router]);
 
   useEffect(() => {
     fetchData();
@@ -127,12 +137,7 @@ export default function AnalyticsPage() {
 
   const fetchQuestions = async (formId) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/questions?formId=${formId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await fetch(`/api/questions?formId=${formId}`);
       if (!response.ok) throw new Error('Failed to fetch questions');
       const { success, data, error: apiError } = await response.json();
       
@@ -146,12 +151,7 @@ export default function AnalyticsPage() {
 
   const fetchData = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/admin/responses', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await fetch('/api/admin/responses');
       if (!response.ok) throw new Error('Failed to fetch data');
       const { success, data, error: apiError } = await response.json();
       
@@ -171,12 +171,7 @@ export default function AnalyticsPage() {
 
   const fetchSQDStats = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/admin/csm-sqd-positive', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await fetch('/api/admin/csm-sqd-positive');
       if (!response.ok) throw new Error('Failed to fetch SQD stats');
       const { success, data } = await response.json();
       if (success) {
@@ -195,7 +190,7 @@ export default function AnalyticsPage() {
   const filterResponsesByFormType = (data) => {
     return data.filter(response => {
       if (selectedFormType === FormType.CSM) return response.form_id === 1;
-      if (selectedFormType === FormType.QMS) return response.form_id === 3;
+      if (selectedFormType === FormType.QMS) return response.form_id === 2;
       return true;
     });
   };
@@ -226,7 +221,7 @@ export default function AnalyticsPage() {
     const totalResponses = filteredData.length;
     // Separate CSM and QMS responses
     const csmResponses = filteredData.filter(r => r.form_id === 1);
-    const qmsResponses = filteredData.filter(r => r.form_id === 3);
+    const qmsResponses = filteredData.filter(r => r.form_id === 2);
     // Calculate CSM stats
     const csmAverageRating = csmResponses.reduce((acc, curr) => {
       return acc + calculateAverageRating(curr.answers, FormType.CSM);
@@ -321,6 +316,8 @@ export default function AnalyticsPage() {
     return questions[questionId] || `Question ${questionId}`;
   };
 
+  if (status === "loading") return <div>Loading...</div>;
+  if (!session) return null;
   if (loading) return <div className="p-8">Loading...</div>;
   if (error) return <div className="p-8 text-red-500">Error: {error}</div>;
 
@@ -335,7 +332,7 @@ export default function AnalyticsPage() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
-            <p className="text-gray-500 mt-1">Monitor and analyze customer feedback</p>
+            <p className="text-gray-500 mt-1">Monitor and analyze client feedback</p>
           </div>
           <div className="flex items-center gap-4">
           <select

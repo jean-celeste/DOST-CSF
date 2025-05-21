@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title);
@@ -182,10 +184,18 @@ const getChartData = (responses) => {
 };
 
 export default function AdminDashboard() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [responses, setResponses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedForm, setSelectedForm] = useState(FormType.CSM);
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.replace("/admin/login");
+    }
+  }, [status, router]);
 
   useEffect(() => {
     fetchData();
@@ -193,12 +203,7 @@ export default function AdminDashboard() {
 
   const fetchData = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/admin/responses', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await fetch('/api/admin/responses');
       if (!response.ok) throw new Error('Failed to fetch data');
       const { success, data, error: apiError } = await response.json();
       
@@ -213,9 +218,12 @@ export default function AdminDashboard() {
 
   const filterResponses = (formType) => {
     if (formType === FormType.CSM) return responses.filter(r => r.form_id === 1);
-    if (formType === FormType.QMS) return responses.filter(r => r.form_id === 3);
+    if (formType === FormType.QMS) return responses.filter(r => r.form_id === 2);
     return responses;
   };
+
+  if (status === "loading") return <div>Loading...</div>;
+  if (!session) return null;
 
   if (loading) return <div className="p-8">Loading...</div>;
   if (error) return <div className="p-8 text-red-500">Error: {error}</div>;
@@ -346,7 +354,7 @@ export default function AdminDashboard() {
               <tr className="bg-gray-50">
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
               </tr>
             </thead>
@@ -360,7 +368,7 @@ export default function AdminDashboard() {
                     {response.service_name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {response.customer_name}
+                    {response.client_name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {selectedForm === FormType.CSM 

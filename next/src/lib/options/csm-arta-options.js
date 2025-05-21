@@ -29,41 +29,105 @@ export const csmArtaOptions = {
       label: "Strongly Agree",
       imageSource: "/assets/emojis/smiling_face_with_heart-eyes_animated.png",
       imageSourceStatic: "/assets/emojis/smiling_face_with_heart-eyes_color.svg",
-      emoji: "😍"
+      emoji: "60d"
     },
     {
       value: "agree",
       label: "Agree",
       imageSource: "/assets/emojis/smiling_face_with_smiling_eyes_animated.png",
       imageSourceStatic: "/assets/emojis/smiling_face_with_smiling_eyes_color.svg",
-      emoji: "😊"
+      emoji: "60a"
     },
     {
       value: "neutral",
       label: "Neither Agree nor Disagree",
       imageSource: "/assets/emojis/face_without_mouth_animated.png",
       imageSourceStatic: "/assets/emojis/face_without_mouth_color.svg",
-      emoji: "😐"
+      emoji: "610"
     },
     {
       value: "disagree",
       label: "Disagree",
       imageSource: "/assets/emojis/frowning_face_animated.png",
       imageSourceStatic: "/assets/emojis/frowning_face_color.svg",
-      emoji: "😕"
+      emoji: "615"
     },
     {
       value: "strongly-disagree",
       label: "Strongly Disagree",
       imageSource: "/assets/emojis/pouting_face_animated.png",
       imageSourceStatic: "/assets/emojis/pouting_face_color.svg",
-      emoji: "😠"
+      emoji: "620"
     },
     {
       value: "na",
       label: "Not Applicable",
       imageSource: null,
-      emoji: "❌"
+      emoji: "74c"
+    }
+  ]
+};
+
+// Filipino options
+export const csmArtaOptionsFilipino = {
+  ccAwareness: [
+    "Alam ko ang CC at nakita ko ito sa napuntahang opisina",
+    "Alam ko ang CC pero hindi ko ito nakita sa napuntahang opisina",
+    "Nalaman ko ang CC nang makita ko ito sa napuntahang opisina",
+    "Hindi ko alam kung ano ang CC at wala akong nakita sa napuntahang opisina"
+  ],
+  ccVisibility: [
+    "Madaling makita",
+    "Medyo madaling makita",
+    "Mahirap makita",
+    "Hindi nakita"
+  ],
+  ccHelpfulness: [
+    "Lubos na Nakatulong",
+    "Medyo Nakatulong",
+    "Hindi Nakatulong"
+  ],
+  ratingOptions: [
+    {
+      value: "strongly-agree",
+      label: "Lubos na Sang-ayon",
+      imageSource: "/assets/emojis/smiling_face_with_heart-eyes_animated.png",
+      imageSourceStatic: "/assets/emojis/smiling_face_with_heart-eyes_color.svg",
+      emoji: "60d"
+    },
+    {
+      value: "agree",
+      label: "Sang-ayon",
+      imageSource: "/assets/emojis/smiling_face_with_smiling_eyes_animated.png",
+      imageSourceStatic: "/assets/emojis/smiling_face_with_smiling_eyes_color.svg",
+      emoji: "60a"
+    },
+    {
+      value: "neutral",
+      label: "Neutral",
+      imageSource: "/assets/emojis/face_without_mouth_animated.png",
+      imageSourceStatic: "/assets/emojis/face_without_mouth_color.svg",
+      emoji: "610"
+    },
+    {
+      value: "disagree",
+      label: "Di-Sang-ayon",
+      imageSource: "/assets/emojis/frowning_face_animated.png",
+      imageSourceStatic: "/assets/emojis/frowning_face_color.svg",
+      emoji: "615"
+    },
+    {
+      value: "strongly-disagree",
+      label: "Lubos na Di-Sang-ayon",
+      imageSource: "/assets/emojis/pouting_face_animated.png",
+      imageSourceStatic: "/assets/emojis/pouting_face_color.svg",
+      emoji: "620"
+    },
+    {
+      value: "na",
+      label: "Hindi Naaangkop",
+      imageSource: null,
+      emoji: "74c"
     }
   ]
 }; 

@@ -10,7 +10,7 @@ import { fetchQuestions, groupQuestions } from '@/lib/questions/fetchQuestions'
 import LoadingSpinner from '@/components/forms-resources/LoadingSpinner'
 import { qmsOptions } from '@/lib/options/qms-options'
 
-export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataChange, isReviewMode, formId = 3 }) {
+export default function Ratings({ onNextStep, onPrevStep, formData, onFormDataChange, isReviewMode, formId = 2 }) {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

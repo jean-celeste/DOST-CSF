@@ -1,7 +1,7 @@
-# DOST-CSF (Customer Satisfaction Feedback System)
+# DOST-CSF (Client Satisfaction Feedback System)
 
 ## Overview
-DOST-CSF is a Customer Satisfaction Feedback System developed for the Department of Science and Technology. This system allows customers to provide feedback on various services and activities through a user-friendly interface. The system includes multiple feedback forms such as CSM-ARTA and QMS, each with specific rating and checkmark components.
+DOST-CSF is a Client Satisfaction Feedback System developed for the Department of Science and Technology. This system allows clients to provide feedback on various services and activities through a user-friendly interface. The system includes multiple feedback forms such as CSM-ARTA and QMS, each with specific rating and checkmark components.
 
 ## Project Structure
 ```
@@ -9,7 +9,6 @@ DOST-CSF/
 ├── next/                  # Next.js application
 │   ├── src/
 │   │   ├── app/          # Next.js app router pages
-│   │   ├── components/   # React components
 │   │   │   ├── forms/    # Form components (CSM-ARTA, QMS)
 │   │   │   └── ui/       # Reusable UI components
 │   │   ├── lib/          # Utility functions and configurations
@@ -41,7 +40,7 @@ DOST-CSF/
 - **Data Storage**
   - Clean JSON structure for responses
   - Question IDs as keys for ratings
-  - Automatic customer data management
+  - Automatic client data management
   - Transaction-based submissions
 
 ## Recent Updates
