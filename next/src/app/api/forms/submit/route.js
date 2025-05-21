@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db/database';
-import { encrypt } from '@/lib/cryptoUtils'; // Import the encrypt function
+import { encrypt, hash } from '@/lib/cryptoUtils'; // Import the encrypt and hash functions
 
 // import { verifyToken } from '@/lib/auth/jwt';
 
@@ -26,30 +26,24 @@ export async function POST(request) {
       // 1. Find or create client
       let clientId = null;
       
-      // IMPORTANT: The following search logic will NOT reliably find clients
-      // if their name, email, or contact fields are encrypted in the database.
-      // This section is left as is for now but needs to be addressed for robust client matching.
       if (formData.personalDetails.email || formData.personalDetails.name || formData.personalDetails.contact) {
         // Build a simple query to find existing client
         const searchConditions = [];
         const searchParams = [];
         
         if (formData.personalDetails.email) {
-          searchConditions.push('email = $' + (searchParams.length + 1));
-          // For searching, you'd ideally search against encrypted values if possible,
-          // or use a different strategy like a hashed, searchable field.
-          // For now, this search will likely fail for encrypted emails.
-          searchParams.push(encrypt(formData.personalDetails.email)); // Attempt to search with encrypted value
+          searchConditions.push('email_hash = $' + (searchParams.length + 1));
+          searchParams.push(hash(formData.personalDetails.email)); // Search with hash value
         }
         
         if (formData.personalDetails.name) {
-          searchConditions.push('name = $' + (searchParams.length + 1));
-          searchParams.push(encrypt(formData.personalDetails.name)); // Attempt to search with encrypted value
+          searchConditions.push('name_hash = $' + (searchParams.length + 1));
+          searchParams.push(hash(formData.personalDetails.name)); // Search with hash value
         }
         
         if (formData.personalDetails.contact) {
-          searchConditions.push('phone = $' + (searchParams.length + 1));
-          searchParams.push(encrypt(formData.personalDetails.contact)); // Attempt to search with encrypted value
+          searchConditions.push('phone_hash = $' + (searchParams.length + 1));
+          searchParams.push(hash(formData.personalDetails.contact)); // Search with hash value
         }
         
         if (searchConditions.length > 0) {
@@ -72,13 +66,21 @@ export async function POST(request) {
         let paramIndex = 1;
 
         if (formData.personalDetails.email) {
-          updateFields.push(`email = $${paramIndex++}`);
+          updateFields.push(`email = $${paramIndex}`);
           updateParams.push(encrypt(formData.personalDetails.email));
+          paramIndex++;
+          updateFields.push(`email_hash = $${paramIndex}`);
+          updateParams.push(hash(formData.personalDetails.email));
+          paramIndex++;
         }
         
         if (formData.personalDetails.contact) {
-          updateFields.push(`phone = $${paramIndex++}`);
+          updateFields.push(`phone = $${paramIndex}`);
           updateParams.push(encrypt(formData.personalDetails.contact));
+          paramIndex++;
+          updateFields.push(`phone_hash = $${paramIndex}`);
+          updateParams.push(hash(formData.personalDetails.contact));
+          paramIndex++;
         }
         
         if (formData.personalDetails.sex) {
@@ -87,8 +89,12 @@ export async function POST(request) {
         }
         
         if (formData.personalDetails.name) {
-          updateFields.push(`name = $${paramIndex++}`);
+          updateFields.push(`name = $${paramIndex}`);
           updateParams.push(encrypt(formData.personalDetails.name));
+          paramIndex++;
+          updateFields.push(`name_hash = $${paramIndex}`);
+          updateParams.push(hash(formData.personalDetails.name));
+          paramIndex++;
         }
         
         if (formData.personalDetails.age) {
@@ -129,24 +135,30 @@ export async function POST(request) {
         const encryptedEmail = encrypt(formData.personalDetails.email || null);
         const encryptedContact = encrypt(formData.personalDetails.contact || null);
         const encryptedName = encrypt(formData.personalDetails.name || null);
+        const emailHash = hash(formData.personalDetails.email || null);
+        const phoneHash = hash(formData.personalDetails.contact || null);
+        const nameHash = hash(formData.personalDetails.name || null);
 
         const insertResult = await clientDB.query(
           `INSERT INTO client (
-            email, phone, sex, name, age,
+            email, email_hash, phone, phone_hash, sex, name, name_hash, age,
             client_type_id,
             last_updated
           )
           VALUES (
-            $1, $2, $3, $4, $5,
-            $6,
+            $1, $2, $3, $4, $5, $6, $7, $8,
+            $9,
             NOW()
           )
           RETURNING client_id`,
           [
             encryptedEmail,
+            emailHash,
             encryptedContact,
+            phoneHash,
             formData.personalDetails.sex || null,
             encryptedName,
+            nameHash,
             formData.personalDetails.age || null,
             clientTypeId
           ]

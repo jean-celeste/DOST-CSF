@@ -4,6 +4,7 @@ const ALGORITHM = 'aes-256-cbc';
 // Key must be 32 bytes (256 bits) for aes-256-cbc. Our key is 64 hex chars (32 bytes).
 const ENCRYPTION_KEY = process.env.APPLICATION_ENCRYPTION_KEY;
 const IV_LENGTH = 16; // For AES, this is always 16
+const HASH_IDX_PEPPER = process.env.HASH_IDX_PEPPER;
 
 /**
  * Encrypts a plaintext string.
@@ -67,4 +68,19 @@ export function decrypt(text) {
     
     return null; 
   }
+}
+
+/**
+ * Returns a SHA-256 hash (hex) of the input string, using a secret pepper.
+ * @param {string} text
+ * @returns {string|null}
+ */
+export function hash(text) {
+  if (text === null || typeof text === 'undefined' || text === '') {
+    return null;
+  }
+  if (!HASH_IDX_PEPPER) {
+    throw new Error('HASH_IDX_PEPPER is not defined.');
+  }
+  return crypto.createHash('sha256').update(HASH_IDX_PEPPER + String(text)).digest('hex');
 }
