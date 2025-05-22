@@ -47,38 +47,41 @@ export default function Review({
   };
 
   const handleEdit = (section) => {
-    // Prevent editing QMS sections for on-site services
-    if (formData.personalDetails.service_type_id === 1 && 
-        (section === 'qms-ratings' || section === 'qms-checkmark')) {
-      return;
-    }
-    
-    // Prevent editing CSM ARTA sections for off-site services
-    if (formData.personalDetails.service_type_id === 2 && 
-        (section === 'csmarta' || section === 'csmarta-ratings')) {
+    const clientType = formData.personalDetails.clientType;
+    const serviceTypeId = formData.personalDetails.service_type_id;
+    const isInternal = clientType === 'internal';
+    const isExternal = ['citizen', 'business', 'government'].includes(clientType);
+    const isOnsite = serviceTypeId === 1;
+    const isOffsite = serviceTypeId === 2;
+
+    // Always allow editing personal details and suggestion
+    if (section === 'personal' || section === 'suggestion') {
+      onEditSection(section);
       return;
     }
 
-    if (section === 'personal') {
-      // Navigate back to PersonalDetailsForm
-      onEditSection('personal');
-    } else if (section === 'csmarta') {
-      // Navigate back to CSMARTACheckmark
-      onEditSection('csmarta');
-    } else if (section === 'csmarta-ratings') {
-      // Navigate back to CSMARTARatings
-      onEditSection('csmarta-ratings');
-    } else if (section === 'qms-ratings') {
-      // Navigate back to QMSRatings
-      onEditSection('qms-ratings');
-    } else if (section === 'qms-checkmark') {
-      // Navigate back to QMSCheckmark
-      onEditSection('qms-checkmark');
-    } else if (section === 'suggestion') {
-      // Navigate back to Suggestion
-      onEditSection('suggestion');
-    } else {
-      setEditingSection(section);
+    // Internal: only QMS sections editable
+    if (isInternal) {
+      if (section === 'qms-ratings' || section === 'qms-checkmark') {
+        onEditSection(section);
+      }
+      return;
+    }
+
+    // External + onsite: only CSM sections editable
+    if (isExternal && isOnsite) {
+      if (section === 'csmarta' || section === 'csmarta-ratings') {
+        onEditSection(section);
+      }
+      return;
+    }
+
+    // External + offsite: only QMS sections editable
+    if (isExternal && isOffsite) {
+      if (section === 'qms-ratings' || section === 'qms-checkmark') {
+        onEditSection(section);
+      }
+      return;
     }
   };
 
@@ -108,67 +111,84 @@ export default function Review({
           />
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
-        >
-          <CSMARTACheckmarkSection 
-            formData={formData}
-            onEdit={handleEdit}
-            editingSection={editingSection}
-            onCancelEdit={handleCancelEdit}
-            onSaveEdit={handleSaveEdit}
-            language={language}
-          />
-        </motion.div>
+        {/* Render only the relevant sections based on clientType and service_type_id */}
+        {(() => {
+          const clientType = formData.personalDetails.clientType;
+          const serviceTypeId = formData.personalDetails.service_type_id;
+          const isInternal = clientType === 'internal';
+          const isExternal = ['citizen', 'business', 'government'].includes(clientType);
+          const isOnsite = serviceTypeId === 1;
+          const isOffsite = serviceTypeId === 2;
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
-        >
-          <CSMARTARatingsSection 
-            formData={formData}
-            onEdit={handleEdit}
-            editingSection={editingSection}
-            onCancelEdit={handleCancelEdit}
-            onSaveEdit={handleSaveEdit}
-            language={language}
-          />
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
-        >
-          <QMSRatingsSection 
-            formData={formData}
-            onEdit={handleEdit}
-            editingSection={editingSection}
-            onCancelEdit={handleCancelEdit}
-            onSaveEdit={handleSaveEdit}
-          />
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
-        >
-          <QMSCheckmarkSection 
-            formData={formData}
-            onEdit={handleEdit}
-            editingSection={editingSection}
-            onCancelEdit={handleCancelEdit}
-            onSaveEdit={handleSaveEdit}
-          />
-        </motion.div>
+          if (isInternal || (isExternal && isOffsite)) {
+            // QMS only
+            return <>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
+              >
+                <QMSRatingsSection 
+                  formData={formData}
+                  onEdit={handleEdit}
+                  editingSection={editingSection}
+                  onCancelEdit={handleCancelEdit}
+                  onSaveEdit={handleSaveEdit}
+                />
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
+              >
+                <QMSCheckmarkSection 
+                  formData={formData}
+                  onEdit={handleEdit}
+                  editingSection={editingSection}
+                  onCancelEdit={handleCancelEdit}
+                  onSaveEdit={handleSaveEdit}
+                />
+              </motion.div>
+            </>;
+          } else if (isExternal && isOnsite) {
+            // CSM only
+            return <>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
+              >
+                <CSMARTACheckmarkSection 
+                  formData={formData}
+                  onEdit={handleEdit}
+                  editingSection={editingSection}
+                  onCancelEdit={handleCancelEdit}
+                  onSaveEdit={handleSaveEdit}
+                  language={language}
+                />
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
+              >
+                <CSMARTARatingsSection 
+                  formData={formData}
+                  onEdit={handleEdit}
+                  editingSection={editingSection}
+                  onCancelEdit={handleCancelEdit}
+                  onSaveEdit={handleSaveEdit}
+                  language={language}
+                />
+              </motion.div>
+            </>;
+          }
+          return null;
+        })()}
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
