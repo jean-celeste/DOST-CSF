@@ -6,6 +6,8 @@ import { ChevronLeft, ChevronRight, CheckCircle2, Star, Pencil, X, MessageSquare
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { csmArtaOptions, csmArtaOptionsFilipino } from '@/lib/options/csm-arta-options';
+import { useEffect, useState } from 'react';
+import { fetchQuestions, groupQuestions } from '@/lib/questions/fetchQuestions';
 
 //Animated emojis
 const heartEyesFace = "/assets/emojis/smiling_face_with_heart-eyes_animated.png";
@@ -226,23 +228,52 @@ export const CSMARTARatingsSection = ({ formData, onEdit, editingSection, onCanc
   </div>
 );
 
-export const QMSCheckmarkSection = ({ formData, onEdit, editingSection, onCancelEdit, onSaveEdit }) => (
-  <div className="space-y-4">
-    {renderSectionHeader('QMS Checkmark', <CheckCircle2 className="h-5 w-5 text-blue-500" />, 'qms-checkmark', onEdit, editingSection, onCancelEdit, onSaveEdit)}
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {Object.entries(formData.qmsCheckmark.selections || {}).map(([option, isSelected]) => (
-        isSelected && (
-          <div key={option} className="bg-gray-50 p-4 rounded-lg">
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-              <p className="text-base text-gray-900">{option}</p>
-            </div>
-          </div>
-        )
-      ))}
+export const QMSCheckmarkSection = ({ formData, onEdit, editingSection, onCancelEdit, onSaveEdit }) => {
+  const [checkmarkMap, setCheckmarkMap] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function getQuestions() {
+      setLoading(true);
+      try {
+        const questions = await fetchQuestions(2); // QMS formId = 2
+        const { checkmarkQuestions } = groupQuestions(questions, 2);
+        const map = {};
+        checkmarkQuestions.forEach(q => {
+          map[q.question_id] = q.question_text;
+        });
+        setCheckmarkMap(map);
+      } catch (e) {
+        setCheckmarkMap({});
+      } finally {
+        setLoading(false);
+      }
+    }
+    getQuestions();
+  }, []);
+
+  return (
+    <div className="space-y-4">
+      {renderSectionHeader('QMS Checkmark', <CheckCircle2 className="h-5 w-5 text-blue-500" />, 'qms-checkmark', onEdit, editingSection, onCancelEdit, onSaveEdit)}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {loading ? (
+          <div className="text-gray-400">Loading...</div>
+        ) : (
+          Object.entries(formData.qmsCheckmark.selections || {}).map(([option, isSelected]) => (
+            isSelected && (
+              <div key={option} className="bg-gray-50 p-4 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                  <p className="text-base text-gray-900">{checkmarkMap[option] || option}</p>
+                </div>
+              </div>
+            )
+          ))
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export const QMSRatingsSection = ({ formData, onEdit, editingSection, onCancelEdit, onSaveEdit }) => (
   <div className="space-y-4">
