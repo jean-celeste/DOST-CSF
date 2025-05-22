@@ -86,7 +86,7 @@ const fetchResponses = async (filter = {}) => {
 
 export async function GET(request) {
   const session = await getServerSession(authOptions);
-  if (!session || !session.user.role) {
+  if (!session || !session.user.role || !session.user.role.toLowerCase().includes('admin')) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   try {

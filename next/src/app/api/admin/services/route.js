@@ -6,7 +6,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 // GET: List all services (with joins)
 export async function GET(request) {
   const session = await getServerSession(authOptions);
-  if (!session || !session.user.role) {
+  if (!session || !session.user.role || !session.user.role.toLowerCase().includes('admin')) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
   try {
@@ -52,7 +52,7 @@ export async function GET(request) {
 // POST: Create a new service
 export async function POST(request) {
   const session = await getServerSession(authOptions);
-  if (!session || !session.user.role) {
+  if (!session || !session.user.role || !session.user.role.toLowerCase().includes('admin')) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
   try {
