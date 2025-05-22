@@ -378,7 +378,7 @@ export default function AnalyticsPage() {
           </div>
         ) : (
           <>
-            {selectedFormType === FormType.CSM ? (
+              {selectedFormType === FormType.CSM ? (
               <CSMAnalytics
                 stats={stats}
                 sqdStats={sqdStats}

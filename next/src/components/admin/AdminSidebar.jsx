@@ -8,6 +8,7 @@ const navigationItems = [
   { name: 'Dashboard', href: '/admin', icon: Home },
   { name: 'Responses', href: '/admin/responses', icon: MessageSquare },
   { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+  { name: 'Reports', href: '/admin/reports', icon: BarChart3 },
   { name: 'Ratings', href: '/admin/ratings', icon: Star },
   { name: 'Clients', href: '/admin/clients', icon: Users },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
