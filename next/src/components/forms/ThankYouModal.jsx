@@ -98,17 +98,6 @@ const ThankYouModal = ({ isOpen, onClose, onNewForm }) => {
               <PlusCircle className="w-5 h-5" />
               Submit Another Form
             </motion.button>
-
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={onClose}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium
-                       hover:bg-blue-700 transition-colors duration-200
-                       shadow-lg hover:shadow-xl"
-            >
-              Close Now
-            </motion.button>
           </div>
         </div>
 
