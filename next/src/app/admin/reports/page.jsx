@@ -1,16 +1,11 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 
 const FormType = {
   CSM: 'csm',
   QMS: 'qms'
-};
-
-const QMSReportTabs = {
-  OVERALL: 'overall',
-  BY_OFFICE: 'byOffice',
-  BY_PROCESS: 'byProcess',
 };
 
 const qmsQuestions = [
@@ -61,12 +56,15 @@ function renderQmsTable(reportData, labelPrefix = '') {
 }
 
 export default function ReportsPage() {
-  const [timeRange, setTimeRange] = useState('month');
-  const [selectedFormType, setSelectedFormType] = useState(FormType.CSM);
   const [qmsReport, setQmsReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [qmsTab, setQmsTab] = useState(QMSReportTabs.OVERALL);
+  const [expandedOffice, setExpandedOffice] = useState(null);
+  const [selectedFormType, setSelectedFormType] = useState(FormType.QMS);
+
+  const handleAccordion = (officeId) => {
+    setExpandedOffice(prev => (prev === officeId ? null : officeId));
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -92,19 +90,10 @@ export default function ReportsPage() {
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Reports</h1>
-            <p className="text-gray-500 mt-1">Generate and view various administrative reports here.</p>
+            <h1 className="text-3xl font-bold text-gray-900">QMS Ratings Report</h1>
+            <p className="text-gray-500 mt-1">View the overall summary and breakdown by office and service.</p>
           </div>
           <div className="flex items-center gap-4">
-            <select
-              className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value)}
-            >
-              <option value="week">Last 7 Days</option>
-              <option value="month">Last 30 Days</option>
-              <option value="year">Last 12 Months</option>
-            </select>
             <div className="flex bg-white rounded-lg p-1 border border-gray-200">
               {[FormType.CSM, FormType.QMS].map((type) => (
                 <button
@@ -123,67 +112,75 @@ export default function ReportsPage() {
           </div>
         </div>
         {selectedFormType === FormType.QMS ? (
-          <div className="bg-white border border-gray-100 rounded-xl shadow p-8 mb-8">
-            <h2 className="text-xl font-bold mb-4 text-gray-800">QMS Ratings Report</h2>
-            <div className="mb-4 flex gap-2">
-              {Object.values(QMSReportTabs).map(tab => (
-                <button
-                  key={tab}
-                  onClick={() => setQmsTab(tab)}
-                  className={`px-4 py-2 rounded-md border transition-colors ${
-                    qmsTab === tab
-                      ? 'bg-blue-500 text-white border-blue-500'
-                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
-                  }`}
-                >
-                  {tab === QMSReportTabs.OVERALL && 'Regionwide'}
-                  {tab === QMSReportTabs.BY_OFFICE && 'By Office'}
-                  {tab === QMSReportTabs.BY_PROCESS && 'By Process (Regional Office)'}
-                </button>
-              ))}
+          <>
+            <div className="bg-white border border-gray-100 rounded-xl shadow p-8 mb-8">
+              <h2 className="text-xl font-bold mb-4 text-gray-800">Regionwide Summary</h2>
+              <div className="overflow-x-auto">
+                {loading ? (
+                  <div className="text-center py-4">Loading...</div>
+                ) : error ? (
+                  <div className="text-center py-4 text-red-500">{error}</div>
+                ) : qmsReport ? (
+                  renderQmsTable(qmsReport.overall)
+                ) : null}
+              </div>
             </div>
-            <div className="overflow-x-auto">
+            <div>
+              <h2 className="text-xl font-bold mb-4 text-gray-800">Breakdown by Office and Service</h2>
               {loading ? (
                 <div className="text-center py-4">Loading...</div>
               ) : error ? (
                 <div className="text-center py-4 text-red-500">{error}</div>
-              ) : qmsReport ? (
-                <>
-                  {qmsTab === QMSReportTabs.OVERALL && (
-                    renderQmsTable(qmsReport.overall)
-                  )}
-                  {qmsTab === QMSReportTabs.BY_OFFICE && (
-                    <>
-                      {qmsReport.byOffice && qmsReport.byOffice.length > 0 ? (
-                        qmsReport.byOffice.map(office => (
-                          <div key={office.office_id} className="mb-8">
-                            <h3 className="font-semibold text-gray-700 mb-2">{office.office_name}</h3>
-                            {renderQmsTable(office)}
+              ) : qmsReport && qmsReport.byOffice && qmsReport.byOffice.length > 0 ? (
+                qmsReport.byOffice.map(office => (
+                  <div
+                    key={office.office_id}
+                    className="mb-6 rounded-xl shadow border border-gray-200 bg-white overflow-hidden transition-all duration-300"
+                  >
+                    <button
+                      className={`w-full flex items-center justify-between px-6 py-4 cursor-pointer transition-colors duration-200 hover:bg-blue-50 focus:outline-none ${expandedOffice === office.office_id ? 'bg-blue-50' : ''}`}
+                      onClick={() => handleAccordion(office.office_id)}
+                      aria-expanded={expandedOffice === office.office_id}
+                      aria-controls={`office-panel-${office.office_id}`}
+                    >
+                      <span className="text-lg font-semibold text-gray-800">{office.office_name}</span>
+                      <span className="ml-2">
+                        {expandedOffice === office.office_id ? (
+                          <ChevronDown className="w-5 h-5 text-blue-600 transition-transform duration-300" />
+                        ) : (
+                          <ChevronRight className="w-5 h-5 text-gray-400 transition-transform duration-300" />
+                        )}
+                      </span>
+                    </button>
+                    <div
+                      id={`office-panel-${office.office_id}`}
+                      style={{
+                        maxHeight: expandedOffice === office.office_id ? 2000 : 0,
+                        overflow: 'hidden',
+                        transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                      }}
+                    >
+                      <div className="px-6 pb-6 pt-2">
+                        {renderQmsTable(office)}
+                        {office.services && office.services.length > 0 && (
+                          <div className="pl-4 border-l-2 border-blue-100 mt-2">
+                            {office.services.map(service => (
+                              <div key={service.service_id} className="mb-6">
+                                <h4 className="font-medium text-blue-700 mb-1">{service.service_name}</h4>
+                                {renderQmsTable(service, 'Question')}
+                              </div>
+                            ))}
                           </div>
-                        ))
-                      ) : (
-                        <div className="text-gray-500">No data by office.</div>
-                      )}
-                    </>
-                  )}
-                  {qmsTab === QMSReportTabs.BY_PROCESS && (
-                    <>
-                      {qmsReport.byProcess && qmsReport.byProcess.length > 0 ? (
-                        qmsReport.byProcess.map(unit => (
-                          <div key={unit.unit_id} className="mb-8">
-                            <h3 className="font-semibold text-gray-700 mb-2">{unit.unit_name}</h3>
-                            {renderQmsTable(unit)}
-                          </div>
-                        ))
-                      ) : (
-                        <div className="text-gray-500">No data by process.</div>
-                      )}
-                    </>
-                  )}
-                </>
-              ) : null}
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-gray-500">No data by office.</div>
+              )}
             </div>
-          </div>
+          </>
         ) : (
           <div className="bg-white border border-gray-100 rounded-xl shadow p-8 mb-8 min-h-[200px] flex items-center justify-center text-gray-400">
             <span>CSM report coming soon.</span>
