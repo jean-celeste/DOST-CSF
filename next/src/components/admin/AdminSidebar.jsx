@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LogOut, Home, MessageSquare, BarChart3, Settings, Star, Users, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LogOut, Home, MessageSquare, BarChart3, Settings, Star, Users, ChevronLeft, ChevronRight, FileChartColumn } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 
 const navigationItems = [
   { name: 'Dashboard', href: '/admin', icon: Home },
   { name: 'Responses', href: '/admin/responses', icon: MessageSquare },
   { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
-  { name: 'Reports', href: '/admin/reports', icon: BarChart3 },
-  { name: 'Ratings', href: '/admin/ratings', icon: Star },
+  { name: 'Reports', href: '/admin/reports', icon: FileChartColumn },
+  // { name: 'Ratings', href: '/admin/ratings', icon: Star },
   { name: 'Clients', href: '/admin/clients', icon: Users },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];

@@ -7,12 +7,66 @@ const FormType = {
   QMS: 'qms'
 };
 
+const QMSReportTabs = {
+  OVERALL: 'overall',
+  BY_OFFICE: 'byOffice',
+  BY_PROCESS: 'byProcess',
+};
+
+const qmsQuestions = [
+  { key: 'overall', label: 'Over-All Satisfaction' },
+  { key: 'appropriateness', label: 'Appropriateness of the service/activity' },
+  { key: 'timeliness', label: 'Timeliness of delivery' },
+  { key: 'attitude', label: 'Attitude of Staff' },
+  { key: 'gender_fair_treatment', label: 'Gender fair treatment' },
+  { key: 'beneficial', label: 'How beneficial is the service/activity' },
+];
+
+const ratingKeys = [
+  'outstanding',
+  'very_satisfactory',
+  'satisfactory',
+  'unsatisfactory',
+  'poor',
+];
+
+function renderQmsTable(reportData, labelPrefix = '') {
+  if (!reportData) return null;
+  return (
+    <table className="min-w-full border text-sm mb-6">
+      <thead>
+        <tr className="bg-gray-100">
+          <th className="px-4 py-2 border">{labelPrefix ? labelPrefix : 'Question'}</th>
+          <th className="px-4 py-2 border">Outstanding</th>
+          <th className="px-4 py-2 border">Very Satisfactory</th>
+          <th className="px-4 py-2 border">Satisfactory</th>
+          <th className="px-4 py-2 border">Unsatisfactory</th>
+          <th className="px-4 py-2 border">Poor</th>
+        </tr>
+      </thead>
+      <tbody>
+        {qmsQuestions.map(q => (
+          <tr key={q.key}>
+            <td className="px-4 py-2 border font-medium">{q.label}</td>
+            {ratingKeys.map(rating => (
+              <td className="px-4 py-2 border" key={rating}>
+                {reportData[`${q.key}_${rating}`] ?? 0}
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
 export default function ReportsPage() {
   const [timeRange, setTimeRange] = useState('month');
   const [selectedFormType, setSelectedFormType] = useState(FormType.CSM);
   const [qmsReport, setQmsReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [qmsTab, setQmsTab] = useState(QMSReportTabs.OVERALL);
 
   useEffect(() => {
     setLoading(true);
@@ -71,77 +125,63 @@ export default function ReportsPage() {
         {selectedFormType === FormType.QMS ? (
           <div className="bg-white border border-gray-100 rounded-xl shadow p-8 mb-8">
             <h2 className="text-xl font-bold mb-4 text-gray-800">QMS Ratings Report</h2>
+            <div className="mb-4 flex gap-2">
+              {Object.values(QMSReportTabs).map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => setQmsTab(tab)}
+                  className={`px-4 py-2 rounded-md border transition-colors ${
+                    qmsTab === tab
+                      ? 'bg-blue-500 text-white border-blue-500'
+                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+                  }`}
+                >
+                  {tab === QMSReportTabs.OVERALL && 'Regionwide'}
+                  {tab === QMSReportTabs.BY_OFFICE && 'By Office'}
+                  {tab === QMSReportTabs.BY_PROCESS && 'By Process (Regional Office)'}
+                </button>
+              ))}
+            </div>
             <div className="overflow-x-auto">
-              <table className="min-w-full border text-sm">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="px-4 py-2 border">Question</th>
-                    <th className="px-4 py-2 border">Outstanding</th>
-                    <th className="px-4 py-2 border">Very Satisfactory</th>
-                    <th className="px-4 py-2 border">Satisfactory</th>
-                    <th className="px-4 py-2 border">Unsatisfactory</th>
-                    <th className="px-4 py-2 border">Poor</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading ? (
-                    <tr><td colSpan={6} className="text-center py-4">Loading...</td></tr>
-                  ) : error ? (
-                    <tr><td colSpan={6} className="text-center py-4 text-red-500">{error}</td></tr>
-                  ) : qmsReport ? (
+              {loading ? (
+                <div className="text-center py-4">Loading...</div>
+              ) : error ? (
+                <div className="text-center py-4 text-red-500">{error}</div>
+              ) : qmsReport ? (
+                <>
+                  {qmsTab === QMSReportTabs.OVERALL && (
+                    renderQmsTable(qmsReport.overall)
+                  )}
+                  {qmsTab === QMSReportTabs.BY_OFFICE && (
                     <>
-                      <tr>
-                        <td className="px-4 py-2 border font-medium">Over-All Satisfaction</td>
-                        <td className="px-4 py-2 border">{qmsReport.overall_outstanding}</td>
-                        <td className="px-4 py-2 border">{qmsReport.overall_very_satisfactory}</td>
-                        <td className="px-4 py-2 border">{qmsReport.overall_satisfactory}</td>
-                        <td className="px-4 py-2 border">{qmsReport.overall_unsatisfactory}</td>
-                        <td className="px-4 py-2 border">{qmsReport.overall_poor}</td>
-                      </tr>
-                      <tr>
-                        <td className="px-4 py-2 border font-medium">Appropriateness of the service/activity</td>
-                        <td className="px-4 py-2 border">{qmsReport.appropriateness_outstanding}</td>
-                        <td className="px-4 py-2 border">{qmsReport.appropriateness_very_satisfactory}</td>
-                        <td className="px-4 py-2 border">{qmsReport.appropriateness_satisfactory}</td>
-                        <td className="px-4 py-2 border">{qmsReport.appropriateness_unsatisfactory}</td>
-                        <td className="px-4 py-2 border">{qmsReport.appropriateness_poor}</td>
-                      </tr>
-                      <tr>
-                        <td className="px-4 py-2 border font-medium">Timeliness of delivery</td>
-                        <td className="px-4 py-2 border">{qmsReport.timeliness_outstanding}</td>
-                        <td className="px-4 py-2 border">{qmsReport.timeliness_very_satisfactory}</td>
-                        <td className="px-4 py-2 border">{qmsReport.timeliness_satisfactory}</td>
-                        <td className="px-4 py-2 border">{qmsReport.timeliness_unsatisfactory}</td>
-                        <td className="px-4 py-2 border">{qmsReport.timeliness_poor}</td>
-                      </tr>
-                      <tr>
-                        <td className="px-4 py-2 border font-medium">Attitude of Staff</td>
-                        <td className="px-4 py-2 border">{qmsReport.attitude_outstanding}</td>
-                        <td className="px-4 py-2 border">{qmsReport.attitude_very_satisfactory}</td>
-                        <td className="px-4 py-2 border">{qmsReport.attitude_satisfactory}</td>
-                        <td className="px-4 py-2 border">{qmsReport.attitude_unsatisfactory}</td>
-                        <td className="px-4 py-2 border">{qmsReport.attitude_poor}</td>
-                      </tr>
-                      <tr>
-                        <td className="px-4 py-2 border font-medium">Gender fair treatment</td>
-                        <td className="px-4 py-2 border">{qmsReport.gender_fair_treatment_outstanding}</td>
-                        <td className="px-4 py-2 border">{qmsReport.gender_fair_treatment_very_satisfactory}</td>
-                        <td className="px-4 py-2 border">{qmsReport.gender_fair_treatment_satisfactory}</td>
-                        <td className="px-4 py-2 border">{qmsReport.gender_fair_treatment_unsatisfactory}</td>
-                        <td className="px-4 py-2 border">{qmsReport.gender_fair_treatment_poor}</td>
-                      </tr>
-                      <tr>
-                        <td className="px-4 py-2 border font-medium">How beneficial is the service/activity</td>
-                        <td className="px-4 py-2 border">{qmsReport.beneficial_outstanding}</td>
-                        <td className="px-4 py-2 border">{qmsReport.beneficial_very_satisfactory}</td>
-                        <td className="px-4 py-2 border">{qmsReport.beneficial_satisfactory}</td>
-                        <td className="px-4 py-2 border">{qmsReport.beneficial_unsatisfactory}</td>
-                        <td className="px-4 py-2 border">{qmsReport.beneficial_poor}</td>
-                      </tr>
+                      {qmsReport.byOffice && qmsReport.byOffice.length > 0 ? (
+                        qmsReport.byOffice.map(office => (
+                          <div key={office.office_id} className="mb-8">
+                            <h3 className="font-semibold text-gray-700 mb-2">{office.office_name}</h3>
+                            {renderQmsTable(office)}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-gray-500">No data by office.</div>
+                      )}
                     </>
-                  ) : null}
-                </tbody>
-              </table>
+                  )}
+                  {qmsTab === QMSReportTabs.BY_PROCESS && (
+                    <>
+                      {qmsReport.byProcess && qmsReport.byProcess.length > 0 ? (
+                        qmsReport.byProcess.map(unit => (
+                          <div key={unit.unit_id} className="mb-8">
+                            <h3 className="font-semibold text-gray-700 mb-2">{unit.unit_name}</h3>
+                            {renderQmsTable(unit)}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-gray-500">No data by process.</div>
+                      )}
+                    </>
+                  )}
+                </>
+              ) : null}
             </div>
           </div>
         ) : (
