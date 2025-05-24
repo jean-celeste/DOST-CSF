@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import AdminHeader from '@/components/admin/AdminHeader';
+import { Toaster } from '@/components/ui/sonner';
 
 export default function AdminLayout({ children }) {
   const pathname = usePathname();
@@ -23,6 +24,18 @@ export default function AdminLayout({ children }) {
   }
   return (
     <SessionProvider>
+      <Toaster
+        position="top-right"
+        duration={5000}
+        toastOptions={{
+          unstyled: true,
+          classNames: {
+            toast: 'w-80 min-h-[40px] p-4 shadow-lg rounded-lg bg-green-100 text-green-900 flex items-center gap-2',
+            title: 'text-base font-semibold text-green-900',
+            description: 'text-sm text-green-800',
+          },
+        }}
+      />
       <AdminLayoutContent>{children}</AdminLayoutContent>
     </SessionProvider>
   );

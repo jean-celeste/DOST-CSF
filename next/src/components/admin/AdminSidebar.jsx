@@ -1,27 +1,37 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LogOut, Home, MessageSquare, BarChart3, Settings, Star, Users, ChevronLeft, ChevronRight, FileChartColumn } from 'lucide-react';
-import { signOut } from 'next-auth/react';
-
-const navigationItems = [
-  { name: 'Dashboard', href: '/admin', icon: Home },
-  { name: 'Responses', href: '/admin/responses', icon: MessageSquare },
-  { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
-  { name: 'Reports', href: '/admin/reports', icon: FileChartColumn },
-  // { name: 'Ratings', href: '/admin/ratings', icon: Star },
-  { name: 'Clients', href: '/admin/clients', icon: Users },
-  { name: 'Settings', href: '/admin/settings', icon: Settings },
-];
+import { LogOut, Home, MessageSquare, BarChart3, Settings, Star, Users, ChevronLeft, ChevronRight, FileChartColumn, UserCog } from 'lucide-react';
+import { signOut, useSession } from 'next-auth/react';
 
 export default function Sidebar({ collapsed: initialCollapsed = false, onCollapse }) {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const [collapsed, setCollapsed] = useState(initialCollapsed);
 
   const handleCollapse = () => {
     setCollapsed((prev) => !prev);
     if (onCollapse) onCollapse(!collapsed);
   };
+
+  // Base navigation items
+  const baseNavigationItems = [
+    { name: 'Dashboard', href: '/admin', icon: Home },
+    { name: 'Responses', href: '/admin/responses', icon: MessageSquare },
+    { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+    { name: 'Reports', href: '/admin/reports', icon: FileChartColumn },
+    { name: 'Clients', href: '/admin/clients', icon: Users },
+    { name: 'Settings', href: '/admin/settings', icon: Settings },
+  ];
+
+  // Add Manage Admins link for Regional Administrators
+  const navigationItems = session?.user?.role === 'Regional Administrator'
+    ? [
+        ...baseNavigationItems.slice(0, 5), // Insert before Settings
+        { name: 'Manage Admins', href: '/admin/admins', icon: UserCog },
+        baseNavigationItems[5], // Settings at the end
+      ]
+    : baseNavigationItems;
 
   return (
     <aside
