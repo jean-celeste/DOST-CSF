@@ -17,6 +17,8 @@ import {
   DialogDescription,
   DialogClose
 } from '@/components/ui/dialog';
+import EditServiceModal from '@/components/EditServiceModal';
+import { Dialog as DeleteDialog, DialogContent as DeleteDialogContent, DialogHeader as DeleteDialogHeader, DialogTitle as DeleteDialogTitle, DialogDescription as DeleteDialogDescription, DialogFooter as DeleteDialogFooter, DialogClose as DeleteDialogClose } from '@/components/ui/dialog';
 
 export default function AdminManagementPage() {
   const { data: session, status } = useSession();
@@ -38,6 +40,16 @@ export default function AdminManagementPage() {
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [adminToEdit, setAdminToEdit] = useState(null);
+  const [editLoading, setEditLoading] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [adminToDelete, setAdminToDelete] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [editForm, setEditForm] = useState({ username: '', office_id: '', division_id: '', role: '' });
+  const [editIsRegionalOffice, setEditIsRegionalOffice] = useState(false);
+  const [editLoadingData, setEditLoadingData] = useState(false);
+  const [editError, setEditError] = useState('');
 
   // Helper to check if selected office is DOST Regional Office
   const isRegionalOffice = formData.office_id && offices.find(o => o.office_id.toString() === formData.office_id)?.office_name === 'DOST Regional Office';
@@ -175,6 +187,109 @@ export default function AdminManagementPage() {
   useEffect(() => {
     setCurrentPage(1);
   }, [search]);
+
+  // Edit handler
+  const handleEdit = (admin) => {
+    setAdminToEdit(admin);
+    setShowEditModal(true);
+  };
+  const handleEditSubmit = async (updatedData) => {
+    setEditLoading(true);
+    try {
+      const res = await fetch(`/api/admin/admins/${adminToEdit.admin_id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedData),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Admin updated successfully');
+        setShowEditModal(false);
+        setAdminToEdit(null);
+        fetchAdmins();
+      } else {
+        toast.error(data.error || 'Failed to update admin');
+      }
+    } catch {
+      toast.error('Error updating admin');
+    }
+    setEditLoading(false);
+  };
+
+  // Delete handler
+  const handleDelete = (admin) => {
+    setAdminToDelete(admin);
+    setShowDeleteDialog(true);
+  };
+  const handleDeleteConfirm = async () => {
+    if (!adminToDelete) return;
+    setDeleteLoading(true);
+    try {
+      const res = await fetch(`/api/admin/admins/${adminToDelete.admin_id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Admin deleted successfully');
+        setShowDeleteDialog(false);
+        setAdminToDelete(null);
+        fetchAdmins();
+      } else {
+        toast.error(data.error || 'Failed to delete admin');
+      }
+    } catch {
+      toast.error('Error deleting admin');
+    }
+    setDeleteLoading(false);
+  };
+
+  // When opening edit modal, fetch latest admin data and initialize form
+  useEffect(() => {
+    if (showEditModal && adminToEdit) {
+      setEditLoadingData(true);
+      setEditError('');
+      fetch(`/api/admin/admins/${adminToEdit.admin_id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            setEditForm({
+              username: data.data.username || '',
+              office_id: data.data.office_id?.toString() || '',
+              division_id: data.data.division_id?.toString() || '',
+              role: data.data.role || '',
+            });
+            const office = offices.find(o => o.office_id.toString() === (data.data.office_id?.toString() || ''));
+            setEditIsRegionalOffice(office?.office_name === 'DOST Regional Office');
+          } else {
+            setEditError(data.error || 'Failed to load admin data');
+          }
+        })
+        .catch(() => setEditError('Failed to load admin data'))
+        .finally(() => setEditLoadingData(false));
+    }
+  }, [showEditModal, adminToEdit, offices]);
+
+  // Auto-set role and division logic for edit modal
+  useEffect(() => {
+    if (!showEditModal) return;
+    if (!editForm.office_id) {
+      setEditForm(f => ({ ...f, division_id: '', role: '' }));
+      setEditIsRegionalOffice(false);
+      return;
+    }
+    const office = offices.find(o => o.office_id.toString() === editForm.office_id);
+    const isRegional = office?.office_name === 'DOST Regional Office';
+    setEditIsRegionalOffice(isRegional);
+    if (isRegional) {
+      if (editForm.division_id) {
+        setEditForm(f => ({ ...f, role: 'Division Administrator' }));
+      } else {
+        setEditForm(f => ({ ...f, role: '' }));
+      }
+    } else {
+      setEditForm(f => ({ ...f, division_id: '', role: 'PSTO Administrator' }));
+    }
+  }, [editForm.office_id, editForm.division_id, showEditModal, offices]);
 
   if (status === "loading") return <div>Loading...</div>;
   if (!session || session.user.role !== 'Regional Administrator') return null;
@@ -356,6 +471,7 @@ export default function AdminManagementPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Office</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Division</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -365,6 +481,10 @@ export default function AdminManagementPage() {
                   <td className="px-6 py-4 whitespace-nowrap">{admin.role}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{admin.office_name || '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{admin.division_name || '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => handleEdit(admin)}>Edit</Button>
+                    <Button size="sm" variant="destructive" onClick={() => handleDelete(admin)}>Delete</Button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -393,6 +513,103 @@ export default function AdminManagementPage() {
           </div>
         </div>
       </div>
+      {/* Edit Admin Modal */}
+      <EditServiceModal
+        isOpen={showEditModal}
+        onClose={() => { setShowEditModal(false); setAdminToEdit(null); setEditError(''); }}
+        title="Edit Admin"
+      >
+        {editLoadingData ? (
+          <div className="py-8 text-center text-gray-500">Loading admin data...</div>
+        ) : editError ? (
+          <div className="py-8 text-center text-red-500">{editError}</div>
+        ) : adminToEdit && (
+          <form
+            className="space-y-6"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              await handleEditSubmit(editForm);
+            }}
+          >
+            <div>
+              <label>Username</label>
+              <Input
+                name="username"
+                type="text"
+                value={editForm.username}
+                onChange={e => setEditForm(f => ({ ...f, username: e.target.value }))}
+                required
+              />
+            </div>
+            <div>
+              <label>Office</label>
+              <Select
+                value={editForm.office_id}
+                onValueChange={value => setEditForm(f => ({ ...f, office_id: value, division_id: '' }))}
+                required
+              >
+                <SelectTrigger><SelectValue placeholder="Select office" /></SelectTrigger>
+                <SelectContent>
+                  {offices.map(office => (
+                    <SelectItem key={office.office_id} value={office.office_id.toString()}>
+                      {office.office_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label>Division</label>
+              <Select
+                value={editForm.division_id}
+                onValueChange={value => setEditForm(f => ({ ...f, division_id: value }))}
+                disabled={!editIsRegionalOffice}
+                required={editIsRegionalOffice}
+              >
+                <SelectTrigger><SelectValue placeholder={editIsRegionalOffice ? "Select division" : "Select office first"} /></SelectTrigger>
+                <SelectContent>
+                  {divisions
+                    .filter(division => division && division.office_id && division.office_id.toString() === "1")
+                    .map(division => (
+                      <SelectItem key={division.division_id} value={division.division_id.toString()}>
+                        {division.division_name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label>Role</label>
+              <Input name="role" type="text" value={editForm.role} readOnly disabled />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => { setShowEditModal(false); setAdminToEdit(null); setEditError(''); }}>Cancel</Button>
+              <Button type="submit" disabled={editLoading || !editForm.role}>{editLoading ? 'Saving...' : 'Save Changes'}</Button>
+            </div>
+          </form>
+        )}
+      </EditServiceModal>
+      {/* Delete Admin Dialog */}
+      <DeleteDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DeleteDialogContent>
+          <DeleteDialogHeader>
+            <DeleteDialogTitle>Delete Admin</DeleteDialogTitle>
+            <DeleteDialogDescription>
+              Are you sure you want to delete the admin "<b>{adminToDelete?.username}</b>"? This action cannot be undone.
+            </DeleteDialogDescription>
+          </DeleteDialogHeader>
+          <DeleteDialogFooter className="mt-4">
+            <DeleteDialogClose asChild>
+              <Button variant="outline" onClick={() => setShowDeleteDialog(false)} disabled={deleteLoading}>
+                Cancel
+              </Button>
+            </DeleteDialogClose>
+            <Button variant="destructive" onClick={handleDeleteConfirm} disabled={deleteLoading}>
+              {deleteLoading ? 'Deleting...' : 'Delete'}
+            </Button>
+          </DeleteDialogFooter>
+        </DeleteDialogContent>
+      </DeleteDialog>
     </div>
   );
 } 
