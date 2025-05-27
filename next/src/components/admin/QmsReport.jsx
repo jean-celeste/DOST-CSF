@@ -132,7 +132,7 @@ export default function QmsReport() {
                     <div className="pl-4 border-l-2 border-blue-100 mt-2">
                       {office.services.map(service => (
                         <div key={service.service_id} className="mb-6">
-                          <h4 className="font-medium text-blue-700 mb-1">{service.service_name}</h4>
+                          <h4 className="text-lg font-bold text-blue-800 mb-3 pl-1 border-l-4 border-blue-400 bg-blue-50">{service.service_name}</h4>
                           {renderQmsTable(service, 'Question')}
                         </div>
                       ))}

@@ -10,7 +10,7 @@ const FormType = {
 };
 
 export default function ReportsPage() {
-  const [selectedFormType, setSelectedFormType] = useState(FormType.QMS);
+  const [selectedFormType, setSelectedFormType] = useState(FormType.CSM);
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
