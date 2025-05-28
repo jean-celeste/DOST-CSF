@@ -33,13 +33,15 @@ const ratingLabels = [
 
 // Helper to style header row
 const styleHeaderRow = (row) => {
-  row.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-  row.fill = {
-    type: 'pattern',
-    pattern: 'solid',
-    fgColor: { argb: 'FF2563EB' }
-  };
-  row.alignment = { vertical: 'middle', horizontal: 'center' };
+  row.eachCell((cell, colNumber) => {
+    cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF2563EB' }
+    };
+    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+  });
 };
 
 // Helper to style cells

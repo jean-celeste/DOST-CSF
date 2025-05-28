@@ -28,20 +28,23 @@ const checkmarkQuestions = [
 
 // Helper function to style header row
 const styleHeaderRow = (row) => {
-  row.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-  row.fill = {
-    type: 'pattern',
-    pattern: 'solid',
-    fgColor: { argb: 'FF2563EB' } // blue background
-  };
-  row.alignment = { vertical: 'middle', horizontal: 'center' };
+  row.eachCell((cell) => {
+    cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF2563EB' } // blue background
+    };
+    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+  });
+  row.isHeader = true; // Mark this row as a header
 };
 
 // Helper function to style cells
 const styleCells = (worksheet) => {
   worksheet.eachRow((row, rowNumber) => {
-    // Skip header for zebra striping, and only apply if no fill is already set
-    if (!row.fill && rowNumber !== 1 && rowNumber % 2 === 0) {
+    // Skip zebra striping for header rows
+    if (!row.isHeader && !row.fill && rowNumber !== 1 && rowNumber % 2 === 0) {
       row.fill = {
         type: 'pattern',
         pattern: 'solid',
@@ -165,7 +168,12 @@ export async function GET(request) {
 
     // --- 1. Summary Sheet ---
     const summarySheet = workbook.addWorksheet('Summary');
-    const summaryColCount = 3;
+    // Set columns before title for correct merging
+    summarySheet.columns = [
+      { key: 'question', width: 35 },
+      { key: 'score', width: 20 }
+    ];
+    const summaryColCount = summarySheet.columns.length;
     styleSheetTitle(summarySheet, 'CSM Checkmark Summary', summaryColCount);
     // CSM Checkmark Summary section
     summarySheet.addRow(['Citizen\'s Charter Answers', 'Score (%)']);
@@ -199,10 +207,14 @@ export async function GET(request) {
     // Breakdown by Checkmark Question section
     styleSheetTitle(summarySheet, 'Breakdown by Checkmark Question', summaryColCount);
     checkmarkQuestions.forEach((q, qIdx) => {
-      summarySheet.addRow([]);
-      summarySheet.addRow([q.label]);
-      summarySheet.addRow(['Answer', 'Responses', 'Percentage']);
-      styleHeaderRow(summarySheet.lastRow);
+      summarySheet.addRow([]); // Empty row for spacing
+      
+      const labelRow = summarySheet.addRow([q.label]);
+      styleServiceHeader(labelRow); // Apply consistent light blue styling
+      summarySheet.mergeCells(labelRow.number, 1, labelRow.number, summaryColCount); // Merge the label row
+
+    summarySheet.addRow(['Answer', 'Responses', 'Percentage']);
+    styleHeaderRow(summarySheet.lastRow);
 
       const counts = {};
       summaryResults[qIdx].rows.forEach(row => {
@@ -225,7 +237,18 @@ export async function GET(request) {
 
     // --- 2. SQD Sheet ---
     const sqdSheet = workbook.addWorksheet('SQD');
-    const sqdColCount = 9;
+    sqdSheet.columns = [
+      { key: 'sqd', width: 30 },
+      { key: 'sa', width: 10 },
+      { key: 'a', width: 10 },
+      { key: 'n', width: 10 },
+      { key: 'd', width: 10 },
+      { key: 'sd', width: 10 },
+      { key: 'nr', width: 10 },
+      { key: 'total', width: 10 },
+      { key: 'overall', width: 12 }
+    ];
+    const sqdColCount = sqdSheet.columns.length;
     styleSheetTitle(sqdSheet, 'Service Quality Dimensions (SQD)', sqdColCount);
     
     // SQD Overall section
@@ -293,9 +316,19 @@ export async function GET(request) {
 
     // --- 3. SQD by Service Sheet (blank) ---
     const sqdByServiceSheet = workbook.addWorksheet('SQD by Service');
-    const sqdByServiceColCount = 9;
+    sqdByServiceSheet.columns = [
+      { key: 'sqd', width: 30 },
+      { key: 'sa', width: 10 },
+      { key: 'a', width: 10 },
+      { key: 'n', width: 10 },
+      { key: 'd', width: 10 },
+      { key: 'sd', width: 10 },
+      { key: 'nr', width: 10 },
+      { key: 'total', width: 10 },
+      { key: 'overall', width: 12 }
+    ];
+    const sqdByServiceColCount = sqdByServiceSheet.columns.length;
     styleSheetTitle(sqdByServiceSheet, 'SQD by Service (Reserved)', sqdByServiceColCount);
-    sqdByServiceSheet.columns.forEach(col => col.width = 20);
     styleFooter(sqdByServiceSheet, sqdByServiceColCount, `Exported: ${new Date().toLocaleString()}`);
 
     // --- 4. Office Sheets ---
@@ -328,12 +361,6 @@ export async function GET(request) {
     // Create a sheet for each office
     Object.entries(officeMap).forEach(([officeId, office]) => {
       const officeSheet = workbook.addWorksheet(office.office_name);
-      const officeColCount = 9; // Number of columns for the data table
-      styleSheetTitle(officeSheet, `${office.office_name} - CSM Ratings by Service`, officeColCount);
-
-      // Define column properties (widths) for the entire sheet ONCE
-      // The 'header' property in column definitions is less critical here as headers are added manually below.
-      // Widths are the primary concern.
       officeSheet.columns = [
         { key: 'sqd', width: 30 }, // Service Quality Dimension
         { key: 'sa', width: 10 },  // Strongly Agree
@@ -345,6 +372,8 @@ export async function GET(request) {
         { key: 'total', width: 10 },// Total Responses
         { key: 'overall', width: 12 }// Overall Percentage
       ];
+      const officeColCount = officeSheet.columns.length;
+      styleSheetTitle(officeSheet, `${office.office_name} - CSM Ratings by Service`, officeColCount);
 
       const serviceList = Object.values(office.services);
       serviceList.forEach((service, sIdx) => {
