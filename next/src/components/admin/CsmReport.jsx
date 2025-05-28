@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, Download } from 'lucide-react';
 import { csmArtaOptions } from '@/lib/options/csm-arta-options';
 import sqdLabels from '@/lib/constants/sqdLabels';
+import { Button } from '@/components/ui/button';
 
 const checkmarkQuestions = [
   {
@@ -378,6 +379,15 @@ function ServiceAccordion({ byService }) {
   );
 }
 
+// Spinner for loading state
+function Spinner() {
+  return (
+    <div className="flex justify-center items-center h-6">
+      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+  );
+}
+
 export default function CsmReport() {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -391,6 +401,32 @@ export default function CsmReport() {
   const [byService, setByService] = useState([]);
   const [byServiceLoading, setByServiceLoading] = useState(true);
   const [byServiceError, setByServiceError] = useState(null);
+
+  // Excel export state
+  const [downloadingExcel, setDownloadingExcel] = useState(false);
+  const [downloadError, setDownloadError] = useState(false);
+
+  const handleExportExcel = async () => {
+    setDownloadingExcel(true);
+    setDownloadError(false);
+    try {
+      const res = await fetch('/api/admin/reports/csm/excel');
+      if (!res.ok) throw new Error('Failed to download Excel report');
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `csm_report_${new Date().toISOString().split('T')[0]}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setDownloadError(true);
+    } finally {
+      setDownloadingExcel(false);
+    }
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -470,6 +506,21 @@ export default function CsmReport() {
 
   return (
     <div className="space-y-8">
+      {/* Excel Export Button */}
+      <div className="flex justify-end mb-2">
+        <Button
+          onClick={handleExportExcel}
+          variant="outline"
+          className="h-10 px-4 border-green-600 text-green-600 hover:bg-green-50 flex items-center gap-2"
+          disabled={downloadingExcel}
+        >
+          {downloadingExcel ? <Spinner /> : <Download size={18} />}
+          Export Excel
+        </Button>
+      </div>
+      {downloadError && (
+        <div className="text-center text-red-500 mb-2">Failed to download Excel report. Please try again.</div>
+      )}
       {/* Summary Section */}
       <div className="bg-white border border-gray-100 rounded-xl shadow p-8 mb-8">
         <h2 className="text-xl font-bold mb-4 text-gray-800">CSM Checkmark Summary</h2>
