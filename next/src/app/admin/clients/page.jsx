@@ -125,7 +125,23 @@ export default function ClientDemographics() {
   if (status === "loading") return <div>Loading...</div>;
   if (!session) return null;
 
-  if (loading) return <div className="p-8">Loading client data...</div>;
+  if (loading) return (
+    <div className="p-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 animate-pulse">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="bg-white p-6 rounded-lg shadow h-32 flex items-center justify-center">
+            <div className="w-16 h-6 bg-gray-200 rounded mb-2" />
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8 animate-pulse">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="bg-white p-6 rounded-lg shadow h-[300px]" />
+        ))}
+      </div>
+      <div className="bg-white p-6 rounded-lg shadow h-64 animate-pulse" />
+    </div>
+  );
   if (error) return <div className="p-8 text-red-500">Error: {error}</div>;
 
   // Filter clients
@@ -209,11 +225,11 @@ export default function ClientDemographics() {
               <Filter className="w-4 h-4 text-gray-500" />
               <span className="text-sm font-medium text-gray-700">Filters:</span>
             </div>
-            
             <select
+              aria-label="Client Type Filter"
               value={filter.clientType}
               onChange={(e) => setFilter({...filter, clientType: e.target.value})}
-              className="px-3 py-1 border border-gray-300 rounded text-sm"
+              className="px-3 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
               <option value="all">All Client Types</option>
               <option value="internal">Internal</option>
@@ -221,21 +237,21 @@ export default function ClientDemographics() {
               <option value="business">Business</option>
               <option value="government">Government</option>
             </select>
-
             <select
+              aria-label="Gender Filter"
               value={filter.gender}
               onChange={(e) => setFilter({...filter, gender: e.target.value})}
-              className="px-3 py-1 border border-gray-300 rounded text-sm"
+              className="px-3 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
               <option value="all">All Genders</option>
               <option value="male">Male</option>
               <option value="female">Female</option>
             </select>
-
             <select
+              aria-label="Age Group Filter"
               value={filter.ageGroup}
               onChange={(e) => setFilter({...filter, ageGroup: e.target.value})}
-              className="px-3 py-1 border border-gray-300 rounded text-sm"
+              className="px-3 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
               <option value="all">All Age Groups</option>
               <option value="Youth (Under 18)">Youth (Under 18)</option>
@@ -243,10 +259,10 @@ export default function ClientDemographics() {
               <option value="Adult (35-54)">Adult (35-54)</option>
               <option value="Senior (55+)">Senior (55+)</option>
             </select>
-
             <button
               onClick={() => setFilter({clientType: 'all', gender: 'all', ageGroup: 'all'})}
-              className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm text-gray-600"
+              className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              aria-label="Clear Filters"
             >
               Clear Filters
             </button>
@@ -334,53 +350,61 @@ export default function ClientDemographics() {
       <div className="bg-white p-6 rounded-lg shadow">
         <h3 className="text-lg font-semibold mb-4">Client List</h3>
         <div className="overflow-x-auto">
-          <table className="min-w-full">
-            <thead>
-              <tr className="bg-gray-50">
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gender</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Responses</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Activity</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredClients.slice(0, 20).map((client, index) => (
-                <tr key={client.client_id || index}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {client.name || 'Anonymous'}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {client.email || 'No email'}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-900 capitalize">
-                      {client.sex || 'Unknown'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {client.age || 'N/A'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 capitalize">
-                      {client.client_type || 'Unknown'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {client.response_count}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(client.last_updated).toLocaleDateString()}
-                  </td>
+          {filteredClients.length === 0 ? (
+            <div className="flex flex-col items-center justify-center min-h-[200px]">
+              <div className="text-4xl mb-2">🙁</div>
+              <div className="text-gray-700 font-semibold mb-1">No clients found</div>
+              <div className="text-gray-500 text-sm">Try adjusting your filters or check back later.</div>
+            </div>
+          ) : (
+            <table className="min-w-full">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gender</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Responses</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Activity</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredClients.slice(0, 20).map((client, index) => (
+                  <tr key={client.client_id || index} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {client.name || 'Anonymous'}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {client.email || 'No email'}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${client.sex?.toLowerCase() === 'male' ? 'bg-blue-100 text-blue-800' : client.sex?.toLowerCase() === 'female' ? 'bg-pink-100 text-pink-800' : 'bg-gray-100 text-gray-600'}`}> 
+                        {client.sex || 'Unknown'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {client.age || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 capitalize">
+                        {client.client_type || 'Unknown'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {client.response_count}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(client.last_updated).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
           {filteredClients.length > 20 && (
             <div className="mt-4 text-center text-sm text-gray-500">
               Showing 20 of {filteredClients.length} clients

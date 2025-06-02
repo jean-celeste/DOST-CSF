@@ -233,7 +233,23 @@ export default function AdminDashboard() {
   if (status === "loading") return <div>Loading...</div>;
   if (!session) return null;
 
-  if (loading) return <div className="p-8">Loading...</div>;
+  if (loading) return (
+    <div className="p-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-pulse">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="bg-white p-6 rounded-lg shadow h-32 flex items-center justify-center">
+            <div className="w-16 h-6 bg-gray-200 rounded mb-2" />
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 animate-pulse">
+        {[...Array(2)].map((_, i) => (
+          <div key={i} className="bg-white p-6 rounded-lg shadow h-[300px]" />
+        ))}
+      </div>
+      <div className="bg-white p-6 rounded-lg shadow h-64 animate-pulse" />
+    </div>
+  );
   if (error) return <div className="p-8 text-red-500">Error: {error}</div>;
 
   const filteredResponses = filterResponses(selectedForm);
@@ -257,12 +273,13 @@ export default function AdminDashboard() {
           {[FormType.CSM, FormType.QMS].map(type => (
             <button
               key={type}
-              className={`px-4 py-2 rounded-lg transition-colors ${
+              className={`px-4 py-2 rounded-lg transition-colors font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 ${
                 selectedForm === type 
                   ? 'bg-blue-500 text-white' 
-                  : 'bg-gray-200 hover:bg-gray-300'
+                  : 'bg-gray-200 hover:bg-blue-100 text-blue-700'
               }`}
               onClick={() => setSelectedForm(type)}
+              aria-pressed={selectedForm === type}
             >
               {type.toUpperCase()} Forms
             </button>
@@ -283,7 +300,7 @@ export default function AdminDashboard() {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white p-6 rounded-lg shadow">
+            <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-100">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-gray-500">Total Responses</p>
@@ -294,7 +311,7 @@ export default function AdminDashboard() {
             </div>
             {selectedForm === FormType.CSM ? (
               <>
-                <div className="bg-white p-6 rounded-lg shadow">
+                <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-100">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-gray-500">CSM Average Rating</p>
@@ -306,7 +323,7 @@ export default function AdminDashboard() {
                     <Star className="text-yellow-500" size={24} />
                   </div>
                 </div>
-                <div className="bg-white p-6 rounded-lg shadow">
+                <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-100">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-gray-500">CSM Satisfaction Rate</p>
@@ -318,7 +335,7 @@ export default function AdminDashboard() {
               </>
             ) : (
               <>
-                <div className="bg-white p-6 rounded-lg shadow">
+                <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-100">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-gray-500">QMS Average Rating</p>
@@ -330,7 +347,7 @@ export default function AdminDashboard() {
                     <Star className="text-yellow-500" size={24} />
                   </div>
                 </div>
-                <div className="bg-white p-6 rounded-lg shadow">
+                <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-100">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-gray-500">QMS Performance</p>
@@ -343,7 +360,7 @@ export default function AdminDashboard() {
             )}
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-            <div className="bg-white p-6 rounded-lg shadow">
+            <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-100">
               <h3 className="text-lg font-semibold mb-4">
                 {selectedForm === FormType.CSM ? 'CSM Service Distribution' : 'QMS Service Distribution'}
               </h3>
@@ -351,7 +368,7 @@ export default function AdminDashboard() {
                 <Pie data={chartData.serviceData} options={CHART_OPTIONS} />
               </div>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow">
+            <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-100">
               <h3 className="text-lg font-semibold mb-4">
                 {selectedForm === FormType.CSM ? 'CSM Rating Distribution' : 'QMS Rating Distribution'}
               </h3>
@@ -360,7 +377,7 @@ export default function AdminDashboard() {
               </div>
             </div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow">
+          <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-100">
             <h3 className="text-lg font-semibold mb-4">
               {selectedForm === FormType.CSM ? 'CSM Recent Responses' : 'QMS Recent Responses'}
             </h3>

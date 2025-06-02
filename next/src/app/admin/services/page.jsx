@@ -166,7 +166,27 @@ export default function AdminServicesPage() {
   const uniqueTypes = [...new Set(services.map(service => service.service_type_name).filter(Boolean))];
   const uniqueOffices = [...new Set(services.map(service => service.office_name).filter(Boolean))];
   
-  if (loading) return <Spinner />;
+  if (loading) return (
+    <div className="p-6 max-w-[1400px] mx-auto">
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">Service Management</h1>
+          <div className="flex gap-2">
+            <Button className="h-10 px-4 bg-gray-200 text-gray-400" disabled>
+              <Plus size={18} />
+              Add Service
+            </Button>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-8 items-start bg-white p-4 rounded-lg shadow-sm border border-gray-100 animate-pulse">
+          <div className="h-10 bg-gray-200 rounded col-span-6" />
+        </div>
+      </div>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 animate-pulse">
+        <div className="h-64" />
+      </div>
+    </div>
+  );
   if (error) return <div className="p-8 text-red-500">Error: {error}</div>;
 
   // Always show the filters and search
@@ -222,15 +242,10 @@ export default function AdminServicesPage() {
         </div>
       </div>
       {filteredServices.length === 0 ? (
-        <div className="flex flex-col items-center justify-center min-h-[300px]">
-          <div className="bg-white border border-blue-100 p-10 rounded-xl shadow flex flex-col items-center max-w-xl w-full">
-            <Plus className="text-blue-400 mb-4" size={48} />
-            <p className="text-lg text-gray-700 mb-2 font-semibold">No services found for your search or filters.</p>
-            <p className="text-gray-500 mb-4 text-center">There are currently no services available for your criteria.</p>
-            <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded text-sm text-center">
-              If you believe there should be data here, please check your filters or contact your system administrator.
-            </div>
-          </div>
+        <div className="flex flex-col items-center justify-center min-h-[200px]">
+          <div className="text-4xl mb-2">🙁</div>
+          <div className="text-gray-700 font-semibold mb-1">No services found</div>
+          <div className="text-gray-500 text-sm">Try adjusting your search or filters, or check back later.</div>
         </div>
       ) : (
         <>

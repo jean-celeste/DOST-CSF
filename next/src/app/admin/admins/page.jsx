@@ -294,6 +294,28 @@ export default function AdminManagementPage() {
   if (status === "loading") return <div>Loading...</div>;
   if (!session || session.user.role !== 'Regional Administrator') return null;
 
+  if (adminsLoading) return (
+    <div className="p-6 max-w-[1400px] mx-auto">
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">Admin Management</h1>
+          <div className="flex gap-2">
+            <Button className="h-10 px-4 bg-gray-200 text-gray-400" disabled>
+              <Plus size={18} />
+              Create Admin
+            </Button>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-8 items-start bg-white p-4 rounded-lg shadow-sm border border-gray-100 animate-pulse">
+          <div className="h-10 bg-gray-200 rounded col-span-6" />
+        </div>
+      </div>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 animate-pulse">
+        <div className="h-64" />
+      </div>
+    </div>
+  );
+
   return (
     <div className="p-6 max-w-[1400px] mx-auto">
       <div className="mb-8">
@@ -464,31 +486,39 @@ export default function AdminManagementPage() {
       </Dialog>
       <div className="bg-white rounded-lg shadow-sm border border-gray-100">
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Office</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Division</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {paginatedAdmins.map(admin => (
-                <tr key={admin.admin_id}>
-                  <td className="px-6 py-4 whitespace-nowrap">{admin.username}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{admin.role}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{admin.office_name || '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{admin.division_name || '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => handleEdit(admin)}>Edit</Button>
-                    <Button size="sm" variant="destructive" onClick={() => handleDelete(admin)}>Delete</Button>
-                  </td>
+          {filteredAdmins.length === 0 ? (
+            <div className="flex flex-col items-center justify-center min-h-[200px]">
+              <div className="text-4xl mb-2">🙁</div>
+              <div className="text-gray-700 font-semibold mb-1">No admins found</div>
+              <div className="text-gray-500 text-sm">Try adjusting your search or check back later.</div>
+            </div>
+          ) : (
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Office</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Division</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {paginatedAdmins.map(admin => (
+                  <tr key={admin.admin_id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap">{admin.username}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{admin.role}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{admin.office_name || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{admin.division_name || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap flex gap-2">
+                      <Button size="sm" variant="outline" onClick={() => handleEdit(admin)}>Edit</Button>
+                      <Button size="sm" variant="destructive" onClick={() => handleDelete(admin)}>Delete</Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
         {/* Pagination */}
         <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">

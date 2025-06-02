@@ -320,7 +320,23 @@ export default function AnalyticsPage() {
 
   if (status === "loading") return <div>Loading...</div>;
   if (!session) return null;
-  if (loading) return <div className="p-8">Loading...</div>;
+  if (loading) return (
+    <div className="p-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-pulse">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="bg-white p-6 rounded-lg shadow h-32 flex items-center justify-center">
+            <div className="w-16 h-6 bg-gray-200 rounded mb-2" />
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 animate-pulse">
+        {[...Array(2)].map((_, i) => (
+          <div key={i} className="bg-white p-6 rounded-lg shadow h-[300px]" />
+        ))}
+      </div>
+      <div className="bg-white p-6 rounded-lg shadow h-64 animate-pulse" />
+    </div>
+  );
   if (error) return <div className="p-8 text-red-500">Error: {error}</div>;
 
   const filteredByTime = filterResponsesByTimeRange(responses);
@@ -352,11 +368,12 @@ export default function AnalyticsPage() {
                 <button
                   key={type}
                   onClick={() => setSelectedFormType(type)}
-                  className={`px-4 py-2 rounded-md transition-colors ${
+                  className={`px-4 py-2 rounded-md transition-colors font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 ${
                     selectedFormType === type
                       ? 'bg-blue-500 text-white'
-                      : 'text-gray-600 hover:bg-gray-100'
+                      : 'text-gray-600 hover:bg-blue-100'
                   }`}
+                  aria-pressed={selectedFormType === type}
                 >
                   {type.toUpperCase()}
                 </button>

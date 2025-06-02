@@ -220,7 +220,31 @@ export default function ResponsesPage() {
     currentPage * itemsPerPage
   );
 
-  if (loading) return <Spinner />;
+  if (loading) return (
+    <div className="p-6 max-w-[1400px] mx-auto">
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">Form Responses</h1>
+          <div className="flex gap-2">
+            <Button className="h-10 px-4 bg-gray-200 text-gray-400" disabled>
+              <Download size={18} />
+              Export CSV
+            </Button>
+            <Button className="h-10 px-4 bg-gray-200 text-gray-400" disabled>
+              <Download size={18} />
+              Export Excel
+            </Button>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-8 items-start bg-white p-4 rounded-lg shadow-sm border border-gray-100 animate-pulse">
+          <div className="h-10 bg-gray-200 rounded col-span-6" />
+        </div>
+      </div>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 animate-pulse">
+        <div className="h-64" />
+      </div>
+    </div>
+  );
   if (error) return <div className="p-8 text-red-500">Error: {error}</div>;
 
   // Always show the filters and search
@@ -283,54 +307,49 @@ export default function ResponsesPage() {
           </div>
         </div>
       </div>
-      {filteredResponses.length === 0 ? (
-        <div className="flex flex-col items-center justify-center min-h-[300px]">
-          <div className="bg-white border border-blue-100 p-10 rounded-xl shadow flex flex-col items-center max-w-xl w-full">
-            <FileText className="text-blue-400 mb-4" size={48} />
-            <p className="text-lg text-gray-700 mb-2 font-semibold">No responses found for your search or filters.</p>
-            <p className="text-gray-500 mb-4 text-center">There are currently no responses available for your criteria.</p>
-            <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded text-sm text-center">
-              If you believe there should be data here, please check your filters or contact your system administrator.
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100">
+        <div className="overflow-x-auto">
+          {filteredResponses.length === 0 ? (
+            <div className="flex flex-col items-center justify-center min-h-[200px]">
+              <div className="text-4xl mb-2">🙁</div>
+              <div className="text-gray-700 font-semibold mb-1">No responses found</div>
+              <div className="text-gray-500 text-sm">Try adjusting your search or filters, or check back later.</div>
             </div>
-          </div>
-        </div>
-      ) : (
-        <>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-100">
+          ) : (
             <ResponsesTable responses={paginatedResponses} onViewDetails={handleViewDetails} />
-            {/* Pagination */}
-            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
-              <div className="flex items-center text-sm text-gray-500">
-                Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredResponses.length)} of {filteredResponses.length} results
-              </div>
-              <div className="flex gap-2">
-                {[...Array(totalPages)].map((_, i) => (
-                  <Button
-                    key={i + 1}
-                    onClick={() => handlePageChange(i + 1)}
-                    variant={currentPage === i + 1 ? "default" : "outline"}
-                    className={`px-3 py-1 text-sm ${
-                      currentPage === i + 1 
-                        ? "bg-blue-500 text-white hover:bg-blue-600" 
-                        : "text-gray-600 hover:bg-gray-50"
-                    }`}
-                  >
-                    {i + 1}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </div>
-          {/* Response Details Modal */}
-          {selectedResponse && (
-            <ResponseDetailsModal 
-              response={selectedResponse} 
-              onClose={() => setSelectedResponse(null)}
-              getQuestionText={getQuestionText}
-              renderRatingValue={renderRatingValue}
-            />
           )}
-        </>
+        </div>
+      </div>
+      {/* Pagination */}
+      <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
+        <div className="flex items-center text-sm text-gray-500">
+          Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredResponses.length)} of {filteredResponses.length} results
+        </div>
+        <div className="flex gap-2">
+          {[...Array(totalPages)].map((_, i) => (
+            <Button
+              key={i + 1}
+              onClick={() => handlePageChange(i + 1)}
+              variant={currentPage === i + 1 ? "default" : "outline"}
+              className={`px-3 py-1 text-sm ${
+                currentPage === i + 1 
+                  ? "bg-blue-500 text-white hover:bg-blue-600" 
+                  : "text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              {i + 1}
+            </Button>
+          ))}
+        </div>
+      </div>
+      {/* Response Details Modal */}
+      {selectedResponse && (
+        <ResponseDetailsModal 
+          response={selectedResponse} 
+          onClose={() => setSelectedResponse(null)}
+          getQuestionText={getQuestionText}
+          renderRatingValue={renderRatingValue}
+        />
       )}
       {downloadError && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">

@@ -111,10 +111,10 @@ function AdminLayoutContent({ children }) {
       {/* Sidebar */}
       <AdminSidebar collapsed={sidebarCollapsed} onCollapse={setSidebarCollapsed} />
       {/* Main Content */}
-      <div className={`transition-all duration-300 flex-1 ${sidebarCollapsed ? 'ml-20' : 'ml-64'} p-0 flex flex-col`}>
+      <div className={`transition-all duration-300 flex-1 ${sidebarCollapsed ? 'ml-20' : 'ml-64'} p-0 flex flex-col bg-gray-50 min-h-screen`}>
         {/* Header */}
         <AdminHeader headerTitle={headerTitle} />
-        <main className="flex-1 p-8">{children}</main>
+        <main className="flex-1 p-4 md:p-8 transition-all duration-300">{children}</main>
       </div>
     </div>
   );
