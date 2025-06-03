@@ -14,7 +14,7 @@ const fetchResponses = async (filter = {}) => {
     `;
     const values = [];
     const conditions = [];
-    if (filter.role === 'Division Head' && filter.division_id) {
+    if ((filter.role === 'Division Head' || filter.role === 'Division Administrator') && filter.division_id) {
       conditions.push('u.division_id = $1');
       values.push(filter.division_id);
     } else if (filter.role === 'PSTO Administrator' && filter.office_id) {

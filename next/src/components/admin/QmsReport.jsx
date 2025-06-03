@@ -19,6 +19,18 @@ const ratingKeys = [
   'poor',
 ];
 
+function isQmsSummaryEmpty(summary) {
+  if (!summary) return true;
+  // Check if all values for all ratings and questions are zero
+  return [
+    'overall', 'appropriateness', 'timeliness', 'attitude', 'gender_fair_treatment', 'beneficial'
+  ].every(q =>
+    ['outstanding', 'very_satisfactory', 'satisfactory', 'unsatisfactory', 'poor'].every(rating =>
+      Number(summary[`${q}_${rating}`] || 0) === 0
+    )
+  );
+}
+
 function renderQmsTable(reportData, labelPrefix = '') {
   if (!reportData) return null;
   return (
@@ -124,21 +136,22 @@ export default function QmsReport() {
       {downloadError && (
         <div className="text-center text-red-500 mb-2">Failed to download Excel report. Please try again.</div>
       )}
-      {/* Regionwide Summary Section */}
+      {/* Summary Section */}
       <div className="bg-white border border-gray-100 rounded-xl shadow p-8 mb-8">
-        <h2 className="text-xl font-bold mb-4 text-gray-800">Regionwide Summary</h2>
-        <div className="overflow-x-auto">
-          {loading ? (
-            <div className="text-center py-4">Loading...</div>
-          ) : error ? (
-            <div className="text-center py-4 text-red-500">{error}</div>
-          ) : qmsReport ? (
-            renderQmsTable(qmsReport.overall)
-          ) : null}
-        </div>
+        <h2 className="text-xl font-bold mb-4 text-gray-800">QMS Checkmark Summary</h2>
+        {loading ? (
+          <div className="text-center py-4">Loading...</div>
+        ) : error ? (
+          <div className="text-center py-4 text-red-500">{error}</div>
+        ) : qmsReport && !isQmsSummaryEmpty(qmsReport.overall) ? (
+          renderQmsTable(qmsReport.overall)
+        ) : (
+          <div className="text-center py-4 text-gray-500">No data available.</div>
+        )}
       </div>
-      <div>
-        <h2 className="text-xl font-bold mb-4 text-gray-800">Breakdown by Office and Service</h2>
+      {/* Breakdown Section */}
+      <div className="bg-white border border-gray-100 rounded-xl shadow p-8 mb-8">
+        <h2 className="text-xl font-bold mb-4 text-gray-800">Breakdown by Checkmark Question</h2>
         {loading ? (
           <div className="text-center py-4">Loading...</div>
         ) : error ? (
@@ -189,7 +202,7 @@ export default function QmsReport() {
             </div>
           ))
         ) : (
-          <div className="text-gray-500">No data by office.</div>
+          <div className="text-center py-4 text-gray-500">No data available.</div>
         )}
       </div>
     </>

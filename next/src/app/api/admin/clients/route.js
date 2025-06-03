@@ -28,7 +28,7 @@ const fetchClients = async (filter = {}) => {
     const conditions = [];
     
     // Apply role-based filtering if needed
-    if (filter.role === 'Division Head' && filter.division_id) {
+    if ((filter.role === 'Division Head' || filter.role === 'Division Administrator') && filter.division_id) {
       query += `
         LEFT JOIN services s ON r.service_id = s.service_id
         LEFT JOIN unit u ON s.unit_id = u.unit_id
@@ -141,7 +141,7 @@ const getClientStatistics = async (filter = {}) => {
     const conditions = [];
     
     // Apply same role-based filtering
-    if (filter.role === 'Division Head' && filter.division_id) {
+    if ((filter.role === 'Division Head' || filter.role === 'Division Administrator') && filter.division_id) {
       query += `
         LEFT JOIN services s ON r.service_id = s.service_id
         LEFT JOIN unit u ON s.unit_id = u.unit_id

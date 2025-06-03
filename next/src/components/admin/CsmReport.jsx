@@ -22,6 +22,14 @@ const checkmarkQuestions = [
   }
 ];
 
+function isSummaryEmpty(summary) {
+  if (!summary) return true;
+  // Check if all counts are zero for all questions
+  return [1, 2, 3].every(id =>
+    !summary[id] || summary[id].every(row => Number(row.count) === 0)
+  );
+}
+
 function renderSummaryTable(summary) {
   // Calculate scores
   const getTotal = (id) => {
@@ -528,9 +536,11 @@ export default function CsmReport() {
           <div className="text-center py-4">Loading...</div>
         ) : error ? (
           <div className="text-center py-4 text-red-500">{error}</div>
-        ) : summary ? (
+        ) : summary && !isSummaryEmpty(summary) ? (
           renderSummaryTable(summary)
-        ) : null}
+        ) : (
+          <div className="text-center py-4 text-gray-500">No data available.</div>
+        )}
       </div>
       {/* Breakdown Section */}
       <div className="bg-white border border-gray-100 rounded-xl shadow p-8 mb-8">
@@ -539,9 +549,11 @@ export default function CsmReport() {
           <div className="text-center py-4">Loading...</div>
         ) : error ? (
           <div className="text-center py-4 text-red-500">{error}</div>
-        ) : summary ? (
+        ) : summary && !isSummaryEmpty(summary) ? (
           renderBreakdownTables(summary)
-        ) : null}
+        ) : (
+          <div className="text-center py-4 text-gray-500">No data available.</div>
+        )}
       </div>
       {/* SQD Section */}
       <div className="bg-white border border-gray-100 rounded-xl shadow p-8 mb-8">
@@ -550,8 +562,10 @@ export default function CsmReport() {
           <div className="text-center py-4">Loading...</div>
         ) : sqdError || sqdPositiveError ? (
           <div className="text-center py-4 text-red-500">{sqdError || sqdPositiveError}</div>
-        ) : (
+        ) : (sqdData.length > 0 && sqdPositive.length > 0) ? (
           renderSqdTables(sqdData, sqdPositive, sqdLoading, sqdPositiveLoading, sqdError, sqdPositiveError)
+        ) : (
+          <div className="text-center py-4 text-gray-500">No data available.</div>
         )}
       </div>
       {/* By Service Section */}
@@ -561,8 +575,10 @@ export default function CsmReport() {
           <div className="text-center py-4">Loading...</div>
         ) : byServiceError ? (
           <div className="text-center py-4 text-red-500">{byServiceError}</div>
-        ) : (
+        ) : byService && byService.length > 0 ? (
           <ServiceAccordion byService={byService} />
+        ) : (
+          <div className="text-center py-4 text-gray-500">No data available.</div>
         )}
       </div>
     </div>

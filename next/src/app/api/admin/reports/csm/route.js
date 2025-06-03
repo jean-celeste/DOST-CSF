@@ -10,16 +10,26 @@ export async function GET() {
   }
 
   try {
-    // For each checkmark question (1, 2, 3), get the count of each unique answer
-    const queries = [1, 2, 3].map(qnum => `
-      SELECT answers->'csmARTACheckmark'->>'${qnum}' AS answer, COUNT(*) AS count
-      FROM responses
-      WHERE form_id = 1
-      GROUP BY answer
-      ORDER BY count DESC
-    `);
+    const { role, office_id, division_id } = session.user;
+    const queries = [1, 2, 3].map(qnum => {
+      let base = `SELECT answers->'csmARTACheckmark'->>'${qnum}' AS answer, COUNT(*) AS count FROM responses r`;
+      let joins = '';
+      let where = ' WHERE form_id = 1';
+      let values = [];
+      if (role === 'Division Administrator' && division_id) {
+        joins += ' JOIN services s ON r.service_id = s.service_id JOIN unit u ON s.unit_id = u.unit_id';
+        where += ' AND u.division_id = $1';
+        values.push(division_id);
+      } else if (role === 'PSTO Administrator' && office_id) {
+        joins += ' JOIN services s ON r.service_id = s.service_id';
+        where += ' AND s.office_id = $1';
+        values.push(office_id);
+      }
+      const groupOrder = ' GROUP BY answer ORDER BY count DESC';
+      return { sql: base + joins + where + groupOrder, values };
+    });
 
-    const results = await Promise.all(queries.map(q => executeQuery(q)));
+    const results = await Promise.all(queries.map(q => executeQuery(q.sql, q.values)));
 
     // Format: { 1: [{ answer, count }, ...], 2: [...], 3: [...] }
     const summary = {};

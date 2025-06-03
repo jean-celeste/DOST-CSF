@@ -30,7 +30,7 @@ export async function GET(request) {
     `;
     const values = [];
     const conditions = [];
-    if (role === 'Division Head' && division_id) {
+    if (role === 'Division Administrator' && division_id) {
       conditions.push('u.division_id = $1');
       values.push(division_id);
     } else if (role === 'PSTO Administrator' && office_id) {

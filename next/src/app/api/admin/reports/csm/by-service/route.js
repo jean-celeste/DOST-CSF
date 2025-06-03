@@ -9,8 +9,8 @@ export async function GET(request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   try {
-    // Get ratings breakdown by service and question
-    const query = `
+    const { role, office_id, division_id } = session.user;
+    let query = `
       SELECT
         s.service_id,
         s.service_name,
@@ -28,11 +28,19 @@ export async function GET(request) {
       JOIN responses resp ON r.response_id = resp.response_id AND resp.form_id = 1
       JOIN services s ON resp.service_id = s.service_id
       JOIN offices o ON s.office_id = o.office_id
-      WHERE r.question_id BETWEEN 4 AND 12
-      GROUP BY s.service_id, s.service_name, o.office_id, o.office_name, r.question_id
-      ORDER BY o.office_id, s.service_id, r.question_id;
     `;
-    const result = await executeQuery(query);
+    let where = 'WHERE r.question_id BETWEEN 4 AND 12';
+    let values = [];
+    if (role === 'Division Administrator' && division_id) {
+      query += ' JOIN unit u ON s.unit_id = u.unit_id';
+      where += ' AND u.division_id = $1';
+      values.push(division_id);
+    } else if (role === 'PSTO Administrator' && office_id) {
+      where += ' AND s.office_id = $1';
+      values.push(office_id);
+    }
+    query += ' ' + where + ' GROUP BY s.service_id, s.service_name, o.office_id, o.office_name, r.question_id ORDER BY o.office_id, s.service_id, r.question_id';
+    const result = await executeQuery(query, values);
     // Group by service
     const services = {};
     result.rows.forEach(row => {

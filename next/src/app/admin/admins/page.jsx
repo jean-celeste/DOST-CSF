@@ -493,31 +493,31 @@ export default function AdminManagementPage() {
               <div className="text-gray-500 text-sm">Try adjusting your search or check back later.</div>
             </div>
           ) : (
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Office</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Division</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {paginatedAdmins.map(admin => (
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Office</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Division</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {paginatedAdmins.map(admin => (
                   <tr key={admin.admin_id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">{admin.username}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{admin.role}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{admin.office_name || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{admin.division_name || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap flex gap-2">
-                      <Button size="sm" variant="outline" onClick={() => handleEdit(admin)}>Edit</Button>
-                      <Button size="sm" variant="destructive" onClick={() => handleDelete(admin)}>Delete</Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                  <td className="px-6 py-4 whitespace-nowrap">{admin.username}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{admin.role}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{admin.office_name || '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{admin.division_name || '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => handleEdit(admin)}>Edit</Button>
+                    <Button size="sm" variant="destructive" onClick={() => handleDelete(admin)}>Delete</Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
           )}
         </div>
         {/* Pagination */}

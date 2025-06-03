@@ -48,16 +48,16 @@ export default function ReportsPage() {
           </div>
         ) : (
           <>
-            {selectedFormType === FormType.QMS ? (
-              <QmsReport />
-            ) : (
-              <CsmReport />
-            )}
+        {selectedFormType === FormType.QMS ? (
+          <QmsReport />
+        ) : (
+          <CsmReport />
+        )}
             <div className="bg-white border border-gray-100 rounded-xl shadow p-8 flex flex-col items-center justify-center min-h-[300px] mt-8">
               <span className="text-gray-400 text-4xl mb-2">📄</span>
-              <h2 className="text-lg font-semibold text-gray-700 mb-2">Reports Coming Soon</h2>
-              <p className="text-gray-500 text-center">This section will allow you to generate, download, and view detailed reports. Stay tuned!</p>
-            </div>
+          <h2 className="text-lg font-semibold text-gray-700 mb-2">Reports Coming Soon</h2>
+          <p className="text-gray-500 text-center">This section will allow you to generate, download, and view detailed reports. Stay tuned!</p>
+        </div>
           </>
         )}
       </div>
