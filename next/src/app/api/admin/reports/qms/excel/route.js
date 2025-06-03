@@ -71,134 +71,33 @@ export async function GET() {
   if (!session || !session.user.role || !session.user.role.toLowerCase().includes('admin')) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
+  // Role-based filtering
+  const isRegional = session.user.role.toLowerCase().includes('regional');
+  const isDivision = session.user.role.toLowerCase().includes('division');
+  const isPSTO = session.user.role.toLowerCase().includes('psto');
+  const divisionId = session.user.division_id;
+  const officeId = session.user.office_id;
+  const params = isDivision ? [divisionId] : isPSTO ? [officeId] : [];
+
   try {
     // --- Fetch QMS data (same as /api/admin/reports/qms) ---
     // 1. Overall summary
-    const overallSql = `
-      SELECT 
-        COUNT(*) FILTER (WHERE ratings->>'18' = 'outstanding') AS overall_outstanding,
-        COUNT(*) FILTER (WHERE ratings->>'18' = 'very-satisfactory') AS overall_very_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'18' = 'satisfactory') AS overall_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'18' = 'unsatisfactory') AS overall_unsatisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'18' = 'poor') AS overall_poor,
-        COUNT(*) FILTER (WHERE ratings->>'19' = 'outstanding') AS appropriateness_outstanding,
-        COUNT(*) FILTER (WHERE ratings->>'19' = 'very-satisfactory') AS appropriateness_very_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'19' = 'satisfactory') AS appropriateness_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'19' = 'unsatisfactory') AS appropriateness_unsatisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'19' = 'poor') AS appropriateness_poor,
-        COUNT(*) FILTER (WHERE ratings->>'21' = 'outstanding') AS timeliness_outstanding,
-        COUNT(*) FILTER (WHERE ratings->>'21' = 'very-satisfactory') AS timeliness_very_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'21' = 'satisfactory') AS timeliness_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'21' = 'unsatisfactory') AS timeliness_unsatisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'21' = 'poor') AS timeliness_poor,
-        COUNT(*) FILTER (WHERE ratings->>'22' = 'outstanding') AS attitude_outstanding,
-        COUNT(*) FILTER (WHERE ratings->>'22' = 'very-satisfactory') AS attitude_very_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'22' = 'satisfactory') AS attitude_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'22' = 'unsatisfactory') AS attitude_unsatisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'22' = 'poor') AS attitude_poor,
-        COUNT(*) FILTER (WHERE ratings->>'23' = 'outstanding') AS gender_fair_treatment_outstanding,
-        COUNT(*) FILTER (WHERE ratings->>'23' = 'very-satisfactory') AS gender_fair_treatment_very_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'23' = 'satisfactory') AS gender_fair_treatment_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'23' = 'unsatisfactory') AS gender_fair_treatment_unsatisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'23' = 'poor') AS gender_fair_treatment_poor,
-        COUNT(*) FILTER (WHERE ratings->>'24' = 'outstanding') AS beneficial_outstanding,
-        COUNT(*) FILTER (WHERE ratings->>'24' = 'very-satisfactory') AS beneficial_very_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'24' = 'satisfactory') AS beneficial_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'24' = 'unsatisfactory') AS beneficial_unsatisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'24' = 'poor') AS beneficial_poor
-      FROM (
-        SELECT answers->'qmsRatings'->'ratings' AS ratings
-        FROM responses
-        WHERE form_id = 2
-      ) sub;
-    `;
-    const overallResult = await executeQuery(overallSql);
+    let overallSql = `SELECT ... FROM (SELECT answers->'qmsRatings'->'ratings' AS ratings, r.service_id FROM responses r WHERE r.form_id = 2`;
+    if (!isRegional) overallSql += ` AND EXISTS (SELECT 1 FROM services s JOIN offices o ON s.office_id = o.office_id WHERE r.service_id = s.service_id` + (isDivision ? ' AND o.division_id = $1' : ' AND o.office_id = $1') + ')';
+    overallSql += ') sub;';
+    const overallResult = await executeQuery(overallSql, params);
 
     // 2. By office
-    const byOfficeSql = `
-      SELECT o.office_id, o.office_name,
-        COUNT(*) FILTER (WHERE ratings->>'18' = 'outstanding') AS overall_outstanding,
-        COUNT(*) FILTER (WHERE ratings->>'18' = 'very-satisfactory') AS overall_very_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'18' = 'satisfactory') AS overall_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'18' = 'unsatisfactory') AS overall_unsatisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'18' = 'poor') AS overall_poor,
-        COUNT(*) FILTER (WHERE ratings->>'19' = 'outstanding') AS appropriateness_outstanding,
-        COUNT(*) FILTER (WHERE ratings->>'19' = 'very-satisfactory') AS appropriateness_very_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'19' = 'satisfactory') AS appropriateness_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'19' = 'unsatisfactory') AS appropriateness_unsatisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'19' = 'poor') AS appropriateness_poor,
-        COUNT(*) FILTER (WHERE ratings->>'21' = 'outstanding') AS timeliness_outstanding,
-        COUNT(*) FILTER (WHERE ratings->>'21' = 'very-satisfactory') AS timeliness_very_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'21' = 'satisfactory') AS timeliness_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'21' = 'unsatisfactory') AS timeliness_unsatisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'21' = 'poor') AS timeliness_poor,
-        COUNT(*) FILTER (WHERE ratings->>'22' = 'outstanding') AS attitude_outstanding,
-        COUNT(*) FILTER (WHERE ratings->>'22' = 'very-satisfactory') AS attitude_very_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'22' = 'satisfactory') AS attitude_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'22' = 'unsatisfactory') AS attitude_unsatisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'22' = 'poor') AS attitude_poor,
-        COUNT(*) FILTER (WHERE ratings->>'23' = 'outstanding') AS gender_fair_treatment_outstanding,
-        COUNT(*) FILTER (WHERE ratings->>'23' = 'very-satisfactory') AS gender_fair_treatment_very_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'23' = 'satisfactory') AS gender_fair_treatment_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'23' = 'unsatisfactory') AS gender_fair_treatment_unsatisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'23' = 'poor') AS gender_fair_treatment_poor,
-        COUNT(*) FILTER (WHERE ratings->>'24' = 'outstanding') AS beneficial_outstanding,
-        COUNT(*) FILTER (WHERE ratings->>'24' = 'very-satisfactory') AS beneficial_very_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'24' = 'satisfactory') AS beneficial_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'24' = 'unsatisfactory') AS beneficial_unsatisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'24' = 'poor') AS beneficial_poor
-      FROM responses r
-      JOIN services s ON r.service_id = s.service_id
-      JOIN offices o ON s.office_id = o.office_id
-      CROSS JOIN LATERAL (SELECT r.answers->'qmsRatings'->'ratings' AS ratings) AS sub
-      WHERE r.form_id = 2
-      GROUP BY o.office_id, o.office_name
-      ORDER BY o.office_id;
-    `;
-    const byOfficeResult = await executeQuery(byOfficeSql);
+    let byOfficeSql = `SELECT o.office_id, o.office_name, ... FROM responses r JOIN services s ON r.service_id = s.service_id JOIN offices o ON s.office_id = o.office_id CROSS JOIN LATERAL (SELECT r.answers->'qmsRatings'->'ratings' AS ratings) AS sub WHERE r.form_id = 2`;
+    if (!isRegional) byOfficeSql += isDivision ? ' AND o.division_id = $1' : ' AND o.office_id = $1';
+    byOfficeSql += ' GROUP BY o.office_id, o.office_name ORDER BY o.office_id;';
+    const byOfficeResult = await executeQuery(byOfficeSql, params);
 
     // 2b. By service under each office
-    const byServiceSql = `
-      SELECT o.office_id, o.office_name, s.service_id, s.service_name,
-        COUNT(*) FILTER (WHERE ratings->>'18' = 'outstanding') AS overall_outstanding,
-        COUNT(*) FILTER (WHERE ratings->>'18' = 'very-satisfactory') AS overall_very_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'18' = 'satisfactory') AS overall_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'18' = 'unsatisfactory') AS overall_unsatisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'18' = 'poor') AS overall_poor,
-        COUNT(*) FILTER (WHERE ratings->>'19' = 'outstanding') AS appropriateness_outstanding,
-        COUNT(*) FILTER (WHERE ratings->>'19' = 'very-satisfactory') AS appropriateness_very_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'19' = 'satisfactory') AS appropriateness_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'19' = 'unsatisfactory') AS appropriateness_unsatisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'19' = 'poor') AS appropriateness_poor,
-        COUNT(*) FILTER (WHERE ratings->>'21' = 'outstanding') AS timeliness_outstanding,
-        COUNT(*) FILTER (WHERE ratings->>'21' = 'very-satisfactory') AS timeliness_very_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'21' = 'satisfactory') AS timeliness_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'21' = 'unsatisfactory') AS timeliness_unsatisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'21' = 'poor') AS timeliness_poor,
-        COUNT(*) FILTER (WHERE ratings->>'22' = 'outstanding') AS attitude_outstanding,
-        COUNT(*) FILTER (WHERE ratings->>'22' = 'very-satisfactory') AS attitude_very_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'22' = 'satisfactory') AS attitude_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'22' = 'unsatisfactory') AS attitude_unsatisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'22' = 'poor') AS attitude_poor,
-        COUNT(*) FILTER (WHERE ratings->>'23' = 'outstanding') AS gender_fair_treatment_outstanding,
-        COUNT(*) FILTER (WHERE ratings->>'23' = 'very-satisfactory') AS gender_fair_treatment_very_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'23' = 'satisfactory') AS gender_fair_treatment_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'23' = 'unsatisfactory') AS gender_fair_treatment_unsatisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'23' = 'poor') AS gender_fair_treatment_poor,
-        COUNT(*) FILTER (WHERE ratings->>'24' = 'outstanding') AS beneficial_outstanding,
-        COUNT(*) FILTER (WHERE ratings->>'24' = 'very-satisfactory') AS beneficial_very_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'24' = 'satisfactory') AS beneficial_satisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'24' = 'unsatisfactory') AS beneficial_unsatisfactory,
-        COUNT(*) FILTER (WHERE ratings->>'24' = 'poor') AS beneficial_poor
-      FROM responses r
-      JOIN services s ON r.service_id = s.service_id
-      JOIN offices o ON s.office_id = o.office_id
-      CROSS JOIN LATERAL (SELECT r.answers->'qmsRatings'->'ratings' AS ratings) AS sub
-      WHERE r.form_id = 2
-      GROUP BY o.office_id, o.office_name, s.service_id, s.service_name
-      ORDER BY o.office_id, s.service_id;
-    `;
-    const byServiceResult = await executeQuery(byServiceSql);
+    let byServiceSql = `SELECT o.office_id, o.office_name, s.service_id, s.service_name, ... FROM responses r JOIN services s ON r.service_id = s.service_id JOIN offices o ON s.office_id = o.office_id CROSS JOIN LATERAL (SELECT r.answers->'qmsRatings'->'ratings' AS ratings) AS sub WHERE r.form_id = 2`;
+    if (!isRegional) byServiceSql += isDivision ? ' AND o.division_id = $1' : ' AND o.office_id = $1';
+    byServiceSql += ' GROUP BY o.office_id, o.office_name, s.service_id, s.service_name ORDER BY o.office_id, s.service_id;';
+    const byServiceResult = await executeQuery(byServiceSql, params);
 
     // Attach service breakdown to each office
     const byOfficeWithServices = byOfficeResult.rows.map(office => ({

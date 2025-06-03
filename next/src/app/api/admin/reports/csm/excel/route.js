@@ -99,69 +99,75 @@ const styleFooter = (worksheet, colCount, text) => {
   worksheet.addRow([]);
 };
 
+// Helper to build WHERE clause for division
+function getDivisionJoinAndWhere(base, alias = 'o') {
+  // For division admin, join offices and division, filter by d.division_id
+  return base + ` JOIN offices o ON responses.service_id = s.service_id AND s.office_id = o.office_id JOIN division d ON o.office_id = d.office_id WHERE d.division_id = $1`;
+}
+
 export async function GET(request) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user.role || !session.user.role.toLowerCase().includes('admin')) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
+  // Role-based filtering
+  const isRegional = session.user.role.toLowerCase().includes('regional');
+  const isDivision = session.user.role.toLowerCase().includes('division');
+  const isPSTO = session.user.role.toLowerCase().includes('psto');
+  const divisionId = session.user.division_id;
+  const officeId = session.user.office_id;
+
+  // Helper to build WHERE clause
+  function getWhere(base, alias = 'o') {
+    if (isRegional) return base;
+    if (isDivision) return base + ` AND ${alias}.division_id = $1`;
+    if (isPSTO) return base + ` AND ${alias}.office_id = $1`;
+    return base;
+  }
+  const params = isDivision ? [divisionId] : isPSTO ? [officeId] : [];
+
   try {
     // --- Fetch all required data ---
     // 1. CSM Checkmark Summary
-    const summaryQueries = [1, 2, 3].map(qnum => `
-      SELECT answers->'csmARTACheckmark'->>'${qnum}' AS answer, COUNT(*) AS count
-      FROM responses
-      WHERE form_id = 1
-      GROUP BY answer
-      ORDER BY count DESC
-    `);
-    const summaryResults = await Promise.all(summaryQueries.map(q => executeQuery(q)));
+    const summaryQueries = [1, 2, 3].map(qnum => {
+      if (isDivision) {
+        let base = `SELECT answers->'csmARTACheckmark'->>'${qnum}' AS answer, COUNT(*) AS count FROM responses JOIN services s ON responses.service_id = s.service_id JOIN unit u ON s.unit_id = u.unit_id WHERE responses.form_id = 1 AND u.division_id = $1`;
+        base += ' GROUP BY answer ORDER BY count DESC';
+        return { text: base, values: params };
+      } else {
+        let base = `SELECT answers->'csmARTACheckmark'->>'${qnum}' AS answer, COUNT(*) AS count FROM responses WHERE form_id = 1`;
+        if (isPSTO) base += ` AND EXISTS (SELECT 1 FROM services s JOIN offices o ON s.office_id = o.office_id WHERE responses.service_id = s.service_id AND o.office_id = $1)`;
+        base += ' GROUP BY answer ORDER BY count DESC';
+        return { text: base, values: params };
+      }
+    });
+    const summaryResults = await Promise.all(summaryQueries.map(q => executeQuery(q.text, q.values)));
 
     // 2. SQD Breakdown
-    const sqdBreakdownQuery = `
-      SELECT
-        question_id AS sqd_id,
-        COUNT(*) FILTER (WHERE rating = 'strongly-agree') AS strongly_agree,
-        COUNT(*) FILTER (WHERE rating = 'agree') AS agree,
-        COUNT(*) FILTER (WHERE rating = 'neutral') AS neutral,
-        COUNT(*) FILTER (WHERE rating = 'disagree') AS disagree,
-        COUNT(*) FILTER (WHERE rating = 'strongly-disagree') AS strongly_disagree,
-        COUNT(*) FILTER (WHERE rating = 'na') AS na,
-        COUNT(*) AS total_responses
-      FROM csm_flat_ratings
-      WHERE form_id = 1 AND question_id BETWEEN 4 AND 12
-      GROUP BY question_id
-      ORDER BY question_id;
-    `;
-    const sqdBreakdownResult = await executeQuery(sqdBreakdownQuery);
+    let sqdBreakdownQuery;
+    if (isDivision) {
+      sqdBreakdownQuery = `SELECT question_id AS sqd_id, COUNT(*) FILTER (WHERE rating = 'strongly-agree') AS strongly_agree, COUNT(*) FILTER (WHERE rating = 'agree') AS agree, COUNT(*) FILTER (WHERE rating = 'neutral') AS neutral, COUNT(*) FILTER (WHERE rating = 'disagree') AS disagree, COUNT(*) FILTER (WHERE rating = 'strongly-disagree') AS strongly_disagree, COUNT(*) FILTER (WHERE rating = 'na') AS na, COUNT(*) AS total_responses FROM csm_flat_ratings r JOIN responses resp ON r.response_id = resp.response_id AND resp.form_id = 1 JOIN services s ON resp.service_id = s.service_id JOIN offices o ON s.office_id = o.office_id JOIN division d ON o.office_id = d.office_id WHERE r.question_id BETWEEN 4 AND 12 AND d.division_id = $1 GROUP BY question_id ORDER BY question_id;`;
+    } else {
+      sqdBreakdownQuery = `SELECT question_id AS sqd_id, COUNT(*) FILTER (WHERE rating = 'strongly-agree') AS strongly_agree, COUNT(*) FILTER (WHERE rating = 'agree') AS agree, COUNT(*) FILTER (WHERE rating = 'neutral') AS neutral, COUNT(*) FILTER (WHERE rating = 'disagree') AS disagree, COUNT(*) FILTER (WHERE rating = 'strongly-disagree') AS strongly_disagree, COUNT(*) FILTER (WHERE rating = 'na') AS na, COUNT(*) AS total_responses FROM csm_flat_ratings r JOIN responses resp ON r.response_id = resp.response_id AND resp.form_id = 1 JOIN services s ON resp.service_id = s.service_id JOIN offices o ON s.office_id = o.office_id WHERE r.question_id BETWEEN 4 AND 12`;
+      if (isPSTO) sqdBreakdownQuery += ' AND o.office_id = $1';
+      sqdBreakdownQuery += ' GROUP BY question_id ORDER BY question_id;';
+    }
+    const sqdBreakdownResult = await executeQuery(sqdBreakdownQuery, params);
 
     // 3. SQD Positive Percentages
     const sqdPositiveQuery = 'SELECT * FROM csm_sqd_positive_percentage ORDER BY question_id;';
     const sqdPositiveResult = await executeQuery(sqdPositiveQuery);
 
     // 4. By Service Breakdown
-    const byServiceQuery = `
-      SELECT
-        s.service_id,
-        s.service_name,
-        o.office_id,
-        o.office_name,
-        r.question_id,
-        COUNT(*) FILTER (WHERE r.rating = 'strongly-agree') AS strongly_agree,
-        COUNT(*) FILTER (WHERE r.rating = 'agree') AS agree,
-        COUNT(*) FILTER (WHERE r.rating = 'neutral') AS neutral,
-        COUNT(*) FILTER (WHERE r.rating = 'disagree') AS disagree,
-        COUNT(*) FILTER (WHERE r.rating = 'strongly-disagree') AS strongly_disagree,
-        COUNT(*) FILTER (WHERE r.rating = 'na') AS na,
-        COUNT(*) AS total_responses
-      FROM csm_flat_ratings r
-      JOIN responses resp ON r.response_id = resp.response_id AND resp.form_id = 1
-      JOIN services s ON resp.service_id = s.service_id
-      JOIN offices o ON s.office_id = o.office_id
-      WHERE r.question_id BETWEEN 4 AND 12
-      GROUP BY s.service_id, s.service_name, o.office_id, o.office_name, r.question_id
-      ORDER BY o.office_id, s.service_id, r.question_id;
-    `;
-    const byServiceResult = await executeQuery(byServiceQuery);
+    let byServiceQuery;
+    if (isDivision) {
+      byServiceQuery = `SELECT s.service_id, s.service_name, o.office_id, o.office_name, r.question_id, COUNT(*) FILTER (WHERE r.rating = 'strongly-agree') AS strongly_agree, COUNT(*) FILTER (WHERE r.rating = 'agree') AS agree, COUNT(*) FILTER (WHERE r.rating = 'neutral') AS neutral, COUNT(*) FILTER (WHERE r.rating = 'disagree') AS disagree, COUNT(*) FILTER (WHERE r.rating = 'strongly-disagree') AS strongly_disagree, COUNT(*) FILTER (WHERE r.rating = 'na') AS na, COUNT(*) AS total_responses FROM csm_flat_ratings r JOIN responses resp ON r.response_id = resp.response_id AND resp.form_id = 1 JOIN services s ON resp.service_id = s.service_id JOIN offices o ON s.office_id = o.office_id JOIN division d ON o.office_id = d.office_id WHERE r.question_id BETWEEN 4 AND 12 AND d.division_id = $1 GROUP BY s.service_id, s.service_name, o.office_id, o.office_name, r.question_id ORDER BY o.office_id, s.service_id, r.question_id;`;
+    } else {
+      byServiceQuery = `SELECT s.service_id, s.service_name, o.office_id, o.office_name, r.question_id, COUNT(*) FILTER (WHERE r.rating = 'strongly-agree') AS strongly_agree, COUNT(*) FILTER (WHERE r.rating = 'agree') AS agree, COUNT(*) FILTER (WHERE r.rating = 'neutral') AS neutral, COUNT(*) FILTER (WHERE r.rating = 'disagree') AS disagree, COUNT(*) FILTER (WHERE r.rating = 'strongly-disagree') AS strongly_disagree, COUNT(*) FILTER (WHERE r.rating = 'na') AS na, COUNT(*) AS total_responses FROM csm_flat_ratings r JOIN responses resp ON r.response_id = resp.response_id AND resp.form_id = 1 JOIN services s ON resp.service_id = s.service_id JOIN offices o ON s.office_id = o.office_id WHERE r.question_id BETWEEN 4 AND 12`;
+      if (isPSTO) byServiceQuery += ' AND o.office_id = $1';
+      byServiceQuery += ' GROUP BY s.service_id, s.service_name, o.office_id, o.office_name, r.question_id ORDER BY o.office_id, s.service_id, r.question_id;';
+    }
+    const byServiceResult = await executeQuery(byServiceQuery, params);
 
     // --- Create Excel Workbook ---
     const workbook = new ExcelJS.Workbook();
@@ -179,28 +185,22 @@ export async function GET(request) {
     summarySheet.addRow(['Citizen\'s Charter Answers', 'Score (%)']);
     styleHeaderRow(summarySheet.lastRow);
 
-    // Calculate scores
-    const getTotal = (id) => summaryResults[id - 1].rows.reduce((acc, row) => acc + Number(row.count), 0);
-    const getCount = (id, optionIndexes) => {
-      return summaryResults[id - 1].rows
-        .filter(row => optionIndexes.includes(
-          checkmarkQuestions.find(q => q.id === id).options.indexOf(row.answer)
-        ))
-        .reduce((acc, row) => acc + Number(row.count), 0);
-    };
-
-    // Add summary scores
-    const awarenessTotal = getTotal(1);
-    const awarenessScore = awarenessTotal ? (getCount(1, [0,1,2]) / awarenessTotal) * 100 : 0;
-    summarySheet.addRow(['CC Awareness', awarenessScore.toFixed(1)]);
-
-    const visibilityTotal = getTotal(2);
-    const visibilityScore = visibilityTotal ? (getCount(2, [0,1]) / visibilityTotal) * 100 : 0;
-    summarySheet.addRow(['CC Visibility', visibilityScore.toFixed(1)]);
-
-    const helpfulnessTotal = getTotal(3);
-    const helpfulnessScore = helpfulnessTotal ? (getCount(3, [0,1]) / helpfulnessTotal) * 100 : 0;
-    summarySheet.addRow(['CC Helpfulness', helpfulnessScore.toFixed(1)]);
+    // Add summary scores using option string-based logic to match frontend
+    checkmarkQuestions.forEach((q, qIdx) => {
+      const counts = {};
+      summaryResults[qIdx].rows.forEach(row => {
+        counts[row.answer] = Number(row.count);
+      });
+      const total = q.options.reduce((acc, option) => acc + (counts[option] || 0), 0);
+      let numerator = 0;
+      if (q.id === 1) { // Awareness: first 3 options
+        numerator = q.options.slice(0, 3).reduce((acc, option) => acc + (counts[option] || 0), 0);
+      } else { // Visibility/Helpfulness: first 2 options
+        numerator = q.options.slice(0, 2).reduce((acc, option) => acc + (counts[option] || 0), 0);
+      }
+      const score = total ? (numerator / total) * 100 : 0;
+      summarySheet.addRow([q.label, score.toFixed(1)]);
+    });
 
     summarySheet.addRow([]); // Empty row for spacing
 
@@ -220,7 +220,8 @@ export async function GET(request) {
       summaryResults[qIdx].rows.forEach(row => {
         counts[row.answer] = Number(row.count);
       });
-      const total = Object.values(counts).reduce((acc, val) => acc + val, 0);
+      // Use q.options.reduce to match frontend logic
+      const total = q.options.reduce((acc, option) => acc + (counts[option] || 0), 0);
 
       q.options.forEach((option, idx) => {
         const count = counts[option] || 0;
