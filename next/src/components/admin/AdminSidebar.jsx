@@ -21,6 +21,7 @@ export default function Sidebar({ collapsed: initialCollapsed = false, onCollaps
     { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
     { name: 'Reports', href: '/admin/reports', icon: FileChartColumn },
     { name: 'Clients', href: '/admin/clients', icon: Users },
+    { name: 'Services', href: '/admin/services', icon: Star },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 
