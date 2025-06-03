@@ -15,8 +15,8 @@ const ratingKeys = [
   'outstanding',
   'very_satisfactory',
   'satisfactory',
+  'fair',
   'unsatisfactory',
-  'poor',
 ];
 
 function isQmsSummaryEmpty(summary) {
@@ -25,7 +25,7 @@ function isQmsSummaryEmpty(summary) {
   return [
     'overall', 'appropriateness', 'timeliness', 'attitude', 'gender_fair_treatment', 'beneficial'
   ].every(q =>
-    ['outstanding', 'very_satisfactory', 'satisfactory', 'unsatisfactory', 'poor'].every(rating =>
+    ['outstanding', 'very_satisfactory', 'satisfactory', 'fair', 'unsatisfactory'].every(rating =>
       Number(summary[`${q}_${rating}`] || 0) === 0
     )
   );
@@ -41,8 +41,8 @@ function renderQmsTable(reportData, labelPrefix = '') {
           <th className="px-4 py-2 border">Outstanding</th>
           <th className="px-4 py-2 border">Very Satisfactory</th>
           <th className="px-4 py-2 border">Satisfactory</th>
+          <th className="px-4 py-2 border">Fair</th>
           <th className="px-4 py-2 border">Unsatisfactory</th>
-          <th className="px-4 py-2 border">Poor</th>
         </tr>
       </thead>
       <tbody>
