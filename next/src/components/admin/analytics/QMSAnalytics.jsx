@@ -88,15 +88,13 @@ function calculateQmsStats(data) {
   if (!data?.overall) return { averageRating: 0, totalResponses: 0 };
 
   let totalScore = 0;
-  let totalResponses = 0;
-  let totalQuestions = 0;
+  let totalRatings = 0;
 
+  // Count total ratings and calculate score
   qmsQuestions.forEach(q => {
-    let questionResponses = 0;
     ratingKeys.forEach(rating => {
-      // Convert the rating key to match the database column name format
       const count = Number(data.overall[`${q.key}_${rating}`] || 0);
-      questionResponses += count;
+      totalRatings += count;
       
       // Calculate score based on rating
       switch(rating) {
@@ -117,15 +115,16 @@ function calculateQmsStats(data) {
           break;
       }
     });
-    if (questionResponses > 0) {
-      totalResponses += questionResponses;
-      totalQuestions++;
-    }
   });
 
+  // Calculate total unique responses by looking at 'overall' ratings only
+  const totalResponses = ratingKeys.reduce((sum, rating) => 
+    sum + Number(data.overall[`overall_${rating}`] || 0), 0
+  );
+
   // Calculate average rating as a percentage (0-100)
-  const averageRating = totalResponses > 0 
-    ? ((totalScore / (totalResponses * 5)) * 100).toFixed(1)
+  const averageRating = totalRatings > 0 
+    ? ((totalScore / (totalRatings * 5)) * 100).toFixed(1)
     : 0;
 
   return {
