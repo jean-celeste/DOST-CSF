@@ -1,8 +1,20 @@
 "use client"
 
 import { useState, useEffect } from 'react';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, LineElement, PointElement } from 'chart.js';
-import { Pie, Bar, Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  LineElement,
+  PointElement,
+  RadialLinearScale
+} from 'chart.js';
+import { Pie, Bar, Line, Radar } from 'react-chartjs-2';
 import { Calendar, TrendingUp, Star, ThumbsUp } from 'lucide-react';
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -10,7 +22,18 @@ import CSMAnalytics from '../../../components/admin/analytics/CSMAnalytics';
 import QMSAnalytics from '../../../components/admin/analytics/QMSAnalytics';
 
 // Register Chart.js components
-ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, LineElement, PointElement);
+ChartJS.register(
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  LineElement,
+  PointElement,
+  RadialLinearScale
+);
 
 // Constants
 const FormType = {
@@ -251,47 +274,161 @@ export default function AnalyticsPage() {
       return acc;
     }, {});
 
+    // Custom color palette for services
+    const colorPalette = [
+      { bg: 'rgba(59, 130, 246, 0.8)', border: 'rgb(59, 130, 246)' },   // Blue
+      { bg: 'rgba(16, 185, 129, 0.8)', border: 'rgb(16, 185, 129)' },   // Green
+      { bg: 'rgba(249, 115, 22, 0.8)', border: 'rgb(249, 115, 22)' },   // Orange
+      { bg: 'rgba(139, 92, 246, 0.8)', border: 'rgb(139, 92, 246)' },   // Purple
+      { bg: 'rgba(236, 72, 153, 0.8)', border: 'rgb(236, 72, 153)' },   // Pink
+      { bg: 'rgba(234, 179, 8, 0.8)', border: 'rgb(234, 179, 8)' },     // Yellow
+      { bg: 'rgba(14, 165, 233, 0.8)', border: 'rgb(14, 165, 233)' },   // Sky
+      { bg: 'rgba(168, 85, 247, 0.8)', border: 'rgb(168, 85, 247)' },   // Purple
+      { bg: 'rgba(239, 68, 68, 0.8)', border: 'rgb(239, 68, 68)' },     // Red
+      { bg: 'rgba(34, 197, 94, 0.8)', border: 'rgb(34, 197, 94)' },     // Green
+    ];
+
+    // Ensure we have enough colors by repeating the palette if needed
+    const totalServices = Object.keys(serviceCounts).length;
+    while (colorPalette.length < totalServices) {
+      colorPalette.push(...colorPalette);
+    }
+
+    // Sort services by count in descending order
+    const sortedServices = Object.entries(serviceCounts)
+      .sort(([, a], [, b]) => b - a)
+      .reduce((obj, [key, value]) => {
+        obj[key] = value;
+        return obj;
+      }, {});
+
     return {
-      labels: Object.keys(serviceCounts),
+      labels: Object.keys(sortedServices),
       datasets: [{
-        data: Object.values(serviceCounts),
-        backgroundColor: [
-          'rgba(54, 162, 235, 0.8)',
-          'rgba(255, 99, 132, 0.8)',
-          'rgba(255, 206, 86, 0.8)',
-          'rgba(75, 192, 192, 0.8)',
-          'rgba(153, 102, 255, 0.8)',
-        ],
-        borderColor: [
-          'rgba(54, 162, 235, 1)',
-          'rgba(255, 99, 132, 1)',
-          'rgba(255, 206, 86, 1)',
-          'rgba(75, 192, 192, 1)',
-          'rgba(153, 102, 255, 1)',
-        ],
-        borderWidth: 1,
+        data: Object.values(sortedServices),
+        backgroundColor: colorPalette.slice(0, totalServices).map(c => c.bg),
+        borderColor: colorPalette.slice(0, totalServices).map(c => c.border),
+        borderWidth: 2,
+        hoverOffset: 15,
+        borderRadius: 4,
       }]
     };
   };
 
   const getRatingDistribution = (data) => {
     const filteredData = filterResponsesByTimeRange(data);
-    const ratingCounts = filteredData.reduce((acc, curr) => {
-      const avgRating = Math.round(calculateAverageRating(curr.answers, curr.form_id === 1 ? FormType.CSM : FormType.QMS));
-      acc[avgRating] = (acc[avgRating] || 0) + 1;
-      return acc;
-    }, {});
+    
+    if (selectedFormType === FormType.CSM) {
+      const csmResponses = filteredData.filter(r => r.form_id === 1);
+      
+      // Initialize rating counts for CSM
+      const csmRatingCounts = {
+        'Strongly Disagree': 0,
+        'Disagree': 0,
+        'Neutral': 0,
+        'Agree': 0,
+        'Strongly Agree': 0
+      };
 
-    return {
-      labels: Object.keys(ratingCounts).map(r => `${r} Stars`),
-      datasets: [{
-        label: 'Number of Responses',
-        data: Object.values(ratingCounts),
-        backgroundColor: 'rgba(54, 162, 235, 0.8)',
-        borderColor: 'rgba(54, 162, 235, 1)',
-        borderWidth: 1,
-      }]
-    };
+      // Count ratings from CSM responses
+      csmResponses.forEach(response => {
+        if (response.answers?.csmARTARatings?.ratings) {
+          const ratings = Object.values(response.answers.csmARTARatings.ratings);
+          ratings.forEach(rating => {
+            switch(rating) {
+              case 'strongly-agree':
+                csmRatingCounts['Strongly Agree']++;
+                break;
+              case 'agree':
+                csmRatingCounts['Agree']++;
+                break;
+              case 'neutral':
+                csmRatingCounts['Neutral']++;
+                break;
+              case 'disagree':
+                csmRatingCounts['Disagree']++;
+                break;
+              case 'strongly-disagree':
+                csmRatingCounts['Strongly Disagree']++;
+                break;
+              // Skip 'na' ratings
+            }
+          });
+        }
+      });
+
+      return {
+        labels: Object.keys(csmRatingCounts),
+        datasets: [{
+          label: 'Number of Responses',
+          data: Object.values(csmRatingCounts),
+          backgroundColor: [
+            '#EF4444', // Red for Strongly Disagree
+            '#F97316', // Orange for Disagree
+            '#FBBF24', // Yellow for Neutral
+            '#34D399', // Light green for Agree
+            '#10B981', // Green for Strongly Agree
+          ],
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1,
+        }]
+      };
+    } else {
+      // QMS Responses
+      const qmsResponses = filteredData.filter(r => r.form_id === 2);
+      
+      // Initialize rating counts for QMS
+      const qmsRatingCounts = {
+        'Outstanding': 0,
+        'Very Satisfactory': 0,
+        'Satisfactory': 0,
+        'Fair': 0,
+        'Unsatisfactory': 0
+      };
+
+      // Count ratings from QMS responses
+      qmsResponses.forEach(response => {
+        if (response.answers?.qmsRatings?.ratings) {
+          const ratings = Object.values(response.answers.qmsRatings.ratings);
+          ratings.forEach(rating => {
+            switch(rating) {
+              case 'outstanding':
+                qmsRatingCounts['Outstanding']++;
+                break;
+              case 'very-satisfactory':
+                qmsRatingCounts['Very Satisfactory']++;
+                break;
+              case 'satisfactory':
+                qmsRatingCounts['Satisfactory']++;
+                break;
+              case 'fair':
+                qmsRatingCounts['Fair']++;
+                break;
+              case 'unsatisfactory':
+                qmsRatingCounts['Unsatisfactory']++;
+                break;
+            }
+          });
+        }
+      });
+
+      return {
+        labels: Object.keys(qmsRatingCounts),
+        datasets: [{
+          label: 'Number of Responses',
+          data: Object.values(qmsRatingCounts),
+          backgroundColor: [
+            '#10B981', // Green for Outstanding
+            '#34D399', // Light green for Very Satisfactory
+            '#FBBF24', // Yellow for Satisfactory
+            '#F97316', // Orange for Fair
+            '#EF4444', // Red for Unsatisfactory
+          ],
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1,
+        }]
+      };
+    }
   };
 
   const getTrendData = (data) => {

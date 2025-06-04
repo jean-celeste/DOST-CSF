@@ -4,7 +4,7 @@ import { csmArtaOptions } from '@/lib/options/csm-arta-options';
 import sqdLabels from '@/lib/constants/sqdLabels';
 import { Button } from '@/components/ui/button';
 
-const checkmarkQuestions = [
+const citizensCharterQuestions = [
   {
     id: 1,
     label: "CC1. Awareness of Citizen's Charter (CC)",
@@ -40,7 +40,7 @@ function renderSummaryTable(summary) {
     if (!summary[id]) return 0;
     return summary[id]
       .filter((row, idx) => optionIndexes.includes(
-        checkmarkQuestions.find(q => q.id === id).options.indexOf(row.answer)
+        citizensCharterQuestions.find(q => q.id === id).options.indexOf(row.answer)
       ))
       .reduce((acc, row) => acc + Number(row.count), 0);
   };
@@ -82,7 +82,7 @@ function renderSummaryTable(summary) {
 }
 
 function renderBreakdownTables(summary) {
-  return checkmarkQuestions.map((q, qIdx) => {
+  return citizensCharterQuestions.map((q, qIdx) => {
     // Map option to count (0 if not present)
     const counts = {};
     if (summary[q.id]) {
@@ -531,7 +531,7 @@ export default function CsmReport() {
       )}
       {/* Summary Section */}
       <div className="bg-white border border-gray-100 rounded-xl shadow p-8 mb-8">
-        <h2 className="text-xl font-bold mb-4 text-gray-800">CSM Checkmark Summary</h2>
+        <h2 className="text-xl font-bold mb-4 text-gray-800">CSM Citizen's Charter Summary</h2>
         {loading ? (
           <div className="text-center py-4">Loading...</div>
         ) : error ? (
@@ -544,7 +544,7 @@ export default function CsmReport() {
       </div>
       {/* Breakdown Section */}
       <div className="bg-white border border-gray-100 rounded-xl shadow p-8 mb-8">
-        <h2 className="text-xl font-bold mb-4 text-gray-800">Breakdown by Checkmark Question</h2>
+        <h2 className="text-xl font-bold mb-4 text-gray-800">Breakdown by Citizen's Charter Question</h2>
         {loading ? (
           <div className="text-center py-4">Loading...</div>
         ) : error ? (

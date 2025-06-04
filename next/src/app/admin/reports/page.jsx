@@ -18,7 +18,9 @@ export default function ReportsPage() {
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">QMS Ratings Report</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              {selectedFormType === FormType.QMS ? 'QMS Ratings Report' : 'CSM Ratings Report'}
+            </h1>
             <p className="text-gray-500 mt-1">View the overall summary and breakdown by office and service.</p>
           </div>
           <div className="flex items-center gap-4">
