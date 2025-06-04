@@ -47,9 +47,21 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
     // Check if all required fields are populated
     const requiredFields = ['contact', 'age', 'sex', 'service_id'];
     const emptyFields = requiredFields.filter(field => !formData[field]);
-    
-    if (emptyFields.length > 0) {
-      setMissingFields(emptyFields);
+
+    // Validation for contact number (must be exactly 11 digits)
+    const isContactInvalid = !formData.contact || formData.contact.length !== 11;
+    // Validation for email (if present, must be valid)
+    const isEmailInvalid = formData.email && !/^([a-zA-Z0-9_\-.+]+)@([a-zA-Z0-9\-.]+)\.([a-zA-Z]{2,})$/.test(formData.email);
+    // Validation for age (must be between 5 and 100)
+    const isAgeInvalid = !formData.age || Number(formData.age) < 5 || Number(formData.age) > 100;
+
+    let invalidFields = [...emptyFields];
+    if (isContactInvalid && !invalidFields.includes('contact')) invalidFields.push('contact');
+    if (isEmailInvalid && !invalidFields.includes('email')) invalidFields.push('email');
+    if (isAgeInvalid && !invalidFields.includes('age')) invalidFields.push('age');
+
+    if (invalidFields.length > 0) {
+      setMissingFields(invalidFields);
       return;
     }
 
@@ -100,13 +112,18 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
                 id="email"
                 type="email"
                 placeholder="Enter your email address"
-                className="w-full h-9 pl-8 pr-8 text-xs sm:text-sm rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                className={`w-full h-9 pl-8 pr-8 text-xs sm:text-sm rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500 ${
+                  formData.email && !/^([a-zA-Z0-9_\-.+]+)@([a-zA-Z0-9\-.]+)\.([a-zA-Z]{2,})$/.test(formData.email) ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
+                }`}
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
               />
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              {formData.email && <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-green-500" />}
+              {formData.email && /^([a-zA-Z0-9_\-.+]+)@([a-zA-Z0-9\-.]+)\.([a-zA-Z]{2,})$/.test(formData.email) && <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-green-500" />}
             </div>
+            {formData.email && !/^([a-zA-Z0-9_\-.+]+)@([a-zA-Z0-9\-.]+)\.([a-zA-Z]{2,})$/.test(formData.email) && (
+              <div className="text-xs text-red-500 mt-1">Please enter a valid email address.</div>
+            )}
           </motion.div>
 
           {/* Contact Number */}
@@ -122,16 +139,27 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
             <div className="relative">
               <Input
                 id="contact"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={11}
                 placeholder="09123456789"
                 className={`w-full h-9 pl-8 pr-8 text-xs sm:text-sm rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500 ${
-                  missingFields.includes('contact') ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
+                  missingFields.includes('contact') || (formData.contact && formData.contact.length !== 11) ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
                 }`}
                 value={formData.contact}
-                onChange={(e) => handleInputChange('contact', e.target.value)}
+                onChange={(e) => {
+                  // Only allow numbers
+                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  handleInputChange('contact', value);
+                }}
               />
               <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              {formData.contact && <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-green-500" />}
+              {formData.contact && formData.contact.length === 11 && <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-green-500" />}
             </div>
+            {formData.contact && formData.contact.length !== 11 && (
+              <div className="text-xs text-red-500 mt-1">Contact number must be exactly 11 digits.</div>
+            )}
           </motion.div>
 
           {/* Age */}
@@ -149,17 +177,23 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
                 id="age"
                 type="number"
                 placeholder="Enter your age"
+                min="5"
+                max="100"
                 className={`w-full h-9 pl-8 pr-8 text-xs sm:text-sm rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500 ${
-                  missingFields.includes('age') ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
+                  missingFields.includes('age') || (formData.age && (Number(formData.age) < 5 || Number(formData.age) > 100)) ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
                 }`}
                 value={formData.age}
-                onChange={(e) => handleInputChange('age', e.target.value)}
-                min="1"
-                max="120"
+                onChange={(e) => {
+                  let value = e.target.value.replace(/[^0-9]/g, '');
+                  handleInputChange('age', value);
+                }}
               />
               <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              {formData.age && <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-green-500" />}
+              {formData.age && Number(formData.age) >= 5 && Number(formData.age) <= 100 && <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-green-500" />}
             </div>
+            {formData.age && (Number(formData.age) < 5 || Number(formData.age) > 100) && (
+              <div className="text-xs text-red-500 mt-1">Age must be between 5 and 100.</div>
+            )}
           </motion.div>
 
           {/* Sex */}
