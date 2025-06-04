@@ -88,6 +88,15 @@ export default function RatingsPage() {
 
   if (status === "loading") return <div>Loading...</div>;
   if (!session) return null;
+  if (ratings.length === 0) return (
+    <div className="p-8">
+      <div className="flex flex-col items-center justify-center min-h-[200px]">
+        <div className="text-4xl mb-2">🙁</div>
+        <div className="text-gray-700 font-semibold mb-1">No ratings found</div>
+        <div className="text-gray-500 text-sm">Try adjusting your search or filters, or check back later.</div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-8">

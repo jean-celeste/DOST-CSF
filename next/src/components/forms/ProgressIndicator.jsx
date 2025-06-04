@@ -2,30 +2,28 @@ import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { UserIcon, CheckSquareIcon, SmileIcon, ClipboardListIcon, QrCodeIcon, MessageSquare } from 'lucide-react'
 
-const ProgressIndicator = ({ currentStep, steps, serviceType }) => {
+const ProgressIndicator = ({ currentStep, steps, serviceType, clientType }) => {
   // Determine if a step is active based on service type
   const isStepActive = (step) => {
-    if (!serviceType) return true; // All steps are active if no service type selected
-    
-    // If service is on-site (service_type_id = 1), steps 2 and 3 are active
+    if (clientType === 'internal') {
+      // Internal: Only QMS steps are active
+      return (
+        step === 1 || // Personal details
+        step === 4 || // QMS Ratings
+        step === 5 || // QMS Checkmark
+        step === 6 || // Suggestion
+        step === 7    // Review
+      );
+    }
+    // External logic (same as before)
+    if (!serviceType) return true;
     if (serviceType === 1) {
-      return step === 1 || // Personal details
-             step === 2 || // CSM Checkmark
-             step === 3 || // CSM Ratings
-             step === 6 || // Suggestion
-             step === 7;   // Review
+      return step === 1 || step === 2 || step === 3 || step === 6 || step === 7;
     }
-    
-    // If service is off-site (service_type_id = 2), steps 4 and 5 are active
     if (serviceType === 2) {
-      return step === 1 || // Personal details
-             step === 4 || // QMS Ratings
-             step === 5 || // QMS Checkmark
-             step === 6 || // Suggestion
-             step === 7;   // Review
+      return step === 1 || step === 4 || step === 5 || step === 6 || step === 7;
     }
-    
-    return true; // All steps are active if service type is not 1 or 2
+    return true;
   };
 
   // Desktop view (sidebar)
@@ -167,7 +165,8 @@ ProgressIndicator.propTypes = {
       icon: PropTypes.string.isRequired
     })
   ).isRequired,
-  serviceType: PropTypes.number
+  serviceType: PropTypes.number,
+  clientType: PropTypes.string
 };
 
 export default ProgressIndicator; 

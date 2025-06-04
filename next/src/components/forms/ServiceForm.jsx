@@ -58,7 +58,7 @@ export default function ServiceForm({ initialValues = {}, onSubmit, onCancel, lo
       </div>
       <div>
         <label className="block font-medium mb-1">Service Type</label>
-        <select name="service_type_id" value={form.service_type_id} onChange={handleChange} required disabled={loading} className="w-full border rounded p-2">
+        <select name="service_type_id" value={form.service_type_id ?? ""} onChange={handleChange} required disabled={loading} className="w-full border rounded p-2">
           <option value="">Select type</option>
           {serviceTypes.map(type => (
             <option key={type.service_type_id} value={type.service_type_id}>{type.service_type_name}</option>
@@ -67,7 +67,7 @@ export default function ServiceForm({ initialValues = {}, onSubmit, onCancel, lo
       </div>
       <div>
         <label className="block font-medium mb-1">Office</label>
-        <select name="office_id" value={form.office_id} onChange={handleChange} required disabled={loading} className="w-full border rounded p-2">
+        <select name="office_id" value={form.office_id ?? ""} onChange={handleChange} required disabled={loading} className="w-full border rounded p-2">
           <option value="">Select office</option>
           {offices.map(office => (
             <option key={office.office_id} value={office.office_id}>{office.office_name}</option>
@@ -76,7 +76,7 @@ export default function ServiceForm({ initialValues = {}, onSubmit, onCancel, lo
       </div>
       <div>
         <label className="block font-medium mb-1">Unit</label>
-        <select name="unit_id" value={form.unit_id} onChange={handleChange} disabled={loading || !form.office_id} className="w-full border rounded p-2">
+        <select name="unit_id" value={form.unit_id ?? ""} onChange={handleChange} disabled={loading || !form.office_id} className="w-full border rounded p-2">
           <option value="">{form.office_id ? 'Select unit' : 'Select office first'}</option>
           {units.map(unit => (
             <option key={unit.unit_id} value={unit.unit_id}>{unit.unit_name}</option>

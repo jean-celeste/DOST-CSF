@@ -12,6 +12,9 @@ import {
   Home,
   MessageSquare
 } from 'lucide-react';
+import AdminSidebar from '@/components/admin/AdminSidebar';
+import AdminHeader from '@/components/admin/AdminHeader';
+import { Toaster } from '@/components/ui/sonner';
 
 export default function AdminLayout({ children }) {
   const pathname = usePathname();
@@ -21,6 +24,18 @@ export default function AdminLayout({ children }) {
   }
   return (
     <SessionProvider>
+      <Toaster
+        position="top-right"
+        duration={5000}
+        toastOptions={{
+          unstyled: true,
+          classNames: {
+            toast: 'w-80 min-h-[40px] p-4 shadow-lg rounded-lg bg-green-100 text-green-900 flex items-center gap-2',
+            title: 'text-base font-semibold text-green-900',
+            description: 'text-sm text-green-800',
+          },
+        }}
+      />
       <AdminLayoutContent>{children}</AdminLayoutContent>
     </SessionProvider>
   );
@@ -31,6 +46,9 @@ function AdminLayoutContent({ children }) {
   const router = useRouter();
   const pathname = usePathname();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [time, setTime] = useState(() => new Date());
+  const [headerTitle, setHeaderTitle] = useState('Admin');
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -40,8 +58,35 @@ function AdminLayoutContent({ children }) {
     }
   }, [status, router]);
 
+  useEffect(() => {
+    const interval = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    // Fetch the header title from the API
+    async function fetchHeaderTitle() {
+      try {
+        const res = await fetch('/api/admin/identity');
+        if (res.ok) {
+          const data = await res.json();
+          setHeaderTitle(data.name ? `${data.name} Admin` : 'Admin');
+        } else {
+          setHeaderTitle('Admin');
+        }
+      } catch {
+        setHeaderTitle('Admin');
+      }
+    }
+    fetchHeaderTitle();
+  }, [status]);
+
   if (status === "loading") return <div>Loading...</div>;
   if (!isAuthenticated) return null;
+
+  // Get division_name from session
+  const divisionName = session?.user?.division_name;
+  const formattedTime = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
   const navigationItems = [
     { name: 'Dashboard', href: '/admin', icon: Home },
@@ -50,50 +95,26 @@ function AdminLayoutContent({ children }) {
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 
+  // Determine header title based on route
+  const getHeaderTitle = () => {
+    if (pathname === '/admin') return 'Admin Dashboard';
+    if (pathname.startsWith('/admin/responses')) return 'Responses';
+    if (pathname.startsWith('/admin/analytics')) return 'Analytics';
+    if (pathname.startsWith('/admin/ratings')) return 'Ratings';
+    if (pathname.startsWith('/admin/clients')) return 'Clients';
+    if (pathname.startsWith('/admin/settings')) return 'Settings';
+    return 'Admin';
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <div className="fixed inset-y-0 left-0 w-64 bg-white shadow-lg">
-        <div className="flex flex-col h-full">
-          <div className="p-6">
-            <h1 className="text-2xl font-bold text-gray-800">Admin Panel</h1>
-          </div>
-          <nav className="flex-1 px-4 space-y-1">
-            {navigationItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-                    isActive
-                      ? 'bg-blue-50 text-blue-700'
-                      : 'text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  <Icon className="w-5 h-5 mr-3" />
-                  {item.name}
-                </Link>
-              );
-            })}
-          </nav>
-          <div className="p-4 border-t">
-            <button
-              onClick={() => {
-                signOut({ callbackUrl: '/admin/login' });
-              }}
-              className="flex items-center w-full px-4 py-3 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 transition-colors"
-            >
-              <LogOut className="w-5 h-5 mr-3" />
-              Logout
-            </button>
-          </div>
-        </div>
-      </div>
+      <AdminSidebar collapsed={sidebarCollapsed} onCollapse={setSidebarCollapsed} />
       {/* Main Content */}
-      <div className="ml-64 p-8">
-        {children}
+      <div className={`transition-all duration-300 flex-1 ${sidebarCollapsed ? 'ml-20' : 'ml-64'} p-0 flex flex-col bg-gray-50 min-h-screen`}>
+        {/* Header */}
+        <AdminHeader headerTitle={headerTitle} />
+        <main className="flex-1 p-4 md:p-8 transition-all duration-300">{children}</main>
       </div>
     </div>
   );

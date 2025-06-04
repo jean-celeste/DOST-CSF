@@ -29,7 +29,14 @@ export const authOptions = {
 
           if (passwordMatch) {
             // If passwords match, return the user object for NextAuth
-            return { id: admin.admin_id, username: admin.username, role: "admin" };
+            return {
+              id: admin.admin_id,
+              username: admin.username,
+              role: admin.role,
+              office_id: admin.office_id,
+              division_id: admin.division_id
+              //unit_id: admin,unit_id //if ever na need na may admin every unit (needd din mag dagdag unit_id column sa dv)
+            };
           }
         }
         // If user not found or password doesn't match, return null
@@ -40,11 +47,17 @@ export const authOptions = {
   session: { strategy: "jwt" },
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.role = user.role;
+      if (user) {
+        token.role = user.role;
+        token.office_id = user.office_id;
+        token.division_id = user.division_id;
+      }
       return token;
     },
     async session({ session, token }) {
       session.user.role = token.role;
+      session.user.office_id = token.office_id;
+      session.user.division_id = token.division_id;
       return session;
     }
   }

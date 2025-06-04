@@ -217,15 +217,39 @@ export default function AdminDashboard() {
   };
 
   const filterResponses = (formType) => {
-    if (formType === FormType.CSM) return responses.filter(r => r.form_id === 1);
-    if (formType === FormType.QMS) return responses.filter(r => r.form_id === 2);
+    if (formType === FormType.CSM) {
+      return responses.filter(
+        r => r.form_id === 1 || r.form_type === 'csm'
+      );
+    }
+    if (formType === FormType.QMS) {
+      return responses.filter(
+        r => r.form_id === 2 || r.form_type === 'qms'
+      );
+    }
     return responses;
   };
 
   if (status === "loading") return <div>Loading...</div>;
   if (!session) return null;
 
-  if (loading) return <div className="p-8">Loading...</div>;
+  if (loading) return (
+    <div className="p-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-pulse">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="bg-white p-6 rounded-lg shadow h-32 flex items-center justify-center">
+            <div className="w-16 h-6 bg-gray-200 rounded mb-2" />
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 animate-pulse">
+        {[...Array(2)].map((_, i) => (
+          <div key={i} className="bg-white p-6 rounded-lg shadow h-[300px]" />
+        ))}
+      </div>
+      <div className="bg-white p-6 rounded-lg shadow h-64 animate-pulse" />
+    </div>
+  );
   if (error) return <div className="p-8 text-red-500">Error: {error}</div>;
 
   const filteredResponses = filterResponses(selectedForm);
@@ -245,142 +269,153 @@ export default function AdminDashboard() {
     <div className="p-8">
       <div className="mb-8">
         <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
-        <div className="flex gap-4 mb-6">
+        <div className="flex gap-4 mb-8">
           {[FormType.CSM, FormType.QMS].map(type => (
             <button
               key={type}
-              className={`px-4 py-2 rounded-lg transition-colors ${
+              className={`px-4 py-2 rounded-lg transition-colors font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 ${
                 selectedForm === type 
                   ? 'bg-blue-500 text-white' 
-                  : 'bg-gray-200 hover:bg-gray-300'
+                  : 'bg-gray-200 hover:bg-blue-100 text-blue-700'
               }`}
               onClick={() => setSelectedForm(type)}
+              aria-pressed={selectedForm === type}
             >
               {type.toUpperCase()} Forms
             </button>
           ))}
         </div>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500">Total Responses</p>
-              <h3 className="text-2xl font-bold">{stats.totalResponses}</h3>
+      {filteredResponses.length === 0 ? (
+        <div className="flex flex-col items-center justify-center min-h-[300px]">
+          <div className="bg-white border border-blue-100 p-10 rounded-xl shadow flex flex-col items-center max-w-xl w-full">
+            <AlertCircle className="text-blue-400 mb-4" size={48} />
+            <p className="text-lg text-gray-700 mb-2 font-semibold">No responses found for your assignment.</p>
+            <p className="text-gray-500 mb-4 text-center">There are currently no responses available for your division or office.</p>
+            <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded text-sm text-center">
+              If you believe there should be data here, please check your filters or contact your system administrator.
             </div>
-            <FileText className="text-blue-500" size={24} />
           </div>
         </div>
-
-        {selectedForm === FormType.CSM ? (
-          <>
-            <div className="bg-white p-6 rounded-lg shadow">
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-100">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-500">CSM Average Rating</p>
-                  <h3 className="text-2xl font-bold">{stats.averageRating.toFixed(2)}%</h3>
-                  <p className="text-sm text-gray-500">
-                    {getRatingInterpretation(stats.averageRating, selectedForm)}
-                  </p>
+                  <p className="text-gray-500">Total Responses</p>
+                  <h3 className="text-2xl font-bold">{stats.totalResponses}</h3>
                 </div>
-                <Star className="text-yellow-500" size={24} />
+                <FileText className="text-blue-500" size={24} />
               </div>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-500">CSM Satisfaction Rate</p>
-                  <h3 className="text-2xl font-bold">{stats.satisfactionRate.toFixed(1)}%</h3>
+            {selectedForm === FormType.CSM ? (
+              <>
+                <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-500">CSM Average Rating</p>
+                      <h3 className="text-2xl font-bold">{stats.averageRating.toFixed(2)}%</h3>
+                      <p className="text-sm text-gray-500">
+                        {getRatingInterpretation(stats.averageRating, selectedForm)}
+                      </p>
+                    </div>
+                    <Star className="text-yellow-500" size={24} />
+                  </div>
                 </div>
-                <ThumbsUp className="text-green-500" size={24} />
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="bg-white p-6 rounded-lg shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-500">QMS Average Rating</p>
-                  <h3 className="text-2xl font-bold">{stats.averageRating.toFixed(2)}</h3>
-                  <p className="text-sm text-gray-500">
-                    {getRatingInterpretation(stats.averageRating, selectedForm)}
-                  </p>
+                <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-500">CSM Satisfaction Rate</p>
+                      <h3 className="text-2xl font-bold">{stats.satisfactionRate.toFixed(1)}%</h3>
+                    </div>
+                    <ThumbsUp className="text-green-500" size={24} />
+                  </div>
                 </div>
-                <Star className="text-yellow-500" size={24} />
-              </div>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-500">QMS Performance</p>
-                  <h3 className="text-2xl font-bold">Coming Soon</h3>
+              </>
+            ) : (
+              <>
+                <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-500">QMS Average Rating</p>
+                      <h3 className="text-2xl font-bold">{stats.averageRating.toFixed(2)}</h3>
+                      <p className="text-sm text-gray-500">
+                        {getRatingInterpretation(stats.averageRating, selectedForm)}
+                      </p>
+                    </div>
+                    <Star className="text-yellow-500" size={24} />
+                  </div>
                 </div>
-                <TrendingUp className="text-green-500" size={24} />
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-4">
-            {selectedForm === FormType.CSM ? 'CSM Service Distribution' : 'QMS Service Distribution'}
-          </h3>
-          <div className="h-[300px]">
-            <Pie data={chartData.serviceData} options={CHART_OPTIONS} />
+                <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-500">QMS Performance</p>
+                      <h3 className="text-2xl font-bold">Coming Soon</h3>
+                    </div>
+                    <TrendingUp className="text-green-500" size={24} />
+                  </div>
+                </div>
+              </>
+            )}
           </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-4">
-            {selectedForm === FormType.CSM ? 'CSM Rating Distribution' : 'QMS Rating Distribution'}
-          </h3>
-          <div className="h-[300px]">
-            <Bar data={chartData.ratingData} options={CHART_OPTIONS} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-100">
+              <h3 className="text-lg font-semibold mb-4">
+                {selectedForm === FormType.CSM ? 'CSM Service Distribution' : 'QMS Service Distribution'}
+              </h3>
+              <div className="h-[300px]">
+                <Pie data={chartData.serviceData} options={CHART_OPTIONS} />
+              </div>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-100">
+              <h3 className="text-lg font-semibold mb-4">
+                {selectedForm === FormType.CSM ? 'CSM Rating Distribution' : 'QMS Rating Distribution'}
+              </h3>
+              <div className="h-[300px]">
+                <Bar data={chartData.ratingData} options={CHART_OPTIONS} />
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-semibold mb-4">
-          {selectedForm === FormType.CSM ? 'CSM Recent Responses' : 'QMS Recent Responses'}
-        </h3>
-        <div className="overflow-x-auto">
-          <table className="min-w-full">
-            <thead>
-              <tr className="bg-gray-50">
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredResponses.slice(0, 10).map((response) => (
-                <tr key={response.response_id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {new Date(response.submitted_at).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {response.service_name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {response.client_name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {selectedForm === FormType.CSM 
-                      ? `${calculateAverageRating(response.answers, selectedForm).toFixed(2)}%`
-                      : calculateAverageRating(response.answers, selectedForm).toFixed(2)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+          <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-100">
+            <h3 className="text-lg font-semibold mb-4">
+              {selectedForm === FormType.CSM ? 'CSM Recent Responses' : 'QMS Recent Responses'}
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="min-w-full">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredResponses.slice(0, 10).map((response) => (
+                    <tr key={response.response_id}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {new Date(response.submitted_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {response.service_name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {response.client_name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {selectedForm === FormType.CSM 
+                          ? `${calculateAverageRating(response.answers, selectedForm).toFixed(2)}%`
+                          : calculateAverageRating(response.answers, selectedForm).toFixed(2)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 } 

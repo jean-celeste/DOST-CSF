@@ -93,7 +93,7 @@ export async function PUT(request, context) {
 // DELETE: Remove a service by ID
 export async function DELETE(request, context) {
   const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== "admin") {
+  if (!session || !session.user.role || !session.user.role.toLowerCase().includes('admin')) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
   const { id } = await context.params;

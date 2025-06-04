@@ -2,10 +2,16 @@ import { NextResponse } from 'next/server';
 import { executeQuery } from '@/lib/db/utils';
 import ExcelJS from 'exceljs';
 import { decrypt } from '@/lib/cryptoUtils'; // Import the decrypt function
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export const dynamic = 'force-dynamic'; // Ensure this route is always dynamic
 
-export async function GET() {
+export async function GET(request) {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user.role || !session.user.role.toLowerCase().includes('admin')) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     // Fetch all responses from the view
     const result = await executeQuery('SELECT * FROM response_details_view');

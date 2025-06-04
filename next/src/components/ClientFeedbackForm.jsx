@@ -55,40 +55,50 @@ export default function ClientFeedbackForm() {
   const handleNextStep = () => {
     console.log('Current Step:', formState.currentStep);
     console.log('Service Type ID:', personalDetails.service_type_id);
+    console.log('Client Type:', personalDetails.clientType);
     
     setFormState(prev => {
       // Don't increment if we're already at the last step
       if (prev.currentStep >= 7) {
         return prev;
       }
-      
-      // If we're at step 1 and moving to step 2, check service type
+
+      // Helper to determine if user should answer CSM or QMS
+      const isInternal = personalDetails.clientType === 'internal';
+      const isExternal = ['citizen', 'business', 'government'].includes(personalDetails.clientType);
+      const isOnsite = personalDetails.service_type_id === 1;
+      const isOffsite = personalDetails.service_type_id === 2;
+
+      // Step 1: Decide which form to show next
       if (prev.currentStep === 1) {
-        if (personalDetails.service_type_id === 1) {
-          // For on-site services, go to CSM form (step 2)
+        if (isInternal) {
+          // Internal always goes to QMS (step 4)
+          return { ...prev, currentStep: 4 };
+        } else if (isExternal && isOnsite) {
+          // External + onsite: CSM (step 2)
           return { ...prev, currentStep: 2 };
-        } else if (personalDetails.service_type_id === 2) {
-          // For off-site services, go to QMS form (step 4)
+        } else if (isExternal && isOffsite) {
+          // External + offsite: QMS (step 4)
           return { ...prev, currentStep: 4 };
         }
       }
-      
-      // For on-site services (type 1), skip steps 4 and 5
-      if (personalDetails.service_type_id === 1) {
+
+      // For CSM (external + onsite), skip QMS steps
+      if (isExternal && isOnsite) {
         if (prev.currentStep === 3) {
           // After CSM ratings, go to suggestion
           return { ...prev, currentStep: 6 };
         }
       }
-      
-      // For off-site services (type 2), skip steps 2 and 3
-      if (personalDetails.service_type_id === 2) {
+
+      // For QMS (internal, or external + offsite), skip CSM steps
+      if ((isInternal || (isExternal && isOffsite))) {
         if (prev.currentStep === 5) {
           // After QMS checkmark, go to suggestion
           return { ...prev, currentStep: 6 };
         }
       }
-      
+
       return { ...prev, currentStep: prev.currentStep + 1 };
     });
   }
@@ -99,34 +109,46 @@ export default function ClientFeedbackForm() {
       if (prev.currentStep === 1) {
         return { ...prev, showMainForm: false };
       }
-      
+
+      const isInternal = personalDetails.clientType === 'internal';
+      const isExternal = ['citizen', 'business', 'government'].includes(personalDetails.clientType);
+      const isOnsite = personalDetails.service_type_id === 1;
+      const isOffsite = personalDetails.service_type_id === 2;
+
+      // Internal: always go back to personal details from QMS steps or suggestion
+      if (isInternal) {
+        if ([4, 5, 6].includes(prev.currentStep)) {
+          return { ...prev, currentStep: 1 };
+        }
+      }
+
       // If we're at step 6 (suggestion), go back to the appropriate previous step based on service type
       if (prev.currentStep === 6) {
-        if (personalDetails.service_type_id === 1) {
-          // For on-site services, go back to CSM ratings (step 3)
+        if (isExternal && isOnsite) {
+          // For external onsite, go back to CSM ratings (step 3)
           return { ...prev, currentStep: 3 };
-        } else if (personalDetails.service_type_id === 2) {
-          // For off-site services, go back to QMS checkmark (step 5)
+        } else if (isExternal && isOffsite) {
+          // For external offsite, go back to QMS checkmark (step 5)
           return { ...prev, currentStep: 5 };
         }
       }
-      
+
       // For on-site services (type 1), skip steps 4 and 5
-      if (personalDetails.service_type_id === 1) {
+      if (isExternal && isOnsite) {
         if (prev.currentStep === 3) {
           // Go back to CSM checkmark (step 2)
           return { ...prev, currentStep: 2 };
         }
       }
-      
+
       // For off-site services (type 2), skip steps 2 and 3
-      if (personalDetails.service_type_id === 2) {
+      if (isExternal && isOffsite) {
         if (prev.currentStep === 4) {
           // Go back to personal details (step 1)
           return { ...prev, currentStep: 1 };
         }
       }
-      
+
       return { ...prev, currentStep: prev.currentStep - 1 };
     });
   }
@@ -212,6 +234,7 @@ export default function ClientFeedbackForm() {
               currentStep={formState.currentStep} 
               steps={FORM_STEPS} 
               serviceType={personalDetails.service_type_id}
+              clientType={personalDetails.clientType}
             />
 
             {/* Logos at the bottom */}
@@ -245,8 +268,8 @@ export default function ClientFeedbackForm() {
                 isReviewMode={editingSection === 'personal'}
               />
             )}
-            
-            {formState.currentStep === 2 && personalDetails.service_type_id === 1 && (
+            {/* CSM: external + onsite */}
+            {formState.currentStep === 2 && ['citizen','business','government'].includes(personalDetails.clientType) && personalDetails.service_type_id === 1 && (
               <CSMARTACheckmark 
                 onNextStep={editingSection === 'csmarta' ? handleReturnToReview : handleNextStep} 
                 onPrevStep={handlePrevStep}
@@ -257,7 +280,7 @@ export default function ClientFeedbackForm() {
                 toggleLanguage={toggleLanguage}
               />
             )}
-            {formState.currentStep === 3 && personalDetails.service_type_id === 1 && (
+            {formState.currentStep === 3 && ['citizen','business','government'].includes(personalDetails.clientType) && personalDetails.service_type_id === 1 && (
               <CSMARTARatings 
                 onNextStep={editingSection === 'csmarta-ratings' ? handleReturnToReview : handleNextStep} 
                 onPrevStep={handlePrevStep}
@@ -268,7 +291,8 @@ export default function ClientFeedbackForm() {
                 toggleLanguage={toggleLanguage}
               />
             )}
-            {formState.currentStep === 4 && personalDetails.service_type_id === 2 && (
+            {/* QMS: internal OR (external + offsite) */}
+            {formState.currentStep === 4 && (personalDetails.clientType === 'internal' || (['citizen','business','government'].includes(personalDetails.clientType) && personalDetails.service_type_id === 2)) && (
               <QMSRatings 
                 onNextStep={editingSection === 'qms-ratings' ? handleReturnToReview : handleNextStep} 
                 onPrevStep={handlePrevStep}
@@ -277,7 +301,7 @@ export default function ClientFeedbackForm() {
                 isReviewMode={editingSection === 'qms-ratings'}
               />
             )}
-            {formState.currentStep === 5 && personalDetails.service_type_id === 2 && (
+            {formState.currentStep === 5 && (personalDetails.clientType === 'internal' || (['citizen','business','government'].includes(personalDetails.clientType) && personalDetails.service_type_id === 2)) && (
               <QMSCheckmark 
                 onNextStep={editingSection === 'qms-checkmark' ? handleReturnToReview : handleNextStep} 
                 onPrevStep={handlePrevStep}
@@ -292,7 +316,7 @@ export default function ClientFeedbackForm() {
                 onPrevStep={handlePrevStep}
                 formData={{
                   ...suggestion,
-                  ratings: personalDetails.service_type_id === 1 ? csmARTARatings.ratings : qmsRatings.ratings
+                  ratings: (personalDetails.clientType === 'internal' || (['citizen','business','government'].includes(personalDetails.clientType) && personalDetails.service_type_id === 2)) ? qmsRatings.ratings : csmARTARatings.ratings
                 }}
                 onFormDataChange={setSuggestion}
                 isReviewMode={editingSection === 'suggestion'}
