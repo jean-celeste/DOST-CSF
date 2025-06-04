@@ -147,7 +147,10 @@ export default function ClientDemographics() {
   // Filter clients
   const filteredClients = clients.filter(client => {
     const matchesType = filter.clientType === 'all' || client.client_type.toLowerCase() === filter.clientType;
-    const matchesGender = filter.gender === 'all' || client.sex.toLowerCase() === filter.gender;
+    const matchesGender = filter.gender === 'all' || 
+      (filter.gender === 'prefer-not' ? 
+        !['male', 'female'].includes(client.sex.toLowerCase()) : 
+        client.sex.toLowerCase() === filter.gender);
     const matchesAgeGroup = filter.ageGroup === 'all' || getAgeGroup(client.age) === filter.ageGroup;
     return matchesType && matchesGender && matchesAgeGroup;
   });
@@ -164,7 +167,7 @@ export default function ClientDemographics() {
 
   // Prepare chart data
   const genderData = {
-    labels: ['Male', 'Female', 'Unknown'],
+    labels: ['Male', 'Female', 'Prefer not to say'],
     datasets: [{
       label: 'Gender Distribution',
       data: [
@@ -246,6 +249,7 @@ export default function ClientDemographics() {
               <option value="all">All Genders</option>
               <option value="male">Male</option>
               <option value="female">Female</option>
+              <option value="prefer-not">Prefer not to say</option>
             </select>
             <select
               aria-label="Age Group Filter"
@@ -308,14 +312,23 @@ export default function ClientDemographics() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500">Gender Ratio</p>
-              <h3 className="text-2xl font-bold">
-                {stats.totalClients > 0 ? 
-                  `${Math.round((stats.maleCount / stats.totalClients) * 100)}% M` : 'N/A'}
-              </h3>
-              <p className="text-sm text-gray-500">
-                {stats.totalClients > 0 ? 
-                  `${Math.round((stats.femaleCount / stats.totalClients) * 100)}% F` : ''}
-              </p>
+              <div className="space-y-1">
+                {stats.totalClients > 0 ? (
+                  <>
+                    <h3 className="text-2xl font-bold">
+                      {Math.round((stats.maleCount / stats.totalClients) * 100)}% M
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      {Math.round((stats.femaleCount / stats.totalClients) * 100)}% F
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {Math.round(((stats.totalClients - stats.maleCount - stats.femaleCount) / stats.totalClients) * 100)}% Prefer not to say
+                    </p>
+                  </>
+                ) : (
+                  <h3 className="text-2xl font-bold">N/A</h3>
+                )}
+              </div>
             </div>
             <TrendingUp className="text-orange-500" size={24} />
           </div>

@@ -516,10 +516,10 @@ export default function QMSAnalytics() {
               <Pie 
                 data={getServiceDistribution(qmsReport)}
                 options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
                       position: 'right',
                       align: 'start',
                       labels: {
@@ -622,10 +622,10 @@ export default function QMSAnalytics() {
             <Bar 
               data={getRatingDistribution(qmsReport)}
               options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
                     display: false
                   },
                   tooltip: {
@@ -652,16 +652,16 @@ export default function QMSAnalytics() {
                     usePointStyle: true,
                     boxPadding: 6
                   }
-                },
-                scales: {
-                  y: {
-                    beginAtZero: true,
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
                     grid: {
                       color: 'rgba(0, 0, 0, 0.1)',
                       drawBorder: false
                     },
-                    ticks: {
-                      stepSize: 1,
+                  ticks: {
+                    stepSize: 1,
                       padding: 10,
                       font: {
                         size: 12
@@ -714,6 +714,6 @@ export default function QMSAnalytics() {
           </div>
         </div>
       )}
-    </div>
+      </div>
   );
-}
+} 
