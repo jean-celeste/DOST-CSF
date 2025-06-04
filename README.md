@@ -55,32 +55,41 @@ DOST-CSF/
 ```json
 {
   "csmARTACheckmark": {
-    "1": "answer",
-    "2": "answer",
-    "3": "answer"
+    "1": "selected_option_text",
+    "2": "selected_option_text",
+    "3": "selected_option_text"
   },
   "csmARTARatings": {
     "ratings": {
-      "4": "rating_value",
-      "5": "rating_value",
-      // ...
-      "12": "rating_value"
-    }
-  },
-  "qmsCheckmark": {
-    "selections": {
-      "31": true,
-      "32": true,
-      // ...
-      "35": true
+      "4": "strongly-agree",
+      "5": "strongly-agree",
+      "6": "strongly-agree",
+      "7": "strongly-agree",
+      "8": "strongly-agree",
+      "9": "strongly-agree",
+      "10": "strongly-agree",
+      "11": "strongly-agree",
+      "12": "strongly-agree"
     }
   },
   "qmsRatings": {
     "ratings": {
-      "25": "rating_value",
-      "26": "rating_value",
-      // ...
-      "30": "rating_value"
+      "13": "rating_value",
+      "14": "rating_value",
+      "15": "rating_value",
+      "16": "rating_value",
+      "17": "rating_value",
+      "18": "rating_value",
+      "19": "rating_value",
+      "21": "rating_value",
+      "22": "rating_value",
+      "23": "rating_value",
+      "24": "rating_value"
+    }
+  },
+  "qmsCheckmark": {
+    "selections": {
+      "question_id": true
     }
   },
   "suggestion": {
@@ -89,6 +98,10 @@ DOST-CSF/
   }
 }
 ```
+
+Rating values can be:
+- CSM-ARTA: "strongly-agree", "agree", "disagree", "strongly-disagree", "na"
+- QMS: "outstanding", "very-satisfactory", "satisfactory", "fair", "unsatisfactory"
 
 ## Prerequisites
 - Node.js (v18 or higher)
