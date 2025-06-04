@@ -118,8 +118,11 @@ DOST-CSF/
 
 ### Database Setup
 1. Create a PostgreSQL database
-2. Run the database migrations
-3. Seed the database with initial questions and options
+2. You will receive a `setup_db.sql` script via email
+3. Run the setup script to create tables and initial data:
+   ```bash
+   psql -U your_username -f setup_db.sql
+   ```
 
 ### Development
 To start the development server:
@@ -141,14 +144,22 @@ npm start
 
 ### CSM-ARTA Form
 - Form ID: 1
-- Checkmark questions (IDs 1-3)
-- Rating questions (IDs 4-12)
+- Total Questions: 12
+- Structure:
+  - Checkmark questions (IDs 1-3) for Citizen's Charter awareness
+  - Rating questions (IDs 4-12) for service satisfaction
 - Includes N/A option for ratings
 
 ### QMS Form
-- Form ID: 3
-- Checkmark questions (IDs 31-35)
-- Rating questions (IDs 26-30)
+- Form ID: 2
+- Total Questions: 11
+- Rating questions only (IDs 13-24, except 20)
+- Categories include:
+  - Service/Activity appropriateness and benefits
+  - Timeliness of delivery
+  - Staff attitude
+  - Gender fair treatment
+  - Overall satisfaction
 - Standard rating options
 
 ## Contributing
