@@ -317,60 +317,118 @@ export default function AnalyticsPage() {
 
   const getRatingDistribution = (data) => {
     const filteredData = filterResponsesByTimeRange(data);
-    const csmResponses = filteredData.filter(r => r.form_id === 1);
     
-    // Initialize rating counts
-    const ratingCounts = {
-      'Strongly Disagree': 0,
-      'Disagree': 0,
-      'Neutral': 0,
-      'Agree': 0,
-      'Strongly Agree': 0
-    };
+    if (selectedFormType === FormType.CSM) {
+      const csmResponses = filteredData.filter(r => r.form_id === 1);
+      
+      // Initialize rating counts for CSM
+      const csmRatingCounts = {
+        'Strongly Disagree': 0,
+        'Disagree': 0,
+        'Neutral': 0,
+        'Agree': 0,
+        'Strongly Agree': 0
+      };
 
-    // Count ratings from CSM responses
-    csmResponses.forEach(response => {
-      if (response.answers?.csmARTARatings?.ratings) {
-        const ratings = Object.values(response.answers.csmARTARatings.ratings);
-        ratings.forEach(rating => {
-          switch(rating) {
-            case 'strongly-agree':
-              ratingCounts['Strongly Agree']++;
-              break;
-            case 'agree':
-              ratingCounts['Agree']++;
-              break;
-            case 'neutral':
-              ratingCounts['Neutral']++;
-              break;
-            case 'disagree':
-              ratingCounts['Disagree']++;
-              break;
-            case 'strongly-disagree':
-              ratingCounts['Strongly Disagree']++;
-              break;
-            // Skip 'na' ratings
-          }
-        });
-      }
-    });
+      // Count ratings from CSM responses
+      csmResponses.forEach(response => {
+        if (response.answers?.csmARTARatings?.ratings) {
+          const ratings = Object.values(response.answers.csmARTARatings.ratings);
+          ratings.forEach(rating => {
+            switch(rating) {
+              case 'strongly-agree':
+                csmRatingCounts['Strongly Agree']++;
+                break;
+              case 'agree':
+                csmRatingCounts['Agree']++;
+                break;
+              case 'neutral':
+                csmRatingCounts['Neutral']++;
+                break;
+              case 'disagree':
+                csmRatingCounts['Disagree']++;
+                break;
+              case 'strongly-disagree':
+                csmRatingCounts['Strongly Disagree']++;
+                break;
+              // Skip 'na' ratings
+            }
+          });
+        }
+      });
 
-    return {
-      labels: Object.keys(ratingCounts),
-      datasets: [{
-        label: 'Number of Responses',
-        data: Object.values(ratingCounts),
-        backgroundColor: [
-          '#EF4444', // Red for Strongly Disagree
-          '#F97316', // Orange for Disagree
-          '#FBBF24', // Yellow for Neutral
-          '#34D399', // Light green for Agree
-          '#10B981', // Green for Strongly Agree
-        ],
-        borderColor: 'rgba(54, 162, 235, 1)',
-        borderWidth: 1,
-      }]
-    };
+      return {
+        labels: Object.keys(csmRatingCounts),
+        datasets: [{
+          label: 'Number of Responses',
+          data: Object.values(csmRatingCounts),
+          backgroundColor: [
+            '#EF4444', // Red for Strongly Disagree
+            '#F97316', // Orange for Disagree
+            '#FBBF24', // Yellow for Neutral
+            '#34D399', // Light green for Agree
+            '#10B981', // Green for Strongly Agree
+          ],
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1,
+        }]
+      };
+    } else {
+      // QMS Responses
+      const qmsResponses = filteredData.filter(r => r.form_id === 2);
+      
+      // Initialize rating counts for QMS
+      const qmsRatingCounts = {
+        'Outstanding': 0,
+        'Very Satisfactory': 0,
+        'Satisfactory': 0,
+        'Fair': 0,
+        'Unsatisfactory': 0
+      };
+
+      // Count ratings from QMS responses
+      qmsResponses.forEach(response => {
+        if (response.answers?.qmsRatings?.ratings) {
+          const ratings = Object.values(response.answers.qmsRatings.ratings);
+          ratings.forEach(rating => {
+            switch(rating) {
+              case 'outstanding':
+                qmsRatingCounts['Outstanding']++;
+                break;
+              case 'very-satisfactory':
+                qmsRatingCounts['Very Satisfactory']++;
+                break;
+              case 'satisfactory':
+                qmsRatingCounts['Satisfactory']++;
+                break;
+              case 'fair':
+                qmsRatingCounts['Fair']++;
+                break;
+              case 'unsatisfactory':
+                qmsRatingCounts['Unsatisfactory']++;
+                break;
+            }
+          });
+        }
+      });
+
+      return {
+        labels: Object.keys(qmsRatingCounts),
+        datasets: [{
+          label: 'Number of Responses',
+          data: Object.values(qmsRatingCounts),
+          backgroundColor: [
+            '#10B981', // Green for Outstanding
+            '#34D399', // Light green for Very Satisfactory
+            '#FBBF24', // Yellow for Satisfactory
+            '#F97316', // Orange for Fair
+            '#EF4444', // Red for Unsatisfactory
+          ],
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1,
+        }]
+      };
+    }
   };
 
   const getTrendData = (data) => {
