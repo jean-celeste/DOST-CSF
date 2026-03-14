@@ -1,0 +1,68 @@
+services:
+  # --- The Shared Database ---
+  db:
+    image: postgres:18.3
+    container_name: postgres-db
+    restart: always
+    environment:
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: dev_password
+      POSTGRES_DB: shared_dev_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev_user -d shared_dev_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # --- Next.js Apps ---
+  cc-charter:
+    build: ./cc-charter
+    container_name: cc-charter-app
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./cc-charter:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - DATABASE_URL=postgresql://dev_user:dev_password@db:5432/cc_charter_db
+    depends_on:
+      db:
+        condition: service_healthy
+
+  qms:
+    build: ./qms
+    container_name: qms-app
+    ports:
+      - "3002:3000"
+    volumes:
+      - ./qms:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - DATABASE_URL=postgresql://dev_user:dev_password@db:5432/qms_db
+    depends_on:
+      db:
+        condition: service_healthy
+
+  next-app:
+    build: ./next
+    container_name: next-generic-app
+    ports:
+      - "3003:3000"
+    volumes:
+      - ./next:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - DATABASE_URL=postgresql://dev_user:dev_password@db:5432/next_app_db
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
