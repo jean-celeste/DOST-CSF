@@ -18,7 +18,7 @@ export default function ConsentForm({ onConsent, onDecline }: ConsentFormProps) 
 
     return (
         <div className="min-h-screen bg-[url('/diamond-pattern.svg')] bg-repeat flex justify-center items-center p-4">
-            <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-8">
+            <div className="bg-white rounded-lg shadow-lg w-full max-w-md sm:max-w-xl lg:max-w-2xl p-4 sm:p-6 lg:p-6 lg:scale-90 lg:origin-center">
                 <div className="flex flex-row justify-center sm:justify-start items-center mb-8">
                     <div className="mr-4 h-12 w-12 sm:h-16 sm:w-16 flex-shrink-0">
                         <img src="/DOST_Logo.png" alt="DOST Logo" className="h-full w-full object-contain" />
