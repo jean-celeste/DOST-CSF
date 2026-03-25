@@ -25,7 +25,6 @@ type Step = {
 
 type StepsProps = {
     currentStep?: number;
-    serviceType?: number;
     clientType?: "internal" | "external";
     steps?: Step[];
 };
@@ -54,27 +53,13 @@ const DEFAULT_STEPS: Step[] = [
     },
     {
         step: 4,
-        title: "QMS Ratings",
-        mobileTitle: "Checkmark",
-        description: "Rate your experience",
-        icon: "SmileIcon",
-    },
-    {
-        step: 5,
-        title: "QMS Checkmark",
-        mobileTitle: "QMS",
-        description: "Please provide feedback",
-        icon: "QrCodeIcon",
-    },
-    {
-        step: 6,
         title: "Suggestions",
         mobileTitle: "Suggestions",
         description: "Share your suggestions to help us improve.",
         icon: "MessageSquare",
     },
     {
-        step: 7,
+        step: 5,
         title: "Review",
         mobileTitle: "Review",
         description: "Review your answers before submission.",
@@ -92,32 +77,18 @@ const ICON_MAP = {
 } as const;
 
 export default function Steps({
-    currentStep = 3,
-    serviceType = 1,
-    clientType = "external",
+    currentStep = 1,
     steps = DEFAULT_STEPS,
 }: StepsProps) {
     const isStepActive = (step: number) => {
-        if (clientType === "internal") {
-            return step === 1 || step === 4 || step === 5 || step === 6 || step === 7;
-        }
-
-        if (!serviceType) return true;
-        if (serviceType === 1) {
-            return step === 1 || step === 2 || step === 3 || step === 6 || step === 7;
-        }
-        if (serviceType === 2) {
-            return step === 1 || step === 4 || step === 5 || step === 6 || step === 7;
-        }
-
         return true;
     };
 
     const DesktopProgress = () => (
-        <div className="bg-white/80 rounded-2xl p-6 shadow-sm backdrop-blur-sm w-full">
+        <div className="bg-white/80 rounded-2xl px-6 py-8 shadow-sm backdrop-blur-sm w-full">
             <div className="relative">
-                <div className="absolute left-6 top-4 bottom-4 w-0.5 bg-gray-100"></div>
-                <div className="space-y-7">
+                <div className="absolute left-6 top-6 bottom-6 w-0.5 bg-gray-100"></div>
+                <div className="space-y-0">
                     {steps.map(({ step, title, description, icon }) => {
                         const active = isStepActive(step);
                         const isCompleted = currentStep >= step;
@@ -125,7 +96,7 @@ export default function Steps({
                         const Icon = ICON_MAP[icon];
 
                         return (
-                            <div key={step} className="relative flex items-start group">
+                            <div key={step} className="relative flex items-start group py-3">
                                 <div
                                     className={`relative shrink-0 z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all duration-300 ease-in-out bg-white ${
                                         shouldShowBlue

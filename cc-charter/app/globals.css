@@ -5,6 +5,11 @@
   --foreground: #171717;
 }
 
+html,
+body {
+  height: 100%;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -32,4 +37,10 @@ body {
   background-size: 100px 100px;
   background-position: center;
   background-attachment: fixed;
+}
+
+@media (pointer: coarse) {
+  .diamond-pattern {
+    background-attachment: scroll;
+  }
 }
