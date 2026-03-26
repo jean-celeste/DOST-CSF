@@ -2,13 +2,9 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 
-type ConsentFormProps = {
-    onConsent?: () => void
-    onDecline?: () => void
-}
-
-export default function ConsentForm({ onConsent, onDecline }: ConsentFormProps) {
+export default function ConsentForm() {
     const [isChecked, setIsChecked] = useState(false)
     const router = useRouter()
 
@@ -21,7 +17,7 @@ export default function ConsentForm({ onConsent, onDecline }: ConsentFormProps) 
             <div className="bg-white rounded-lg shadow-lg w-full max-w-md sm:max-w-xl lg:max-w-2xl p-4 sm:p-6 lg:p-6 lg:scale-90 lg:origin-center">
                 <div className="flex flex-row justify-center sm:justify-start items-center mb-8">
                     <div className="mr-4 h-12 w-12 sm:h-16 sm:w-16 flex-shrink-0">
-                        <img src="/DOST_Logo.png" alt="DOST Logo" className="h-full w-full object-contain" />
+                        <Image src="/DOST_Logo.png" alt="DOST Logo" width={64} height={64} className="h-full w-full object-contain" />
                     </div>
                     <div className="text-left">
                         <h1 className="text-sm sm:text-xl font-bold text-gray-800">Department of Science and Technology V</h1>
@@ -79,9 +75,9 @@ export default function ConsentForm({ onConsent, onDecline }: ConsentFormProps) 
                 </div>
 
                 <div className="flex justify-center mt-8 space-x-4">
-                    <img src="/ARTA_Logo.png" alt="ARTA logo" className="h-10 sm:h-12 w-auto" />
-                    <img src="/CC_Logo.png" alt="CC Logo" className="h-10 sm:h-12 w-auto" />
-                    <img src="/BP_logo.png" alt="Bagong Pilipinas logo" className="h-10 sm:h-12 w-auto" />
+                    <Image src="/ARTA_Logo.png" alt="ARTA logo" width={120} height={48} className="h-10 sm:h-12 w-auto" />
+                    <Image src="/CC_Logo.png" alt="CC Logo" width={120} height={48} className="h-10 sm:h-12 w-auto" />
+                    <Image src="/BP_logo.png" alt="Bagong Pilipinas logo" width={120} height={48} className="h-10 sm:h-12 w-auto" />
                 </div>
             </div>
         </div>

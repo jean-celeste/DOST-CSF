@@ -80,17 +80,17 @@ export default function Steps({
     currentStep = 1,
     steps = DEFAULT_STEPS,
 }: StepsProps) {
-    const isStepActive = (step: number) => {
+    const isStepActive = () => {
         return true;
     };
 
-    const DesktopProgress = () => (
+    const desktopProgress = (
         <div className="bg-white/80 rounded-2xl px-6 py-8 shadow-sm backdrop-blur-sm w-full">
             <div className="relative">
                 <div className="absolute left-6 top-6 bottom-6 w-0.5 bg-gray-100"></div>
                 <div className="space-y-0">
                     {steps.map(({ step, title, description, icon }) => {
-                        const active = isStepActive(step);
+                        const active = isStepActive();
                         const isCompleted = currentStep >= step;
                         const shouldShowBlue = active && isCompleted;
                         const Icon = ICON_MAP[icon];
@@ -140,7 +140,7 @@ export default function Steps({
         </div>
     );
 
-    const MobileProgress = () => (
+    const mobileProgress = (
         <div className="relative w-full overflow-hidden">
             <div className="flex absolute top-3 left-2 right-2 h-[1px]">
                 {[...Array(steps.length - 1)].map((_, index) => {
@@ -158,7 +158,7 @@ export default function Steps({
 
             <div className="flex justify-between items-start px-1 relative z-10">
                 {steps.map(({ step, mobileTitle }) => {
-                    const active = isStepActive(step);
+                    const active = isStepActive();
                     const isCompleted = currentStep >= step;
                     const shouldShowBlue = active && isCompleted;
 
@@ -200,11 +200,11 @@ export default function Steps({
     return (
         <>
             <div className="lg:hidden w-full">
-                <MobileProgress />
+                {mobileProgress}
             </div>
 
             <div className="hidden lg:block w-full">
-                <DesktopProgress />
+                {desktopProgress}
             </div>
         </>
     );
