@@ -1,6 +1,7 @@
 import { Pool } from 'pg'
 
 let pool
+const useSsl = String(process.env.DB_SSL || '').toLowerCase() === 'true'
 
 if (!pool) {
   pool = new Pool({
@@ -9,7 +10,7 @@ if (!pool) {
     database: process.env.DB_NAME,
     password: String(process.env.DB_PASSWORD),
     port: parseInt(process.env.DB_PORT),
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    ssl: useSsl ? { rejectUnauthorized: false } : false
   })
 }
 

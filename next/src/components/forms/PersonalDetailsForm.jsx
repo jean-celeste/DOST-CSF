@@ -5,10 +5,19 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Check, ChevronDown, Mail, Phone, Calendar, User, ChevronLeft, ChevronRight, Building2, Users, UserCircle } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { motion } from 'framer-motion'
 import ServiceSelectionModal from './ServiceSelectionModal'
+
+const AGE_GROUP_OPTIONS = [
+  '19 and lower',
+  '20 - 34',
+  '35 - 49',
+  '50 - 64',
+  '65 and up'
+]
 
 export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, onFormDataChange, isReviewMode }) {
   const [isServicesDialogOpen, setIsServicesDialogOpen] = useState(false)
@@ -52,8 +61,8 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
     const isContactInvalid = !formData.contact || formData.contact.length !== 11;
     // Validation for email (if present, must be valid)
     const isEmailInvalid = formData.email && !/^([a-zA-Z0-9_\-.+]+)@([a-zA-Z0-9\-.]+)\.([a-zA-Z]{2,})$/.test(formData.email);
-    // Validation for age (must be between 5 and 100)
-    const isAgeInvalid = !formData.age || Number(formData.age) < 5 || Number(formData.age) > 100;
+    // Validation for age group selection (must be one of predefined options)
+    const isAgeInvalid = !formData.age || !AGE_GROUP_OPTIONS.includes(formData.age);
 
     let invalidFields = [...emptyFields];
     if (isContactInvalid && !invalidFields.includes('contact')) invalidFields.push('contact');
@@ -173,27 +182,27 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
               Age
             </Label>
             <div className="relative">
-              <Input
-                id="age"
-                type="number"
-                placeholder="Enter your age"
-                min="5"
-                max="100"
-                className={`w-full h-9 pl-8 pr-8 text-xs sm:text-sm rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500 ${
-                  missingFields.includes('age') || (formData.age && (Number(formData.age) < 5 || Number(formData.age) > 100)) ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
-                }`}
-                value={formData.age}
-                onChange={(e) => {
-                  let value = e.target.value.replace(/[^0-9]/g, '');
-                  handleInputChange('age', value);
-                }}
-              />
+              <Select
+                value={formData.age || ''}
+                onValueChange={(value) => handleInputChange('age', value)}
+              >
+                <SelectTrigger
+                  id="age"
+                  aria-label="Age Group"
+                  className={`w-full h-9 bg-white pl-8 pr-8 text-xs sm:text-sm rounded-xl border border-gray-200 shadow-none focus:border-blue-500 focus:ring-blue-500 ${
+                    missingFields.includes('age') ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
+                  }`}
+                >
+                  <SelectValue placeholder="Select your age group" />
+                </SelectTrigger>
+                <SelectContent>
+                  {AGE_GROUP_OPTIONS.map((option) => (
+                    <SelectItem key={option} value={option}>{option}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              {formData.age && Number(formData.age) >= 5 && Number(formData.age) <= 100 && <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-green-500" />}
             </div>
-            {formData.age && (Number(formData.age) < 5 || Number(formData.age) > 100) && (
-              <div className="text-xs text-red-500 mt-1">Age must be between 5 and 100.</div>
-            )}
           </motion.div>
 
           {/* Sex */}

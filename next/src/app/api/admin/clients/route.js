@@ -127,9 +127,6 @@ const getClientStatistics = async (filter = {}) => {
         COUNT(*) as total_clients,
         COUNT(CASE WHEN c.sex = 'male' THEN 1 END) as male_count,
         COUNT(CASE WHEN c.sex = 'female' THEN 1 END) as female_count,
-        AVG(c.age) as avg_age,
-        MIN(c.age) as min_age,
-        MAX(c.age) as max_age,
         COUNT(CASE WHEN r.response_id IS NOT NULL THEN 1 END) as clients_with_responses,
         COUNT(DISTINCT ct.client_type_name) as client_types_count
       FROM client c

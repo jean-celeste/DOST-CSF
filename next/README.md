@@ -34,3 +34,25 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+## In case of error 500
+
+Remove the explicit secret override in next/src/app/api/auth/[...nextauth]/route.js.
+Delete this line:
+
+Context: this line forces your own resolution order. Without it, NextAuth uses its built-in env lookup behavior.
+
+Decide whether to keep or remove the extra env aliases in docker-compose.yml:36.
+If you want old behavior strictly:
+
+Keep NEXTAUTH_SECRET
+Remove AUTH_SECRET (optional cleanup)
+Keep NEXTAUTH_URL (still recommended)
+Rebuild/restart the app container so env/config changes apply.
+If using Docker Compose:
+
+Verify behavior after revert:
+
+Missing secret in production should again raise NextAuth NO_SECRET
+With NEXTAUTH_SECRET set, /api/auth/session should work normally

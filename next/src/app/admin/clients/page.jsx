@@ -77,12 +77,15 @@ const CHART_OPTIONS = {
   },
 };
 
-const getAgeGroup = (age) => {
-  if (age < 18) return 'Youth (Under 18)';
-  if (age < 35) return 'Young Adult (18-34)';
-  if (age < 55) return 'Adult (35-54)';
-  return 'Senior (55+)';
-};
+const AGE_GROUP_OPTIONS = [
+  '19 and lower',
+  '20 - 34',
+  '35 - 49',
+  '50 - 64',
+  '65 and up'
+];
+
+const getAgeGroup = (age) => age || 'Unknown';
 
 export default function ClientDemographics() {
   const { data: session, status } = useSession();
@@ -156,12 +159,20 @@ export default function ClientDemographics() {
   });
 
   // Calculate statistics
+  const ageGroupData = filteredClients.reduce((acc, client) => {
+    const group = getAgeGroup(client.age);
+    acc[group] = (acc[group] || 0) + 1;
+    return acc;
+  }, {});
+
+  const topAgeGroup = Object.entries(ageGroupData)
+    .sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
+
   const stats = {
     totalClients: filteredClients.length,
     maleCount: filteredClients.filter(c => c.sex.toLowerCase() === 'male').length,
     femaleCount: filteredClients.filter(c => c.sex.toLowerCase() === 'female').length,
-    averageAge: filteredClients.length > 0 ? 
-      filteredClients.reduce((sum, c) => sum + (c.age || 0), 0) / filteredClients.length : 0,
+    topAgeGroup,
     activeClients: filteredClients.filter(c => c.response_count > 1).length
   };
 
@@ -180,12 +191,6 @@ export default function ClientDemographics() {
       borderWidth: 1,
     }]
   };
-
-  const ageGroupData = filteredClients.reduce((acc, client) => {
-    const group = getAgeGroup(client.age);
-    acc[group] = (acc[group] || 0) + 1;
-    return acc;
-  }, {});
 
   const ageGroupChart = {
     labels: Object.keys(ageGroupData),
@@ -258,10 +263,9 @@ export default function ClientDemographics() {
               className="px-3 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
               <option value="all">All Age Groups</option>
-              <option value="Youth (Under 18)">Youth (Under 18)</option>
-              <option value="Young Adult (18-34)">Young Adult (18-34)</option>
-              <option value="Adult (35-54)">Adult (35-54)</option>
-              <option value="Senior (55+)">Senior (55+)</option>
+              {AGE_GROUP_OPTIONS.map((option) => (
+                <option key={option} value={option}>{option}</option>
+              ))}
             </select>
             <button
               onClick={() => setFilter({clientType: 'all', gender: 'all', ageGroup: 'all'})}
@@ -300,9 +304,9 @@ export default function ClientDemographics() {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500">Average Age</p>
-              <h3 className="text-2xl font-bold">{stats.averageAge.toFixed(1)}</h3>
-              <p className="text-sm text-gray-500">years</p>
+              <p className="text-gray-500">Top Age Group</p>
+              <h3 className="text-2xl font-bold">{stats.topAgeGroup}</h3>
+              <p className="text-sm text-gray-500">by client count</p>
             </div>
             <Calendar className="text-purple-500" size={24} />
           </div>
@@ -375,7 +379,7 @@ export default function ClientDemographics() {
                 <tr className="bg-gray-50">
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gender</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age Group</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Responses</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Activity</th>

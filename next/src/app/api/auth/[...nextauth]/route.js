@@ -4,6 +4,7 @@ import { executeQuery } from "@/lib/db/utils";
 import bcrypt from 'bcrypt'; // Import bcrypt
 
 export const authOptions = {
+  secret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET,
   providers: [
     CredentialsProvider({
       name: "Credentials",

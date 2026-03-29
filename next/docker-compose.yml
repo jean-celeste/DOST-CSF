@@ -1,0 +1,48 @@
+
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: postgres-db
+    restart: always
+    environment:
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: dev_password
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./dost_feedback_db.sql:/docker-entrypoint-initdb.d/dost_feedback_db.sql:ro
+      - ./docker/init-db.sh:/docker-entrypoint-initdb.d/10-init-db.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev_user -d dost_feedback_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+
+  next-app:
+    build: .
+    container_name: next-generic-app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      DB_USER: dev_user
+      DB_HOST: db
+      DB_NAME: dost_feedback_db
+      DB_PASSWORD: dev_password
+      DB_PORT: 5432
+      DB_SSL: "false"
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-local-dev-nextauth-secret-change-me-please}
+      AUTH_SECRET: ${AUTH_SECRET:-local-dev-nextauth-secret-change-me-please}
+      APPLICATION_ENCRYPTION_KEY: ${APPLICATION_ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
+      HASH_IDX_PEPPER: ${HASH_IDX_PEPPER:-local-dev-hash-pepper-change-me}
+      NODE_ENV: production
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
