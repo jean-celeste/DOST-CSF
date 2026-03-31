@@ -48,11 +48,8 @@ export default function Review({
 
   const handleEdit = (section) => {
     const clientType = formData.personalDetails.clientType;
-    const serviceTypeId = formData.personalDetails.service_type_id;
     const isInternal = clientType === 'internal';
     const isExternal = ['citizen', 'business', 'government'].includes(clientType);
-    const isOnsite = serviceTypeId === 1;
-    const isOffsite = serviceTypeId === 2;
 
     // Always allow editing personal details and suggestion
     if (section === 'personal' || section === 'suggestion') {
@@ -68,17 +65,9 @@ export default function Review({
       return;
     }
 
-    // External + onsite: only CSM sections editable
-    if (isExternal && isOnsite) {
+    // External: only CSM sections editable
+    if (isExternal) {
       if (section === 'csmarta' || section === 'csmarta-ratings') {
-        onEditSection(section);
-      }
-      return;
-    }
-
-    // External + offsite: only QMS sections editable
-    if (isExternal && isOffsite) {
-      if (section === 'qms-ratings' || section === 'qms-checkmark') {
         onEditSection(section);
       }
       return;
@@ -114,13 +103,10 @@ export default function Review({
         {/* Render only the relevant sections based on clientType and service_type_id */}
         {(() => {
           const clientType = formData.personalDetails.clientType;
-          const serviceTypeId = formData.personalDetails.service_type_id;
           const isInternal = clientType === 'internal';
           const isExternal = ['citizen', 'business', 'government'].includes(clientType);
-          const isOnsite = serviceTypeId === 1;
-          const isOffsite = serviceTypeId === 2;
 
-          if (isInternal || (isExternal && isOffsite)) {
+          if (isInternal) {
             // QMS only
             return <>
               <motion.div
@@ -152,7 +138,7 @@ export default function Review({
                 />
               </motion.div>
             </>;
-          } else if (isExternal && isOnsite) {
+          } else if (isExternal) {
             // CSM only
             return <>
               <motion.div

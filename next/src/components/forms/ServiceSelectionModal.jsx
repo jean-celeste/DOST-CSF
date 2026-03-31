@@ -226,11 +226,11 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
               whileHover={{ scale: 1.01, y: -2 }}
               whileTap={{ scale: 0.98 }}
               transition={{ duration: 0.1 }}
-              className={`group p-6 sm:p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative
+              className={`group p-6 sm:p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative overflow-hidden
                 ${clientType === 'internal' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-500'}`}
               onClick={() => handleClientTypeSelect('internal')}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute inset-0 rounded-2xl pointer-events-none bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative flex flex-col items-center">
                 <div className="p-4 rounded-full bg-blue-50 group-hover:bg-blue-100 transition-colors mb-4">
                   <Building2 className="h-10 w-10 text-blue-500" />
@@ -248,11 +248,11 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
               whileHover={{ scale: 1.01, y: -2 }}
               whileTap={{ scale: 0.98 }}
               transition={{ duration: 0.1 }}
-              className={`group p-6 sm:p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative
+              className={`group p-6 sm:p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative overflow-hidden
                 ${clientType === 'external' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-500'}`}
               onClick={() => handleClientTypeSelect('external')}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute inset-0 rounded-2xl pointer-events-none bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative flex flex-col items-center">
                 <div className="p-4 rounded-full bg-blue-50 group-hover:bg-blue-100 transition-colors mb-4">
                   <Users className="h-10 w-10 text-blue-500" />
@@ -281,11 +281,11 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                     whileHover={{ scale: 1.01, y: -2 }}
                     whileTap={{ scale: 0.98 }}
                     transition={{ duration: 0.1 }}
-                    className={`group p-6 sm:p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative
+                    className={`group p-6 sm:p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative overflow-hidden
                       ${externalSubtype === id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-500'}`}
                     onClick={() => handleExternalSubtypeSelect(id)}
                   >
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute inset-0 rounded-2xl pointer-events-none bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="relative flex flex-col items-center">
                       <div className="p-4 rounded-full bg-blue-50 group-hover:bg-blue-100 transition-colors mb-4">
                         <Icon className="h-10 w-10 text-blue-500" />
@@ -419,14 +419,14 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                   whileHover={{ scale: 1.001, y: -1 }}
                   whileTap={{ scale: 0.995 }}
                   transition={{ duration: 0.1 }}
-                  className={`w-full p-3 sm:p-4 rounded-xl border-2 transition-all text-left group relative
+                  className={`w-full p-3 sm:p-4 rounded-xl border-2 transition-all text-left group relative overflow-hidden
                     ${selectedService?.service_id === service.service_id
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-gray-200 hover:border-blue-500 hover:shadow-md'
                     }`}
                   onClick={() => handleServiceSelect(service)}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute inset-0 rounded-xl pointer-events-none bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 truncate">{service.service_name}</h3>

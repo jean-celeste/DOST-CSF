@@ -1,14 +1,11 @@
 export async function submitForm(formData) {
   try {
-    // Determine which form to submit based on clientType and service type
+    // Determine which form to submit based on clientType
     const clientType = formData.personalDetails.clientType;
-    const serviceTypeId = formData.personalDetails.service_type_id;
     const isInternal = clientType === 'internal';
     const isExternal = ['citizen', 'business', 'government'].includes(clientType);
-    const isOnsite = serviceTypeId === 1;
-    const isOffsite = serviceTypeId === 2;
 
-    if (isInternal || (isExternal && isOffsite)) {
+    if (isInternal) {
       // Submit QMS form
       const response = await fetch('/api/forms/submit', {
         method: 'POST',
@@ -30,7 +27,7 @@ export async function submitForm(formData) {
         throw new Error(result.error || 'Failed to submit QMS form');
       }
       return result;
-    } else if (isExternal && isOnsite) {
+    } else if (isExternal) {
       // Submit CSM ARTA form
       const response = await fetch('/api/forms/submit', {
         method: 'POST',

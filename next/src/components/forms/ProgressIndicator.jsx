@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { UserIcon, CheckSquareIcon, SmileIcon, ClipboardListIcon, QrCodeIcon, MessageSquare } from 'lucide-react'
 
 const ProgressIndicator = ({ currentStep, steps, serviceType, clientType }) => {
-  // Determine if a step is active based on service type
+  // Determine if a step is active based on client type
   const isStepActive = (step) => {
     if (clientType === 'internal') {
       // Internal: Only QMS steps are active
@@ -15,13 +15,9 @@ const ProgressIndicator = ({ currentStep, steps, serviceType, clientType }) => {
         step === 7    // Review
       );
     }
-    // External logic (same as before)
-    if (!serviceType) return true;
-    if (serviceType === 1) {
+    if (['citizen', 'business', 'government'].includes(clientType)) {
+      // External: Always CSM steps regardless of service type
       return step === 1 || step === 2 || step === 3 || step === 6 || step === 7;
-    }
-    if (serviceType === 2) {
-      return step === 1 || step === 4 || step === 5 || step === 6 || step === 7;
     }
     return true;
   };
