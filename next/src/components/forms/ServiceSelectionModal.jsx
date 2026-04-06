@@ -223,7 +223,7 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
             <motion.button
-              whileHover={{ scale: 1.01, y: -2 }}
+              whileHover={{ scale: 1.005, y: -2 }}
               whileTap={{ scale: 0.98 }}
               transition={{ duration: 0.1 }}
               className={`group p-6 sm:p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative overflow-hidden
@@ -245,7 +245,7 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
               </div>
             </motion.button>
             <motion.button
-              whileHover={{ scale: 1.01, y: -2 }}
+              whileHover={{ scale: 1.005, y: -2 }}
               whileTap={{ scale: 0.98 }}
               transition={{ duration: 0.1 }}
               className={`group p-6 sm:p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative overflow-hidden
@@ -278,7 +278,7 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                 ].map(({ id, icon: Icon, title, description }) => (
                   <motion.button
                     key={id}
-                    whileHover={{ scale: 1.01, y: -2 }}
+                    whileHover={{ scale: 1.005, y: -2 }}
                     whileTap={{ scale: 0.98 }}
                     transition={{ duration: 0.1 }}
                     className={`group p-6 sm:p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative overflow-hidden
@@ -484,7 +484,7 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
             onStepClick={handleStepClick}
           />
           
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto px-1 py-1 sm:px-2">
             <AnimatePresence mode="wait">
               {renderStepContent()}
             </AnimatePresence>
