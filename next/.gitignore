@@ -45,7 +45,7 @@ check-db-tables.js
 display-services.js
 
 # db
-*.sql
+
 
 # scripts
 *.test.js
