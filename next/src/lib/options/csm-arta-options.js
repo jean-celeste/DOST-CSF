@@ -1,10 +1,10 @@
 export const csmArtaOptions = {
   // Options for question 1 (CC Awareness)
   ccAwareness: [
-    "I know what a CC is and I saw this office's CC.",
-    "I know what a CC is but I did NOT see this office's CC.",
-    "I learned of the CC only when I saw this office's CC.",
-    "I do not know what a CC is and I did not see one in this office."
+    "I know what a Citizen Charter (CC) is and I saw this office's CC.",
+    "I know what a Citizen Charter (CC) is but I did NOT see this office's CC.",
+    "I learned of the Citizen Charter (CC) only when I saw this office's CC.",
+    "I do not know what a Citizen Charter (CC) is and I did not see one in this office."
   ],
 
   // Options for question 2 (CC Visibility)
