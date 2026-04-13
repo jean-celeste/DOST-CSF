@@ -1,9 +1,9 @@
 // next/src/lib/constants/csmArtaQuestionsFilipino.js
 export const csmArtaQuestionsFilipino = {
     checkmark: [
-      "Alin sa mga sumusunod ang naglalarawan sa iyong kaalaman sa Citizen Charter (CC)?",
-      "Masasabi mo ba na ang Citizen Charter(CC) nang napuntahang opisina ay…",
-      "Gaano nakatulong ang Citizen Charter (CC) sa transaksyon mo?"
+      "Alin sa mga sumusunod ang naglalarawan sa iyong kaalaman sa CC?",
+      "Masasabi mo ba na ang CC nang napuntahang opisina ay…",
+      "Gaano nakatulong ang CC sa transaksyon mo?"
     ],
     ratings: [
       "Nasiyahan ako sa serbisyo na aking natanggap sa napuntahan na tanggapan.",
