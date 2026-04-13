@@ -78,6 +78,14 @@ export default function Ratings({
     });
   };
 
+  useEffect(() => {
+    if (loading) return;
+
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }, [formData.currentPage, loading]);
+
   if (loading) {
     return <LoadingSpinner />;
   }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { UserIcon, CheckSquareIcon, SmileIcon, ClipboardListIcon, QrCodeIcon, MessageSquare } from 'lucide-react'
 import PersonalDetailsForm from '@/components/forms/PersonalDetailsForm'
 import DataPrivacyConsent from '@/components/prompts/DataPrivacyConsent'
@@ -43,6 +43,12 @@ export default function ClientFeedbackForm() {
   const [editingSection, setEditingSection] = useState(null)
   const [language, setLanguage] = useState('en')
   const toggleLanguage = () => setLanguage(l => l === 'en' ? 'fil' : 'en')
+
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    })
+  }, [formState.currentStep])
 
   const handleConsent = () => {
     setFormState(prev => ({ ...prev, showMainForm: true }))

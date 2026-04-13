@@ -78,7 +78,7 @@ export default function Checkmark({
       <div className="p-8">
         <div className="space-y-8">
           <div className="space-y-2">
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
+            <h2 data-step-first="true" tabIndex={-1} className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
               Please select the criteria/attributes that are important to you.
             </h2>
             <p className="text-gray-500">Click on any attribute to mark it as important.</p>
