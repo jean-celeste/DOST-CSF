@@ -57,11 +57,9 @@ export default function Review({
       return;
     }
 
-    // Internal: only QMS sections editable
+    // Internal: all sections are editable
     if (isInternal) {
-      if (section === 'qms-ratings' || section === 'qms-checkmark') {
-        onEditSection(section);
-      }
+      onEditSection(section);
       return;
     }
 
@@ -107,8 +105,37 @@ export default function Review({
           const isExternal = ['citizen', 'business', 'government'].includes(clientType);
 
           if (isInternal) {
-            // QMS only
             return <>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
+              >
+                <CSMARTACheckmarkSection 
+                  formData={formData}
+                  onEdit={handleEdit}
+                  editingSection={editingSection}
+                  onCancelEdit={handleCancelEdit}
+                  onSaveEdit={handleSaveEdit}
+                  language={language}
+                />
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
+              >
+                <CSMARTARatingsSection 
+                  formData={formData}
+                  onEdit={handleEdit}
+                  editingSection={editingSection}
+                  onCancelEdit={handleCancelEdit}
+                  onSaveEdit={handleSaveEdit}
+                  language={language}
+                />
+              </motion.div>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

@@ -6,14 +6,7 @@ const ProgressIndicator = ({ currentStep, steps, serviceType, clientType }) => {
   // Determine if a step is active based on client type
   const isStepActive = (step) => {
     if (clientType === 'internal') {
-      // Internal: Only QMS steps are active
-      return (
-        step === 1 || // Personal details
-        step === 4 || // QMS Ratings
-        step === 5 || // QMS Checkmark
-        step === 6 || // Suggestion
-        step === 7    // Review
-      );
+      return true;
     }
     if (['citizen', 'business', 'government'].includes(clientType)) {
       // External: Always CSM steps regardless of service type

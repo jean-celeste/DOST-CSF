@@ -69,16 +69,11 @@ export default function ClientFeedbackForm() {
         return prev;
       }
 
-      // Helper to determine if user should answer CSM or QMS
-      const isInternal = personalDetails.clientType === 'internal';
       const isExternal = ['citizen', 'business', 'government'].includes(personalDetails.clientType);
 
       // Step 1: Decide which form to show next
       if (prev.currentStep === 1) {
-        if (isInternal) {
-          // Internal always goes to QMS (step 4)
-          return { ...prev, currentStep: 4 };
-        } else if (isExternal) {
+        if (isExternal) {
           // External clients always use CSM path (step 2)
           return { ...prev, currentStep: 2 };
         }
@@ -88,14 +83,6 @@ export default function ClientFeedbackForm() {
       if (isExternal) {
         if (prev.currentStep === 3) {
           // After CSM ratings, go to suggestion
-          return { ...prev, currentStep: 6 };
-        }
-      }
-
-      // For QMS (internal only), skip CSM steps
-      if (isInternal) {
-        if (prev.currentStep === 5) {
-          // After QMS checkmark, go to suggestion
           return { ...prev, currentStep: 6 };
         }
       }
@@ -111,15 +98,7 @@ export default function ClientFeedbackForm() {
         return { ...prev, showMainForm: false };
       }
 
-      const isInternal = personalDetails.clientType === 'internal';
       const isExternal = ['citizen', 'business', 'government'].includes(personalDetails.clientType);
-
-      // Internal: always go back to personal details from QMS steps or suggestion
-      if (isInternal) {
-        if ([4, 5, 6].includes(prev.currentStep)) {
-          return { ...prev, currentStep: 1 };
-        }
-      }
 
       // If we're at step 6 (suggestion), go back to the appropriate previous step based on service type
       if (prev.currentStep === 6) {
@@ -257,7 +236,7 @@ export default function ClientFeedbackForm() {
               />
             )}
             {/* CSM: external clients */}
-            {formState.currentStep === 2 && ['citizen','business','government'].includes(personalDetails.clientType) && (
+            {formState.currentStep === 2 && ['internal','citizen','business','government'].includes(personalDetails.clientType) && (
               <CSMARTACheckmark 
                 onNextStep={editingSection === 'csmarta' ? handleReturnToReview : handleNextStep} 
                 onPrevStep={handlePrevStep}
@@ -268,7 +247,7 @@ export default function ClientFeedbackForm() {
                 toggleLanguage={toggleLanguage}
               />
             )}
-            {formState.currentStep === 3 && ['citizen','business','government'].includes(personalDetails.clientType) && (
+            {formState.currentStep === 3 && ['internal','citizen','business','government'].includes(personalDetails.clientType) && (
               <CSMARTARatings 
                 onNextStep={editingSection === 'csmarta-ratings' ? handleReturnToReview : handleNextStep} 
                 onPrevStep={handlePrevStep}
