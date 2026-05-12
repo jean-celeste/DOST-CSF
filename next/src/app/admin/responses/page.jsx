@@ -201,7 +201,17 @@ export default function ResponsesPage() {
       'unsatisfactory': 'Unsatisfactory',
       'poor': 'Poor'
     };
-    return ratingMap[rating] || rating;
+    if (rating === null || rating === undefined || rating === '') return 'N/A';
+    if (typeof rating === 'string' || typeof rating === 'number') {
+      return ratingMap[rating] || rating;
+    }
+    if (typeof rating === 'boolean') return rating ? 'Yes' : 'No';
+    if (Array.isArray(rating)) return rating.join(', ');
+    try {
+      return JSON.stringify(rating);
+    } catch {
+      return String(rating);
+    }
   };
 
   // Reset to first page when filters change

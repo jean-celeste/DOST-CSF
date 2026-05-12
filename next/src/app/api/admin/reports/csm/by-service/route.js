@@ -27,16 +27,15 @@ export async function GET(request) {
       FROM csm_flat_ratings r
       JOIN responses resp ON r.response_id = resp.response_id AND resp.form_id = 1
       JOIN services s ON resp.service_id = s.service_id
-      JOIN offices o ON s.office_id = o.office_id
+      JOIN offices o ON s.office_id = o.office_id AND o.office_category = 'unit'
     `;
     let where = 'WHERE r.question_id BETWEEN 4 AND 12';
     let values = [];
     if (role === 'Division Administrator' && division_id) {
-      query += ' JOIN unit u ON s.unit_id = u.unit_id';
-      where += ' AND u.division_id = $1';
+      where += ' AND o.division_id = $1';
       values.push(division_id);
-    } else if (role === 'PSTO Administrator' && office_id) {
-      where += ' AND s.office_id = $1';
+     } else if (role === 'Office Administrator' && office_id) {
+      where += ` AND EXISTS (SELECT 1 FROM service_office so WHERE so.service_id = s.service_id AND so.office_id = $1)`;
       values.push(office_id);
     }
     query += ' ' + where + ' GROUP BY s.service_id, s.service_name, o.office_id, o.office_name, r.question_id ORDER BY o.office_id, s.service_id, r.question_id';

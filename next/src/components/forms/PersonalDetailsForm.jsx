@@ -19,7 +19,7 @@ const AGE_GROUP_OPTIONS = [
   '65 and up'
 ]
 
-export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, onFormDataChange, isReviewMode }) {
+export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, onFormDataChange, isReviewMode, showNavigation = true }) {
   const [isServicesDialogOpen, setIsServicesDialogOpen] = useState(false)
   const [missingFields, setMissingFields] = useState([])
 
@@ -37,6 +37,7 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
   }
 
   const handleServiceSelect = (serviceData) => {
+    console.log('[PersonalDetailsForm] Service selected:', serviceData)
     const updatedFormData = {
       ...formData,
       service_id: serviceData.service_id,
@@ -290,35 +291,37 @@ export default function PersonalDetailsForm({ onNextStep, onPrevStep, formData, 
           </motion.div>
         </div>
 
-        {/* Navigation Buttons */}
-        <div className="flex justify-between mt-12 sm:mt-20">
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <Button 
-              variant="outline"
-              className="px-8 py-3 rounded-xl border-2 border-gray-200 hover:border-gray-300"
-              onClick={onPrevStep}
+        {/* Navigation Buttons - hidden when inside dynamic form engine */}
+        {showNavigation && (
+          <div className="flex justify-between mt-12 sm:mt-20">
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              <ChevronLeft className="mr-2 h-5 w-5" />
-              Back
-            </Button>
-          </motion.div>
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <Button 
-              variant="gradient"
-              className="px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white shadow-lg"
-              onClick={handleNextClick} 
+              <Button
+                variant="outline"
+                className="px-8 py-3 rounded-xl border-2 border-gray-200 hover:border-gray-300"
+                onClick={onPrevStep}
+              >
+                <ChevronLeft className="mr-2 h-5 w-5" />
+                Back
+              </Button>
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              {isReviewMode ? 'Return to Review' : 'Continue'}
-              <ChevronRight className="ml-2 h-5 w-5" />
-            </Button>
-          </motion.div>
-        </div>
+              <Button
+                variant="gradient"
+                className="px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white shadow-lg"
+                onClick={handleNextClick}
+              >
+                {isReviewMode ? 'Return to Review' : 'Continue'}
+                <ChevronRight className="ml-2 h-5 w-5" />
+              </Button>
+            </motion.div>
+          </div>
+        )}
       </div>
 
       {/* Logo Section - Right side */}
@@ -373,5 +376,10 @@ PersonalDetailsForm.propTypes = {
     clientType: PropTypes.string
   }).isRequired,
   onFormDataChange: PropTypes.func.isRequired,
-  isReviewMode: PropTypes.bool
+  isReviewMode: PropTypes.bool,
+  showNavigation: PropTypes.bool
+}
+
+PersonalDetailsForm.defaultProps = {
+  showNavigation: true
 }

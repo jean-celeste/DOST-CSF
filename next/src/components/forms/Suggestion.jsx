@@ -22,6 +22,13 @@ export default function Suggestion({ onNextStep, onPrevStep, formData, onFormDat
     }
   }
 
+  // Check if there are low-rated items to show the reason prompt
+  const hasLowRatings = () => {
+    if (!formData?.ratings) return false
+    const lowRatings = ['satisfactory', 'fair', 'unsatisfactory']
+    return Object.values(formData.ratings).some(rating => lowRatings.includes(rating))
+  }
+
   return (
     <div className="space-y-8">
       <div className="space-y-2">
@@ -38,10 +45,8 @@ export default function Suggestion({ onNextStep, onPrevStep, formData, onFormDat
         animate={{ opacity: 1, y: 0 }}
         className="space-y-6"
       >
-        {/* First Question - For scores of 3, 2, 1 */}
-        {formData.ratings && Object.values(formData.ratings).some(rating => 
-          ['satisfactory', 'fair', 'unsatisfactory'].includes(rating)
-        ) && (
+        {/* First Question - For scores of 3, 2, 1 (Legacy support) */}
+        {hasLowRatings() && (
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 hover:shadow-md transition-shadow">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-900 mb-1">
@@ -109,7 +114,11 @@ Suggestion.propTypes = {
     reasonForLowScore: PropTypes.string,
     generalComments: PropTypes.string,
     ratings: PropTypes.object
-  }).isRequired,
+  }),
   onFormDataChange: PropTypes.func.isRequired,
   isReviewMode: PropTypes.bool
-} 
+}
+
+Suggestion.defaultProps = {
+  formData: {}
+}

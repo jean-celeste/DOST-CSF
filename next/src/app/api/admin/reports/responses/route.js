@@ -13,8 +13,51 @@ export async function GET(request) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
   try {
-    // Fetch all responses from the view
-    const result = await executeQuery('SELECT * FROM response_details_view');
+    // Fetch all responses from the normalized tables
+    const result = await executeQuery(`
+      SELECT
+        r.response_id,
+        r.form_id,
+        r.service_id,
+        r.submitted_at,
+        r.answers,
+        c.client_id,
+        c.name AS client_name,
+        c.email AS client_email,
+        c.phone AS client_phone,
+        c.sex,
+        c.age,
+        c.client_type_id,
+        c.last_updated,
+        ct.client_type_name,
+        s.service_name,
+        s.office_id AS unit_id,
+        u.office_name AS unit_name,
+        u.division_id,
+        po.office_name AS office_name,
+        f.form_title AS form_name,
+        CASE
+          WHEN r.form_id = 1 THEN 'csm'
+          WHEN r.form_id = 2 THEN 'qms'
+          ELSE 'unknown'
+        END AS form_type
+      FROM responses r
+      LEFT JOIN client c ON r.client_id = c.client_id
+      LEFT JOIN client_type ct ON c.client_type_id = ct.client_type_id
+      LEFT JOIN services s ON r.service_id = s.service_id
+      LEFT JOIN offices u ON s.office_id = u.office_id AND u.office_category = 'unit'
+      LEFT JOIN forms f ON r.form_id = f.form_id
+      LEFT JOIN LATERAL (
+        SELECT o.office_name
+        FROM service_office so
+        JOIN offices o ON so.office_id = o.office_id
+        WHERE so.service_id = s.service_id
+          AND so.is_process_owner = true
+        ORDER BY so.service_office_id
+        LIMIT 1
+      ) po ON true
+      ORDER BY r.submitted_at DESC
+    `);
     const rows = result.rows;
 
     // Prepare workbook and worksheet

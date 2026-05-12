@@ -27,11 +27,11 @@ export async function GET(request) {
     let where = 'WHERE r.question_id BETWEEN 4 AND 12';
     let values = [];
     if (role === 'Division Administrator' && division_id) {
-      query += ' JOIN unit u ON s.unit_id = u.unit_id';
+      query += ` JOIN offices u ON s.office_id = u.office_id AND u.office_category = 'unit'`;
       where += ' AND u.division_id = $1';
       values.push(division_id);
-    } else if (role === 'PSTO Administrator' && office_id) {
-      where += ' AND s.office_id = $1';
+     } else if (role === 'Office Administrator' && office_id) {
+      where += ` AND EXISTS (SELECT 1 FROM service_office so WHERE so.service_id = s.service_id AND so.office_id = $1)`;
       values.push(office_id);
     }
     query += ' ' + where + ' GROUP BY r.question_id ORDER BY r.question_id';

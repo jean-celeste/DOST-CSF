@@ -2,9 +2,21 @@ import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { UserIcon, CheckSquareIcon, SmileIcon, ClipboardListIcon, QrCodeIcon, MessageSquare } from 'lucide-react'
 
-const ProgressIndicator = ({ currentStep, steps, serviceType, clientType }) => {
-  // Determine if a step is active based on client type
-  const isStepActive = (step) => {
+const ProgressIndicator = ({
+  currentStep,
+  steps,
+  serviceType,
+  clientType,
+  activeSteps,
+  isDynamic = false
+}) => {
+  // For dynamic forms, use the provided activeSteps array
+  const getIsStepActive = (step) => {
+    if (isDynamic && activeSteps) {
+      return activeSteps.includes(step)
+    }
+
+    // Legacy behavior: determine if a step is active based on client type
     if (clientType === 'internal') {
       return true;
     }
@@ -23,7 +35,7 @@ const ProgressIndicator = ({ currentStep, steps, serviceType, clientType }) => {
         <div className="absolute left-6 top-4 bottom-4 w-0.5 bg-gray-100 -z-1"></div>
         <div className="space-y-7">
           {steps.map(({ step, title, description, icon }) => {
-            const active = isStepActive(step);
+            const active = getIsStepActive(step);
             const isCompleted = currentStep >= step;
             const shouldShowBlue = active && isCompleted;
 
@@ -33,7 +45,7 @@ const ProgressIndicator = ({ currentStep, steps, serviceType, clientType }) => {
                 <div
                   className={`relative shrink-0 z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all duration-300 ease-in-out bg-white ${
                     shouldShowBlue
-                      ? "border-blue-500 text-blue-500 shadow-sm" 
+                      ? "border-blue-500 text-blue-500 shadow-sm"
                       : active
                         ? "border-gray-300 text-gray-400"
                         : "border-gray-200 text-gray-300"
@@ -49,10 +61,10 @@ const ProgressIndicator = ({ currentStep, steps, serviceType, clientType }) => {
                   </div>
                 </div>
                 {/* Text content - apply opacity only when inactive */}
-                <div className={`ml-4 min-w-0 flex-1`}>
+                <div className={`ml-4 min-w-0 flex-1 ${!active ? 'opacity-50' : ''}`}>
                   <h3 className={`text-sm font-medium transition-all duration-300 ${
                     shouldShowBlue
-                      ? "text-blue-500" 
+                      ? "text-blue-500"
                       : active
                         ? "text-gray-700"
                         : "text-gray-400"
@@ -80,7 +92,7 @@ const ProgressIndicator = ({ currentStep, steps, serviceType, clientType }) => {
         {[...Array(steps.length - 1)].map((_, index) => {
           const segmentStep = index + 1;
           return (
-            <div 
+            <div
               key={`segment-${segmentStep}`}
               className={`flex-1 h-full transition-all duration-300 ease-in-out ${
                 currentStep > segmentStep ? 'bg-[#3B82F6]' : 'bg-gray-100'
@@ -91,7 +103,7 @@ const ProgressIndicator = ({ currentStep, steps, serviceType, clientType }) => {
       </div>
       <div className="flex justify-between items-start px-0.5 xs:px-1 relative z-10">
         {steps.map(({ step, mobileTitle }) => {
-          const active = isStepActive(step);
+          const active = getIsStepActive(step);
           const isCompleted = currentStep >= step;
           const shouldShowBlue = active && isCompleted;
 
@@ -100,7 +112,7 @@ const ProgressIndicator = ({ currentStep, steps, serviceType, clientType }) => {
               <div
                 className={`h-5 w-5 xs:h-6 xs:w-6 sm:h-7 sm:w-7 rounded-full border-[1.5px] flex items-center justify-center transition-all duration-300 ease-in-out leading-none mb-1 bg-white ${
                   shouldShowBlue
-                    ? "border-[#3B82F6] text-[#3B82F6] shadow-sm" 
+                    ? "border-[#3B82F6] text-[#3B82F6] shadow-sm"
                     : active
                       ? "border-gray-300 text-gray-400"
                       : "border-gray-200 text-gray-300"
@@ -108,7 +120,7 @@ const ProgressIndicator = ({ currentStep, steps, serviceType, clientType }) => {
               >
                 <span className="text-[10px] xs:text-xs sm:text-sm">{step}</span>
               </div>
-              <span 
+              <span
                 className={`text-[7px] xs:text-[8px] sm:text-[9px] text-center whitespace-pre-line leading-tight transition-colors duration-300 ${
                   shouldShowBlue
                     ? "text-[#3B82F6] font-medium"
@@ -134,7 +146,7 @@ const ProgressIndicator = ({ currentStep, steps, serviceType, clientType }) => {
       <div className="lg:hidden">
         <MobileProgress />
       </div>
-      
+
       {/* Desktop view */}
       <div className="hidden lg:block flex-1">
         <DesktopProgress />
@@ -155,7 +167,15 @@ ProgressIndicator.propTypes = {
     })
   ).isRequired,
   serviceType: PropTypes.number,
-  clientType: PropTypes.string
+  clientType: PropTypes.string,
+  // New props for dynamic form support
+  activeSteps: PropTypes.arrayOf(PropTypes.number),
+  isDynamic: PropTypes.bool
 };
 
-export default ProgressIndicator; 
+ProgressIndicator.defaultProps = {
+  activeSteps: [],
+  isDynamic: false
+};
+
+export default ProgressIndicator;

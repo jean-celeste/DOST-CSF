@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LogOut, Home, MessageSquare, BarChart3, Settings, Star, Users, ChevronLeft, ChevronRight, FileChartColumn, UserCog } from 'lucide-react';
+import { LogOut, Home, MessageSquare, BarChart3, Settings, Star, Users, ChevronLeft, ChevronRight, FileChartColumn, UserCog, Building2 } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
 
 export default function Sidebar({ collapsed: initialCollapsed = false, onCollapse }) {
@@ -22,15 +22,16 @@ export default function Sidebar({ collapsed: initialCollapsed = false, onCollaps
     { name: 'Reports', href: '/admin/reports', icon: FileChartColumn },
     { name: 'Clients', href: '/admin/clients', icon: Users },
     { name: 'Services', href: '/admin/services', icon: Star },
+    { name: 'Offices', href: '/admin/offices', icon: Building2 },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 
   // Add Manage Admins link for Regional Administrators
   const navigationItems = session?.user?.role === 'Regional Administrator'
     ? [
-        ...baseNavigationItems.slice(0, 5), // Insert before Settings
+        ...baseNavigationItems.slice(0, 5), // Insert before Services/Offices
         { name: 'Manage Admins', href: '/admin/admins', icon: UserCog },
-        baseNavigationItems[5], // Settings at the end
+        ...baseNavigationItems.slice(5), // Services, Offices, Settings at the end
       ]
     : baseNavigationItems;
 

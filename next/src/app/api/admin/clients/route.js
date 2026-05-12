@@ -31,15 +31,15 @@ const fetchClients = async (filter = {}) => {
     if ((filter.role === 'Division Head' || filter.role === 'Division Administrator') && filter.division_id) {
       query += `
         LEFT JOIN services s ON r.service_id = s.service_id
-        LEFT JOIN unit u ON s.unit_id = u.unit_id
+        LEFT JOIN offices u ON s.office_id = u.office_id AND u.office_category = 'unit'
       `;
       conditions.push('u.division_id = $1 OR r.response_id IS NULL');
       values.push(filter.division_id);
-    } else if (filter.role === 'PSTO Administrator' && filter.office_id) {
+     } else if (filter.role === 'Office Administrator' && filter.office_id) {
       query += `
         LEFT JOIN services s ON r.service_id = s.service_id
       `;
-      conditions.push('s.office_id = $1 OR r.response_id IS NULL');
+      conditions.push(`(EXISTS (SELECT 1 FROM service_office so WHERE so.service_id = s.service_id AND so.office_id = $1) OR r.response_id IS NULL)`);
       values.push(filter.office_id);
     }
     
@@ -141,15 +141,15 @@ const getClientStatistics = async (filter = {}) => {
     if ((filter.role === 'Division Head' || filter.role === 'Division Administrator') && filter.division_id) {
       query += `
         LEFT JOIN services s ON r.service_id = s.service_id
-        LEFT JOIN unit u ON s.unit_id = u.unit_id
+        LEFT JOIN offices u ON s.office_id = u.office_id AND u.office_category = 'unit'
       `;
       conditions.push('u.division_id = $1 OR r.response_id IS NULL');
       values.push(filter.division_id);
-    } else if (filter.role === 'PSTO Administrator' && filter.office_id) {
+     } else if (filter.role === 'Office Administrator' && filter.office_id) {
       query += `
         LEFT JOIN services s ON r.service_id = s.service_id
       `;
-      conditions.push('s.office_id = $1 OR r.response_id IS NULL');
+      conditions.push(`(EXISTS (SELECT 1 FROM service_office so WHERE so.service_id = s.service_id AND so.office_id = $1) OR r.response_id IS NULL)`);
       values.push(filter.office_id);
     }
     

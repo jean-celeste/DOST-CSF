@@ -1,32 +1,40 @@
 "use client";
 
 import React from 'react';
-import { X, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+
+const formatDisplayValue = (value) => {
+  if (value === null || value === undefined || value === '') return null;
+  if (typeof value === 'string' || typeof value === 'number') return value;
+  if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+  if (Array.isArray(value)) return value.join(', ');
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+};
 
 export default function ResponseDetailsModal({ response, onClose, getQuestionText, renderRatingValue }) {
   if (!response) return null;
 
   const { answers } = response;
-  const isCSM = response.form_type === 'csm';
+  // Extract form type from personalDetails, fallback to response.form_type for backward compatibility
+  const formType = answers?.personalDetails?.clientType || response.form_type || 'N/A';
+  const isCSM = formType === 'csm' || answers?.csmARTARatings?.ratings !== undefined;
   const ratings = isCSM ? answers.csmARTARatings?.ratings : answers.qmsRatings?.ratings;
   const comments = isCSM ? answers.csmARTARatings?.comments : answers.qmsRatings?.comments;
   const checkmarkSelections = isCSM ? answers.csmARTACheckmark : answers.qmsCheckmark?.selections;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
-      <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto animate-slideUp">
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-gray-900">Response Details</h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            aria-label="Close modal"
-          >
-            <X size={24} className="text-gray-500" />
-          </button>
-        </div>
-        <div className="p-6">
-          {!answers ? <p className="text-gray-600 p-6">No answer details available.</p> : (
+    <Dialog open={Boolean(response)} onOpenChange={onClose}>
+      <DialogContent className="w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-xl border border-gray-200 p-0 shadow-xl">
+        <DialogHeader className="sticky top-0 z-10 border-b border-gray-100 bg-white px-6 py-4">
+          <DialogTitle className="text-2xl font-semibold text-gray-900">Response Details</DialogTitle>
+        </DialogHeader>
+        <div className="px-6 py-5">
+          {!answers ? <p className="p-6 text-gray-600">No answer details available.</p> : (
             <div className="space-y-6">
               {/* Header Section */}
               <div className="bg-gray-50 p-4 rounded-lg">
@@ -38,7 +46,7 @@ export default function ResponseDetailsModal({ response, onClose, getQuestionTex
                     </p>
                   </div>
                   <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                    {response.form_type.toUpperCase()}
+                    {formType?.toUpperCase() || 'N/A'}
                   </div>
                 </div>
               </div>
@@ -50,36 +58,44 @@ export default function ResponseDetailsModal({ response, onClose, getQuestionTex
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Name:</span>
-                      <span className="font-medium">{response.client_name}</span>
+                      <span className="font-medium">{formatDisplayValue(response.client_name) || 'Not provided'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Email:</span>
-                      <span className="font-medium">{response.client_email}</span>
+                      <span className="font-medium">{formatDisplayValue(response.client_email) || formatDisplayValue(answers?.personalDetails?.email) || 'Not provided'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Phone:</span>
-                      <span className="font-medium">{response.client_phone || '-'}</span>
+                      <span className="font-medium">{formatDisplayValue(response.client_phone) || '-'}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white p-4 rounded-lg border border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Service Information</h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Service:</span>
-                      <span className="font-medium">{response.service_name}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Office:</span>
-                      <span className="font-medium">{response.office_name || '-'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Unit:</span>
-                      <span className="font-medium">{response.unit_name || '-'}</span>
-                    </div>
-                  </div>
-                </div>
+<div className="bg-white p-4 rounded-lg border border-gray-200">
+                   <h3 className="text-lg font-semibold text-gray-900 mb-3">Service Information</h3>
+                   <div className="space-y-2">
+                     <div className="flex justify-between">
+                       <span className="text-gray-600">Service:</span>
+                       <span className="font-medium">{formatDisplayValue(response.service_name) || formatDisplayValue(answers?.personalDetails?.service_name) || 'Not provided'}</span>
+                     </div>
+                     <div className="flex justify-between">
+                       <span className="text-gray-600">Office:</span>
+                       <span className="font-medium">{formatDisplayValue(response.office_name) || formatDisplayValue(answers?.personalDetails?.office_name) || '-'}</span>
+                     </div>
+                     <div className="flex justify-between">
+                       <span className="text-gray-600">Unit:</span>
+                       <span className="font-medium">{formatDisplayValue(response.unit_name) || formatDisplayValue(answers?.personalDetails?.unit_name) || '-'}</span>
+                     </div>
+                     {response.is_process_owner !== undefined && (
+                       <div className="flex justify-between">
+                         <span className="text-gray-600">Process Owner:</span>
+                         <span className={`font-medium ${response.is_process_owner ? 'text-green-600' : 'text-gray-500'}`}>
+                           {response.is_process_owner ? 'Yes' : 'No'}
+                         </span>
+                       </div>
+                     )}
+                   </div>
+                 </div>
               </div>
 
               {/* Checkmark Selections */}
@@ -101,7 +117,7 @@ export default function ResponseDetailsModal({ response, onClose, getQuestionTex
                               <p className="text-gray-700 font-medium mb-1">
                                 {getQuestionText(response.form_id, key)}
                               </p>
-                              <p className="text-gray-600">{value}</p>
+                              <p className="text-gray-600">{formatDisplayValue(value) || 'N/A'}</p>
                             </div>
                           </div>
                         </div>
@@ -114,7 +130,7 @@ export default function ResponseDetailsModal({ response, onClose, getQuestionTex
                             <div className="bg-green-100 text-green-800 rounded-full p-1 mr-3">
                               <Check size={16} />
                             </div>
-                            <span className="text-gray-700">{getQuestionText(response.form_id, criteria)}</span>
+                            <span className="text-gray-700">{formatDisplayValue(getQuestionText(response.form_id, criteria)) || 'N/A'}</span>
                           </div>
                         )
                       ))
@@ -138,7 +154,7 @@ export default function ResponseDetailsModal({ response, onClose, getQuestionTex
                         rating === 'strongly-disagree' || rating === 'poor' ? 'bg-red-100 text-red-800' :
                         'bg-gray-100 text-gray-800'
                       }`}>
-                        {renderRatingValue(rating)}
+                        {formatDisplayValue(renderRatingValue(rating)) || 'N/A'}
                       </span>
                     </div>
                   ))}
@@ -150,7 +166,7 @@ export default function ResponseDetailsModal({ response, onClose, getQuestionTex
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Comments</h3>
                 <div className="bg-gray-50 p-4 rounded">
                   <p className="text-gray-700 whitespace-pre-wrap">
-                    {comments || 'No comments provided'}
+                    {formatDisplayValue(comments) || 'No comments provided'}
                   </p>
                 </div>
               </div>
@@ -165,7 +181,7 @@ export default function ResponseDetailsModal({ response, onClose, getQuestionTex
                         <h4 className="font-medium text-gray-700 mb-2">General Comments</h4>
                         <div className="bg-gray-50 p-4 rounded">
                           <p className="text-gray-700 whitespace-pre-wrap">
-                            {answers.suggestion.generalComments || 'No general comments provided'}
+                            {formatDisplayValue(answers.suggestion.generalComments) || 'No general comments provided'}
                           </p>
                         </div>
                       </div>
@@ -175,7 +191,7 @@ export default function ResponseDetailsModal({ response, onClose, getQuestionTex
                         <h4 className="font-medium text-gray-700 mb-2">Reason for Low Score</h4>
                         <div className="bg-gray-50 p-4 rounded">
                           <p className="text-gray-700 whitespace-pre-wrap">
-                            {answers.suggestion.reasonForLowScore || 'No reason provided'}
+                            {formatDisplayValue(answers.suggestion.reasonForLowScore) || 'No reason provided'}
                           </p>
                         </div>
                       </div>
@@ -186,7 +202,7 @@ export default function ResponseDetailsModal({ response, onClose, getQuestionTex
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

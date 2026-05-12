@@ -11,13 +11,18 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const officeId = searchParams.get('office_id');
-    let query = 'SELECT unit_id, unit_name, office_id FROM unit';
-    let values = [];
-    if (officeId) {
-      query += ' WHERE office_id = $1';
-      values.push(officeId);
+    const parentOfficeId = officeId;
+    let query = `
+      SELECT o.office_id AS unit_id, o.office_name AS unit_name, o.parent_office_id AS office_id
+      FROM offices o
+      WHERE o.office_category = 'unit'
+    `;
+    const values = [];
+    if (parentOfficeId) {
+      query += ' AND o.parent_office_id = $1';
+      values.push(parseInt(parentOfficeId, 10));
     }
-    query += ' ORDER BY unit_name';
+    query += ' ORDER BY o.office_name';
     const result = await executeQuery(query, values);
     return NextResponse.json({ success: true, data: result.rows });
   } catch (error) {

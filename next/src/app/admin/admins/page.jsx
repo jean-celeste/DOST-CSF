@@ -75,16 +75,15 @@ export default function AdminManagementPage() {
     }
     if (isRegionalOffice) {
       // If division is selected, role is Division Administrator
-      if (formData.division_id) {
+if (formData.division_id) {
         setFormData(f => ({ ...f, role: 'Division Administrator' }));
       } else {
         setFormData(f => ({ ...f, role: '' }));
       }
-    } else {
-      // PSTO: role is PSTO Administrator, division is always blank
-      setFormData(f => ({ ...f, division_id: '', role: 'PSTO Administrator' }));
-    }
-  }, [formData.office_id, formData.division_id, isRegionalOffice]);
+     } else {
+        setFormData(f => ({ ...f, division_id: '', role: 'Office Administrator' }));
+      }
+   }, [formData.office_id, formData.division_id, isRegionalOffice]);
 
   const fetchOffices = async () => {
     try {
@@ -286,9 +285,9 @@ export default function AdminManagementPage() {
       } else {
         setEditForm(f => ({ ...f, role: '' }));
       }
-    } else {
-      setEditForm(f => ({ ...f, division_id: '', role: 'PSTO Administrator' }));
-    }
+     } else {
+       setEditForm(f => ({ ...f, division_id: '', role: 'Office Administrator' }));
+     }
   }, [editForm.office_id, editForm.division_id, showEditModal, offices]);
 
   if (status === "loading") return <div>Loading...</div>;
@@ -416,19 +415,19 @@ export default function AdminManagementPage() {
                   </div>
                 )}
               </div>
-              <div>
-                <label>Office</label>
-                <Select value={formData.office_id} onValueChange={value => setFormData({ ...formData, office_id: value, division_id: '' })} required>
-                  <SelectTrigger><SelectValue placeholder="Select office" /></SelectTrigger>
-                  <SelectContent>
-                    {offices.map(office => (
-                      <SelectItem key={office.office_id} value={office.office_id.toString()}>
-                        {office.office_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+               <div>
+                 <label>Office</label>
+                 <Select value={formData.office_id} onValueChange={value => setFormData({ ...formData, office_id: value, division_id: '' })} required>
+                   <SelectTrigger><SelectValue placeholder="Select office" /></SelectTrigger>
+                   <SelectContent>
+                     {offices.map(office => (
+                       <SelectItem key={office.office_id} value={office.office_id.toString()}>
+                         {office.office_name} <span className="text-xs text-gray-500 ml-1">({office.office_category})</span>
+                       </SelectItem>
+                     ))}
+                   </SelectContent>
+                 </Select>
+               </div>
               <div>
                 <label>Division</label>
                 <Select
@@ -579,13 +578,13 @@ export default function AdminManagementPage() {
                 required
               >
                 <SelectTrigger><SelectValue placeholder="Select office" /></SelectTrigger>
-                <SelectContent>
-                  {offices.map(office => (
-                    <SelectItem key={office.office_id} value={office.office_id.toString()}>
-                      {office.office_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
+                 <SelectContent>
+                   {offices.map(office => (
+                     <SelectItem key={office.office_id} value={office.office_id.toString()}>
+                       {office.office_name} <span className="text-xs text-gray-500">({office.office_category})</span>
+                     </SelectItem>
+                   ))}
+                 </SelectContent>
               </Select>
             </div>
             <div>

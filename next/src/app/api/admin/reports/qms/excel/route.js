@@ -31,9 +31,8 @@ const ratingLabels = [
   'Poor',
 ];
 
-// Helper to style header row
 const styleHeaderRow = (row) => {
-  row.eachCell((cell, colNumber) => {
+  row.eachCell((cell) => {
     cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
     cell.fill = {
       type: 'pattern',
@@ -44,7 +43,6 @@ const styleHeaderRow = (row) => {
   });
 };
 
-// Helper to style cells
 const styleCells = (worksheet) => {
   worksheet.eachRow((row, rowNumber) => {
     if (!row.fill && rowNumber !== 1 && rowNumber % 2 === 0) {
@@ -71,71 +69,175 @@ export async function GET() {
   if (!session || !session.user.role || !session.user.role.toLowerCase().includes('admin')) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
-  // Role-based filtering
+
   const isRegional = session.user.role.toLowerCase().includes('regional');
   const isDivision = session.user.role.toLowerCase().includes('division');
-  const isPSTO = session.user.role.toLowerCase().includes('psto');
+  const isOffice = session.user.role.toLowerCase().includes('office administrator');
   const divisionId = session.user.division_id;
   const officeId = session.user.office_id;
-  const params = isDivision ? [divisionId] : isPSTO ? [officeId] : [];
+  const params = isDivision ? [divisionId] : isOffice ? [officeId] : [];
 
   try {
-    // --- Fetch QMS data (same as /api/admin/reports/qms) ---
-    // 1. Overall summary
-    let overallSql = `SELECT ... FROM (SELECT answers->'qmsRatings'->'ratings' AS ratings, r.service_id FROM responses r WHERE r.form_id = 2`;
-    if (!isRegional) overallSql += ` AND EXISTS (SELECT 1 FROM services s JOIN offices o ON s.office_id = o.office_id WHERE r.service_id = s.service_id` + (isDivision ? ' AND o.division_id = $1' : ' AND o.office_id = $1') + ')';
-    overallSql += ') sub;';
+    let overallSql = `
+      SELECT
+        COUNT(*) FILTER (WHERE ratings->>'18' = 'outstanding') AS overall_outstanding,
+        COUNT(*) FILTER (WHERE ratings->>'18' = 'very-satisfactory') AS overall_very_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'18' = 'satisfactory') AS overall_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'18' = 'unsatisfactory') AS overall_unsatisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'18' = 'fair') AS overall_fair,
+        COUNT(*) FILTER (WHERE ratings->>'19' = 'outstanding') AS appropriateness_outstanding,
+        COUNT(*) FILTER (WHERE ratings->>'19' = 'very-satisfactory') AS appropriateness_very_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'19' = 'satisfactory') AS appropriateness_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'19' = 'unsatisfactory') AS appropriateness_unsatisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'19' = 'fair') AS appropriateness_fair,
+        COUNT(*) FILTER (WHERE ratings->>'21' = 'outstanding') AS timeliness_outstanding,
+        COUNT(*) FILTER (WHERE ratings->>'21' = 'very-satisfactory') AS timeliness_very_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'21' = 'satisfactory') AS timeliness_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'21' = 'unsatisfactory') AS timeliness_unsatisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'21' = 'fair') AS timeliness_fair,
+        COUNT(*) FILTER (WHERE ratings->>'22' = 'outstanding') AS attitude_outstanding,
+        COUNT(*) FILTER (WHERE ratings->>'22' = 'very-satisfactory') AS attitude_very_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'22' = 'satisfactory') AS attitude_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'22' = 'unsatisfactory') AS attitude_unsatisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'22' = 'fair') AS attitude_fair,
+        COUNT(*) FILTER (WHERE ratings->>'23' = 'outstanding') AS gender_fair_treatment_outstanding,
+        COUNT(*) FILTER (WHERE ratings->>'23' = 'very-satisfactory') AS gender_fair_treatment_very_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'23' = 'satisfactory') AS gender_fair_treatment_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'23' = 'unsatisfactory') AS gender_fair_treatment_unsatisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'23' = 'fair') AS gender_fair_treatment_fair,
+        COUNT(*) FILTER (WHERE ratings->>'24' = 'outstanding') AS beneficial_outstanding,
+        COUNT(*) FILTER (WHERE ratings->>'24' = 'very-satisfactory') AS beneficial_very_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'24' = 'satisfactory') AS beneficial_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'24' = 'unsatisfactory') AS beneficial_unsatisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'24' = 'fair') AS beneficial_fair
+      FROM (
+        SELECT answers->'qmsRatings'->'ratings' AS ratings
+        FROM responses r
+        WHERE r.form_id = 2
+        ${!isRegional ? `AND EXISTS (SELECT 1 FROM services s JOIN offices o ON s.office_id = o.office_id WHERE r.service_id = s.service_id ${isDivision ? 'AND o.division_id = $1' : 'AND o.office_id = $1'})` : ''}
+      ) sub;
+    `;
     const overallResult = await executeQuery(overallSql, params);
 
-    // 2. By office
-    let byOfficeSql = `SELECT o.office_id, o.office_name, ... FROM responses r JOIN services s ON r.service_id = s.service_id JOIN offices o ON s.office_id = o.office_id CROSS JOIN LATERAL (SELECT r.answers->'qmsRatings'->'ratings' AS ratings) AS sub WHERE r.form_id = 2`;
+    let byOfficeSql = `
+      SELECT o.office_id, o.office_name,
+        COUNT(*) FILTER (WHERE ratings->>'18' = 'outstanding') AS overall_outstanding,
+        COUNT(*) FILTER (WHERE ratings->>'18' = 'very-satisfactory') AS overall_very_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'18' = 'satisfactory') AS overall_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'18' = 'unsatisfactory') AS overall_unsatisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'18' = 'fair') AS overall_fair,
+        COUNT(*) FILTER (WHERE ratings->>'19' = 'outstanding') AS appropriateness_outstanding,
+        COUNT(*) FILTER (WHERE ratings->>'19' = 'very-satisfactory') AS appropriateness_very_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'19' = 'satisfactory') AS appropriateness_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'19' = 'unsatisfactory') AS appropriateness_unsatisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'19' = 'fair') AS appropriateness_fair,
+        COUNT(*) FILTER (WHERE ratings->>'21' = 'outstanding') AS timeliness_outstanding,
+        COUNT(*) FILTER (WHERE ratings->>'21' = 'very-satisfactory') AS timeliness_very_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'21' = 'satisfactory') AS timeliness_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'21' = 'unsatisfactory') AS timeliness_unsatisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'21' = 'fair') AS timeliness_fair,
+        COUNT(*) FILTER (WHERE ratings->>'22' = 'outstanding') AS attitude_outstanding,
+        COUNT(*) FILTER (WHERE ratings->>'22' = 'very-satisfactory') AS attitude_very_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'22' = 'satisfactory') AS attitude_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'22' = 'unsatisfactory') AS attitude_unsatisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'22' = 'fair') AS attitude_fair,
+        COUNT(*) FILTER (WHERE ratings->>'23' = 'outstanding') AS gender_fair_treatment_outstanding,
+        COUNT(*) FILTER (WHERE ratings->>'23' = 'very-satisfactory') AS gender_fair_treatment_very_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'23' = 'satisfactory') AS gender_fair_treatment_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'23' = 'unsatisfactory') AS gender_fair_treatment_unsatisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'23' = 'fair') AS gender_fair_treatment_fair,
+        COUNT(*) FILTER (WHERE ratings->>'24' = 'outstanding') AS beneficial_outstanding,
+        COUNT(*) FILTER (WHERE ratings->>'24' = 'very-satisfactory') AS beneficial_very_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'24' = 'satisfactory') AS beneficial_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'24' = 'unsatisfactory') AS beneficial_unsatisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'24' = 'fair') AS beneficial_fair
+      FROM responses r
+      JOIN services s ON r.service_id = s.service_id
+      JOIN offices o ON s.office_id = o.office_id AND o.office_category = 'unit'
+      CROSS JOIN LATERAL (SELECT r.answers->'qmsRatings'->'ratings' AS ratings) AS sub
+      WHERE r.form_id = 2
+    `;
     if (!isRegional) byOfficeSql += isDivision ? ' AND o.division_id = $1' : ' AND o.office_id = $1';
     byOfficeSql += ' GROUP BY o.office_id, o.office_name ORDER BY o.office_id;';
     const byOfficeResult = await executeQuery(byOfficeSql, params);
 
-    // 2b. By service under each office
-    let byServiceSql = `SELECT o.office_id, o.office_name, s.service_id, s.service_name, ... FROM responses r JOIN services s ON r.service_id = s.service_id JOIN offices o ON s.office_id = o.office_id CROSS JOIN LATERAL (SELECT r.answers->'qmsRatings'->'ratings' AS ratings) AS sub WHERE r.form_id = 2`;
+    let byServiceSql = `
+      SELECT o.office_id, o.office_name, s.service_id, s.service_name,
+        COUNT(*) FILTER (WHERE ratings->>'18' = 'outstanding') AS overall_outstanding,
+        COUNT(*) FILTER (WHERE ratings->>'18' = 'very-satisfactory') AS overall_very_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'18' = 'satisfactory') AS overall_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'18' = 'unsatisfactory') AS overall_unsatisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'18' = 'fair') AS overall_fair,
+        COUNT(*) FILTER (WHERE ratings->>'19' = 'outstanding') AS appropriateness_outstanding,
+        COUNT(*) FILTER (WHERE ratings->>'19' = 'very-satisfactory') AS appropriateness_very_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'19' = 'satisfactory') AS appropriateness_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'19' = 'unsatisfactory') AS appropriateness_unsatisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'19' = 'fair') AS appropriateness_fair,
+        COUNT(*) FILTER (WHERE ratings->>'21' = 'outstanding') AS timeliness_outstanding,
+        COUNT(*) FILTER (WHERE ratings->>'21' = 'very-satisfactory') AS timeliness_very_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'21' = 'satisfactory') AS timeliness_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'21' = 'unsatisfactory') AS timeliness_unsatisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'21' = 'fair') AS timeliness_fair,
+        COUNT(*) FILTER (WHERE ratings->>'22' = 'outstanding') AS attitude_outstanding,
+        COUNT(*) FILTER (WHERE ratings->>'22' = 'very-satisfactory') AS attitude_very_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'22' = 'satisfactory') AS attitude_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'22' = 'unsatisfactory') AS attitude_unsatisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'22' = 'fair') AS attitude_fair,
+        COUNT(*) FILTER (WHERE ratings->>'23' = 'outstanding') AS gender_fair_treatment_outstanding,
+        COUNT(*) FILTER (WHERE ratings->>'23' = 'very-satisfactory') AS gender_fair_treatment_very_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'23' = 'satisfactory') AS gender_fair_treatment_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'23' = 'unsatisfactory') AS gender_fair_treatment_unsatisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'23' = 'fair') AS gender_fair_treatment_fair,
+        COUNT(*) FILTER (WHERE ratings->>'24' = 'outstanding') AS beneficial_outstanding,
+        COUNT(*) FILTER (WHERE ratings->>'24' = 'very-satisfactory') AS beneficial_very_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'24' = 'satisfactory') AS beneficial_satisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'24' = 'unsatisfactory') AS beneficial_unsatisfactory,
+        COUNT(*) FILTER (WHERE ratings->>'24' = 'fair') AS beneficial_fair
+      FROM responses r
+      JOIN services s ON r.service_id = s.service_id
+      JOIN offices o ON s.office_id = o.office_id AND o.office_category = 'unit'
+      CROSS JOIN LATERAL (SELECT r.answers->'qmsRatings'->'ratings' AS ratings) AS sub
+      WHERE r.form_id = 2
+    `;
     if (!isRegional) byServiceSql += isDivision ? ' AND o.division_id = $1' : ' AND o.office_id = $1';
     byServiceSql += ' GROUP BY o.office_id, o.office_name, s.service_id, s.service_name ORDER BY o.office_id, s.service_id;';
     const byServiceResult = await executeQuery(byServiceSql, params);
 
-    // Attach service breakdown to each office
     const byOfficeWithServices = byOfficeResult.rows.map(office => ({
       ...office,
-      services: byServiceResult.rows.filter(s => s.office_id === office.office_id)
+      services: byServiceResult.rows.filter(service => service.office_id === office.office_id)
     }));
 
-    // --- Create Excel Workbook ---
     const workbook = new ExcelJS.Workbook();
 
-    // --- 1. Regionwide Summary Sheet ---
     const summarySheet = workbook.addWorksheet('Regionwide Summary');
     summarySheet.addRow(['Question', ...ratingLabels]);
     styleHeaderRow(summarySheet.lastRow);
+    const overallRow = overallResult.rows[0] || {};
     qmsQuestions.forEach(q => {
       const row = [q.label];
       ratingKeys.forEach(rating => {
-        row.push(overallResult.rows[0][`${q.key}_${rating}`] || 0);
+        row.push(overallRow[`${q.key}_${rating}`] || 0);
       });
       summarySheet.addRow(row);
     });
-    summarySheet.columns.forEach(col => col.width = 25);
+    summarySheet.columns.forEach(col => {
+      col.width = 25;
+    });
     styleCells(summarySheet);
 
-    // --- 2. Per-Office Sheets ---
     byOfficeWithServices.forEach(office => {
       const officeSheet = workbook.addWorksheet(office.office_name);
-      // Add label for summary table
       const summaryLabelRow = officeSheet.addRow(['Office Summary']);
       officeSheet.mergeCells(summaryLabelRow.number, 1, summaryLabelRow.number, 6);
       summaryLabelRow.font = { bold: true, size: 13 };
       summaryLabelRow.fill = {
         type: 'pattern',
         pattern: 'solid',
-        fgColor: { argb: 'FFDBEAFE' } // light blue
+        fgColor: { argb: 'FFDBEAFE' }
       };
       summaryLabelRow.alignment = { vertical: 'middle', horizontal: 'center' };
-      // Office summary table
+
       officeSheet.addRow(['Question', ...ratingLabels]);
       styleHeaderRow(officeSheet.lastRow);
       qmsQuestions.forEach(q => {
@@ -145,8 +247,8 @@ export async function GET() {
         });
         officeSheet.addRow(row);
       });
-      officeSheet.addRow([]); // Spacer
-      // Per-service tables
+
+      officeSheet.addRow([]);
       if (office.services && office.services.length > 0) {
         office.services.forEach(service => {
           officeSheet.addRow([service.service_name]);
@@ -161,14 +263,16 @@ export async function GET() {
             });
             officeSheet.addRow(row);
           });
-          officeSheet.addRow([]); // Spacer
+          officeSheet.addRow([]);
         });
       }
-      officeSheet.columns.forEach(col => col.width = 25);
+
+      officeSheet.columns.forEach(col => {
+        col.width = 25;
+      });
       styleCells(officeSheet);
     });
 
-    // --- Write to buffer and return as file ---
     const buffer = await workbook.xlsx.writeBuffer();
     const now = new Date();
     const pad = n => n.toString().padStart(2, '0');
@@ -186,4 +290,4 @@ export async function GET() {
     console.error('Error generating QMS Excel report:', error);
     return NextResponse.json({ error: 'Failed to generate QMS report' }, { status: 500 });
   }
-} 
+}

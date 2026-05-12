@@ -131,6 +131,18 @@ const mapToTagalog = (answer, type) => {
   return answer;
 };
 
+const formatDisplayValue = (value) => {
+  if (value === null || value === undefined || value === '') return null;
+  if (typeof value === 'string' || typeof value === 'number') return value;
+  if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+  if (Array.isArray(value)) return value.join(', ');
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+};
+
 export const PersonalDetailsSection = ({ formData, onEdit, editingSection, onCancelEdit, onSaveEdit }) => (
   <div className="space-y-4">
     {renderSectionHeader('Personal Details', <CheckCircle2 className="h-5 w-5 text-blue-500" />, 'personal', onEdit, editingSection, onCancelEdit, onSaveEdit)}
@@ -220,7 +232,7 @@ export const CSMARTARatingsSection = ({ formData, onEdit, editingSection, onCanc
           <p className="text-sm font-medium text-gray-500 mb-2">SQD {index}</p>
           <div className="flex items-center space-x-2">
             {renderEmoji(value, 'csm')}
-            <p className="text-base text-gray-900">{language === 'fil' ? mapToTagalog(value, 'ratingOptions') : value}</p>
+            <p className="text-base text-gray-900">{language === 'fil' ? mapToTagalog(formatDisplayValue(value), 'ratingOptions') : formatDisplayValue(value)}</p>
           </div>
         </div>
       ))}
@@ -284,13 +296,163 @@ export const QMSRatingsSection = ({ formData, onEdit, editingSection, onCancelEd
           <p className="text-sm font-medium text-gray-500 mb-2">Question {key.slice(-1)}</p>
           <div className="flex items-center space-x-2">
             {renderEmoji(value, 'qms')}
-            <p className="text-base text-gray-900">{value}</p>
+            <p className="text-base text-gray-900">{formatDisplayValue(value)}</p>
           </div>
         </div>
       ))}
     </div>
   </div>
 );
+
+/**
+ * DynamicSectionRenderer - Renders review sections from dynamic form questions
+ * Uses a map of question_id -> answer value to display answers in the review step
+ */
+export const DynamicSectionRenderer = ({
+  questions,
+  answers,
+  onEdit,
+  editingQuestionId,
+  onCancelEdit,
+  onSaveEdit
+}) => {
+  if (!questions || questions.length === 0) {
+    return null;
+  }
+
+  // Group questions by their type for display
+  const groupedQuestions = questions.reduce((groups, question) => {
+    const type = question.question_type || 'text';
+    if (!groups[type]) {
+      groups[type] = [];
+    }
+    groups[type].push(question);
+    return groups;
+  }, {});
+
+  return (
+    <div className="space-y-6">
+      {/* Rating Questions */}
+      {groupedQuestions.rating && (
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <h3 className="text-xl font-semibold text-gray-900 mb-4">
+            <Star className="inline h-5 w-5 text-yellow-400 mr-2" />
+            Ratings
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {groupedQuestions.rating.map((q) => {
+              const answer = answers[q.question_id];
+              return (
+                <div key={q.question_id} className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm font-medium text-gray-500 mb-2">
+                    {q.question_text}
+                  </p>
+                  <div className="flex items-center space-x-2">
+                    {answer ? (
+                      <span className="text-base text-gray-900 bg-blue-50 px-3 py-1 rounded-full text-sm">
+                        {formatDisplayValue(answer)}
+                      </span>
+                    ) : (
+                      <span className="text-sm text-gray-400 italic">No answer</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Checkmark Questions */}
+      {groupedQuestions.checkmark && (
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <h3 className="text-xl font-semibold text-gray-900 mb-4">
+            <CheckCircle2 className="inline h-5 w-5 text-blue-500 mr-2" />
+            Checklist
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {groupedQuestions.checkmark.map((q) => {
+              const answer = answers[q.question_id];
+              return (
+                <div key={q.question_id} className="bg-gray-50 p-4 rounded-lg flex items-center space-x-3">
+                  <div className={`w-3 h-3 rounded-full border-2 ${
+                    answer
+                      ? 'bg-blue-500 border-blue-500'
+                      : 'border-gray-300 bg-white'
+                  }`} />
+                  <p className="text-base text-gray-900">{q.question_text}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Text Questions */}
+      {groupedQuestions.text && (
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <h3 className="text-xl font-semibold text-gray-900 mb-4">
+            <MessageSquare className="inline h-5 w-5 text-blue-500 mr-2" />
+            Additional Feedback
+          </h3>
+          <div className="space-y-4">
+            {groupedQuestions.text.map((q) => {
+              const answer = answers[q.question_id];
+              return (
+                <div key={q.question_id} className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm font-medium text-gray-500 mb-2">
+                    {q.question_text}
+                  </p>
+                  <p className="text-base text-gray-900 whitespace-pre-wrap">
+                    {formatDisplayValue(answer) || <span className="text-gray-400 italic">No answer provided</span>}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Radio Questions */}
+      {groupedQuestions.radio && (
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <h3 className="text-xl font-semibold text-gray-900 mb-4">
+            <CheckCircle2 className="inline h-5 w-5 text-blue-500 mr-2" />
+            Selections
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {groupedQuestions.radio.map((q) => {
+              const answer = answers[q.question_id];
+              return (
+                <div key={q.question_id} className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm font-medium text-gray-500 mb-2">
+                    {q.question_text}
+                  </p>
+                  <p className="text-base text-gray-900">
+                    {formatDisplayValue(answer) || <span className="text-gray-400 italic">No answer</span>}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+DynamicSectionRenderer.propTypes = {
+  questions: PropTypes.arrayOf(PropTypes.shape({
+    question_id: PropTypes.number.isRequired,
+    question_text: PropTypes.string.isRequired,
+    question_type: PropTypes.string
+  })),
+  answers: PropTypes.object,
+  onEdit: PropTypes.func,
+  editingQuestionId: PropTypes.number,
+  onCancelEdit: PropTypes.func,
+  onSaveEdit: PropTypes.func
+};
 
 export const SuggestionSection = ({ formData, onEdit, editingSection, onCancelEdit, onSaveEdit }) => (
   <div className="space-y-4">
@@ -406,4 +568,13 @@ NavigationButtons.propTypes = {
 
 ErrorMessage.propTypes = {
   error: PropTypes.string
-}; 
+};
+
+DynamicSectionRenderer.propTypes = {
+  questions: PropTypes.array,
+  answers: PropTypes.object,
+  onEdit: PropTypes.func,
+  editingQuestionId: PropTypes.number,
+  onCancelEdit: PropTypes.func,
+  onSaveEdit: PropTypes.func
+};

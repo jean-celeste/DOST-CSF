@@ -17,12 +17,12 @@ export async function GET() {
       let where = ' WHERE form_id = 1';
       let values = [];
       if (role === 'Division Administrator' && division_id) {
-        joins += ' JOIN services s ON r.service_id = s.service_id JOIN unit u ON s.unit_id = u.unit_id';
+        joins += ` JOIN services s ON r.service_id = s.service_id JOIN offices u ON s.office_id = u.office_id AND u.office_category = 'unit'`;
         where += ' AND u.division_id = $1';
         values.push(division_id);
-      } else if (role === 'PSTO Administrator' && office_id) {
+       } else if (role === 'Office Administrator' && office_id) {
         joins += ' JOIN services s ON r.service_id = s.service_id';
-        where += ' AND s.office_id = $1';
+        where += ` AND EXISTS (SELECT 1 FROM service_office so WHERE so.service_id = s.service_id AND so.office_id = $1)`;
         values.push(office_id);
       }
       const groupOrder = ' GROUP BY answer ORDER BY count DESC';

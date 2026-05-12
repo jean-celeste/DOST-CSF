@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import EditServiceModal from '@/components/EditServiceModal'; // Assuming this is a generic modal wrapper
+import EditServiceModal from '@/components/EditServiceModal';
 import ServiceForm from '@/components/forms/ServiceForm';
 import LoadingSpinner from '@/components/forms-resources/LoadingSpinner';
 
@@ -9,10 +9,10 @@ export default function ManageServiceModal({
   isOpen,
   onClose,
   onSubmit,
-  serviceToEdit, // This will be the full service object for editing, or null for adding
-  isFormSubmitting, // Loading state for the submission process, controlled by parent
+  serviceToEdit,
+  isFormSubmitting,
 }) {
-  const [internalLoading, setInternalLoading] = useState(false); // For loading dropdowns etc.
+  const [internalLoading, setInternalLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const [offices, setOffices] = useState([]);
@@ -25,7 +25,7 @@ export default function ManageServiceModal({
     if (isOpen) {
       setError(null);
       setInternalLoading(true);
-      setCurrentService(serviceToEdit); // Set current service for the form
+      setCurrentService(serviceToEdit);
 
       const fetchData = async () => {
         try {
@@ -47,15 +47,11 @@ export default function ManageServiceModal({
           setServiceTypes(typesData.data || []);
           setClientTypes(clientTypesData.data || []);
 
-          // If editing and office_id is present, fetch initial units
-          if (serviceToEdit && serviceToEdit.office_id) {
-            const unitsRes = await fetch(`/api/admin/units?office_id=${serviceToEdit.office_id}`);
-            const unitsData = await unitsRes.json();
-            if (!unitsData.success) throw new Error(unitsData.error || 'Failed to fetch units');
-            setUnits(unitsData.data || []);
-          } else {
-            setUnits([]); // Clear units if no office selected or adding new
-          }
+          const parentForUnits = serviceToEdit?.parent_office_id ?? 1;
+          const unitsRes = await fetch(`/api/admin/units?office_id=${parentForUnits}`);
+          const unitsData = await unitsRes.json();
+          if (!unitsData.success) throw new Error(unitsData.error || 'Failed to fetch units');
+          setUnits(unitsData.data || []);
         } catch (err) {
           setError(err.message);
           setOffices([]);
@@ -69,7 +65,6 @@ export default function ManageServiceModal({
 
       fetchData();
     } else {
-      // Reset states when modal is closed
       setInternalLoading(false);
       setError(null);
       setOffices([]);
@@ -85,18 +80,14 @@ export default function ManageServiceModal({
       setUnits([]);
       return;
     }
-    // setError(null); // Clear previous errors
     try {
-      // setInternalLoading(true); // Optionally show loading for units
       const unitsRes = await fetch(`/api/admin/units?office_id=${officeId}`);
       const unitsData = await unitsRes.json();
       if (!unitsData.success) throw new Error(unitsData.error || 'Failed to fetch units');
       setUnits(unitsData.data || []);
     } catch (err) {
-      setError(err.message); // Display error related to units fetching
+      setError(err.message);
       setUnits([]);
-    } finally {
-      // setInternalLoading(false);
     }
   };
 
@@ -121,10 +112,10 @@ export default function ManageServiceModal({
          <div className="text-red-500 p-4">Error: {error} <button onClick={onClose} className="text-blue-500 underline ml-2">Close</button></div>
       ) : (
         <ServiceForm
-          initialValues={currentService ?? {}} // Always pass an object, never null
+          initialValues={currentService ?? {}}
           onSubmit={onSubmit}
           onCancel={onClose}
-          loading={isFormSubmitting} // This is the loading state for the actual form submission
+          loading={isFormSubmitting}
           offices={offices}
           serviceTypes={serviceTypes}
           units={units}

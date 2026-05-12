@@ -13,20 +13,26 @@ import {
   QMSRatingsSection,
   SuggestionSection,
   NavigationButtons,
-  ErrorMessage
+  ErrorMessage,
+  DynamicSectionRenderer
 } from './FormReviewSections';
 
-export default function Review({ 
-  onNextStep, 
-  onPrevStep, 
-  formData, 
-  onEditSection, 
+export default function Review({
+  onNextStep,
+  onPrevStep,
+  formData,
+  onEditSection,
   onNewForm,
   formId,
   formType,
-  language
+  language,
+  // New props for dynamic form support
+  dynamicQuestions,
+  dynamicAnswers,
+  onDynamicEdit
 }) {
   const [editingSection, setEditingSection] = useState(null);
+  const [editingQuestionId, setEditingQuestionId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showThankYou, setShowThankYou] = useState(false);
   const [error, setError] = useState(null);
@@ -36,7 +42,12 @@ export default function Review({
     setError(null);
 
     try {
-      await submitForm(formData);
+      // Extract serviceId from personalDetails for the submission
+      const submissionData = {
+        ...formData,
+        serviceId: formData.personalDetails?.service_id
+      };
+      await submitForm(submissionData);
       setShowThankYou(true);
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -47,170 +58,214 @@ export default function Review({
   };
 
   const handleEdit = (section) => {
-    const clientType = formData.personalDetails.clientType;
+    const clientType = formData?.personalDetails?.clientType;
     const isInternal = clientType === 'internal';
     const isExternal = ['citizen', 'business', 'government'].includes(clientType);
 
     // Always allow editing personal details and suggestion
     if (section === 'personal' || section === 'suggestion') {
-      onEditSection(section);
+      onEditSection && onEditSection(section);
       return;
     }
 
     // Internal: all sections are editable
     if (isInternal) {
-      onEditSection(section);
+      onEditSection && onEditSection(section);
       return;
     }
 
     // External: only CSM sections editable
     if (isExternal) {
       if (section === 'csmarta' || section === 'csmarta-ratings') {
-        onEditSection(section);
+        onEditSection && onEditSection(section);
       }
       return;
     }
   };
 
+  const handleDynamicQuestionEdit = (questionId) => {
+    setEditingQuestionId(questionId);
+    if (onDynamicEdit) {
+      onDynamicEdit(questionId);
+    }
+  };
+
   const handleCancelEdit = () => {
     setEditingSection(null);
+    setEditingQuestionId(null);
   };
 
   const handleSaveEdit = (section) => {
-    // TODO: Implement save logic
     setEditingSection(null);
+    setEditingQuestionId(null);
   };
+
+  // Check if we're in dynamic mode
+  const isDynamic = dynamicQuestions && dynamicQuestions.length > 0;
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="space-y-8">
+        {/* Personal Details (always present) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
         >
-          <PersonalDetailsSection 
-            formData={formData}
-            onEdit={handleEdit}
-            editingSection={editingSection}
-            onCancelEdit={handleCancelEdit}
-            onSaveEdit={handleSaveEdit}
-          />
+          {formData && (
+            <PersonalDetailsSection
+              formData={formData}
+              onEdit={handleEdit}
+              editingSection={editingSection}
+              onCancelEdit={handleCancelEdit}
+              onSaveEdit={handleSaveEdit}
+            />
+          )}
         </motion.div>
 
-        {/* Render only the relevant sections based on clientType and service_type_id */}
-        {(() => {
-          const clientType = formData.personalDetails.clientType;
-          const isInternal = clientType === 'internal';
-          const isExternal = ['citizen', 'business', 'government'].includes(clientType);
+        {/* Dynamic sections or legacy sections */}
+        {isDynamic ? (
+          // Dynamic form review
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
+          >
+            <DynamicSectionRenderer
+              questions={dynamicQuestions}
+              answers={dynamicAnswers || {}}
+              onEdit={handleDynamicQuestionEdit}
+              editingQuestionId={editingQuestionId}
+              onCancelEdit={handleCancelEdit}
+              onSaveEdit={handleSaveEdit}
+            />
+          </motion.div>
+        ) : formData ? (
+          // Legacy form review (for backward compatibility)
+          (() => {
+            const clientType = formData.personalDetails?.clientType;
+            const isInternal = clientType === 'internal';
+            const isExternal = ['citizen', 'business', 'government'].includes(clientType);
 
-          if (isInternal) {
-            return <>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
-              >
-                <CSMARTACheckmarkSection 
-                  formData={formData}
-                  onEdit={handleEdit}
-                  editingSection={editingSection}
-                  onCancelEdit={handleCancelEdit}
-                  onSaveEdit={handleSaveEdit}
-                  language={language}
-                />
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
-              >
-                <CSMARTARatingsSection 
-                  formData={formData}
-                  onEdit={handleEdit}
-                  editingSection={editingSection}
-                  onCancelEdit={handleCancelEdit}
-                  onSaveEdit={handleSaveEdit}
-                  language={language}
-                />
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
-              >
-                <QMSRatingsSection 
-                  formData={formData}
-                  onEdit={handleEdit}
-                  editingSection={editingSection}
-                  onCancelEdit={handleCancelEdit}
-                  onSaveEdit={handleSaveEdit}
-                />
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
-              >
-                <QMSCheckmarkSection 
-                  formData={formData}
-                  onEdit={handleEdit}
-                  editingSection={editingSection}
-                  onCancelEdit={handleCancelEdit}
-                  onSaveEdit={handleSaveEdit}
-                />
-              </motion.div>
-            </>;
-          } else if (isExternal) {
-            // CSM only
-            return <>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
-              >
-                <CSMARTACheckmarkSection 
-                  formData={formData}
-                  onEdit={handleEdit}
-                  editingSection={editingSection}
-                  onCancelEdit={handleCancelEdit}
-                  onSaveEdit={handleSaveEdit}
-                  language={language}
-                />
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
-              >
-                <CSMARTARatingsSection 
-                  formData={formData}
-                  onEdit={handleEdit}
-                  editingSection={editingSection}
-                  onCancelEdit={handleCancelEdit}
-                  onSaveEdit={handleSaveEdit}
-                  language={language}
-                />
-              </motion.div>
-            </>;
-          }
-          return null;
-        })()}
+            return (
+              <>
+                {(() => {
+                  if (isInternal) {
+                    return (
+                      <>
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.1 }}
+                          className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
+                        >
+                          <CSMARTACheckmarkSection
+                            formData={formData}
+                            onEdit={handleEdit}
+                            editingSection={editingSection}
+                            onCancelEdit={handleCancelEdit}
+                            onSaveEdit={handleSaveEdit}
+                            language={language}
+                          />
+                        </motion.div>
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.2 }}
+                          className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
+                        >
+                          <CSMARTARatingsSection
+                            formData={formData}
+                            onEdit={handleEdit}
+                            editingSection={editingSection}
+                            onCancelEdit={handleCancelEdit}
+                            onSaveEdit={handleSaveEdit}
+                            language={language}
+                          />
+                        </motion.div>
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.3 }}
+                          className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
+                        >
+                          <QMSRatingsSection
+                            formData={formData}
+                            onEdit={handleEdit}
+                            editingSection={editingSection}
+                            onCancelEdit={handleCancelEdit}
+                            onSaveEdit={handleSaveEdit}
+                          />
+                        </motion.div>
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.4 }}
+                          className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
+                        >
+                          <QMSCheckmarkSection
+                            formData={formData}
+                            onEdit={handleEdit}
+                            editingSection={editingSection}
+                            onCancelEdit={handleCancelEdit}
+                            onSaveEdit={handleSaveEdit}
+                          />
+                        </motion.div>
+                      </>
+                    );
+                  } else if (isExternal) {
+                    return (
+                      <>
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.1 }}
+                          className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
+                        >
+                          <CSMARTACheckmarkSection
+                            formData={formData}
+                            onEdit={handleEdit}
+                            editingSection={editingSection}
+                            onCancelEdit={handleCancelEdit}
+                            onSaveEdit={handleSaveEdit}
+                            language={language}
+                          />
+                        </motion.div>
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.2 }}
+                          className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
+                        >
+                          <CSMARTARatingsSection
+                            formData={formData}
+                            onEdit={handleEdit}
+                            editingSection={editingSection}
+                            onCancelEdit={handleCancelEdit}
+                            onSaveEdit={handleSaveEdit}
+                            language={language}
+                          />
+                        </motion.div>
+                      </>
+                    );
+                  }
+                  return null;
+                })()}
+              </>
+            );
+          })()
+        ) : null}
 
+        {/* Suggestions (always present) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
           className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow"
         >
-          <SuggestionSection 
-            formData={formData}
+          <SuggestionSection
+            formData={formData || { suggestion: {}}}
             onEdit={handleEdit}
             editingSection={editingSection}
             onCancelEdit={handleCancelEdit}
@@ -219,7 +274,7 @@ export default function Review({
         </motion.div>
       </div>
 
-      <NavigationButtons 
+      <NavigationButtons
         onPrevStep={onPrevStep}
         onNextStep={handleSubmit}
         isSubmitting={isSubmitting}
@@ -227,8 +282,8 @@ export default function Review({
 
       <ErrorMessage error={error} />
 
-      <ThankYouModal 
-        isOpen={showThankYou} 
+      <ThankYouModal
+        isOpen={showThankYou}
         onClose={() => {
           setShowThankYou(false);
           onNextStep();
@@ -265,10 +320,24 @@ Review.propTypes = {
     qmsCheckmark: PropTypes.object,
     qmsRatings: PropTypes.object,
     suggestion: PropTypes.object
-  }).isRequired,
-  onEditSection: PropTypes.func.isRequired,
+  }),
+  onEditSection: PropTypes.func,
   onNewForm: PropTypes.func.isRequired,
-  formId: PropTypes.number.isRequired,
-  formType: PropTypes.string.isRequired,
-  language: PropTypes.string.isRequired
-}; 
+  formId: PropTypes.number,
+  formType: PropTypes.string,
+  language: PropTypes.string,
+  // Dynamic form props
+  dynamicQuestions: PropTypes.arrayOf(PropTypes.shape({
+    question_id: PropTypes.number.isRequired,
+    question_text: PropTypes.string.isRequired,
+    question_type: PropTypes.string
+  })),
+  dynamicAnswers: PropTypes.object,
+  onDynamicEdit: PropTypes.func
+};
+
+Review.defaultProps = {
+  dynamicQuestions: null,
+  dynamicAnswers: null,
+  onDynamicEdit: null
+};

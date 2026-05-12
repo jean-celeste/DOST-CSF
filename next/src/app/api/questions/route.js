@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { executeQuery } from '@/lib/db/utils'
+import { normalizeQuestionRow } from '@/lib/questions/questionMetadata'
 
 // import { verifyToken } from '@/lib/auth/jwt';
 
@@ -22,10 +23,12 @@ export async function GET(request) {
     const query = `
       SELECT 
         q.question_id,
-        q.question_text
+        q.question_text,
+        q.question_type,
+        q.question_order
       FROM questions q
       WHERE q.form_id = $1
-      ORDER BY q.question_id
+      ORDER BY COALESCE(q.question_order, q.question_id), q.question_id
     `
     
     const result = await executeQuery(query, [formId])
@@ -37,6 +40,7 @@ export async function GET(request) {
     return NextResponse.json({ 
       success: true,
       data: questions,
+      questions: result.rows.map((row) => normalizeQuestionRow(row, parseInt(formId))),
       timestamp: new Date().toISOString()
     })
   } catch (error) {

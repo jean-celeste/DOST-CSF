@@ -97,7 +97,9 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
 
   // Get filtered services based on selected filters
   const getFilteredServices = () => {
-    if (!clientType) return []
+    // Check if we have a valid client type selection
+    const hasValidClientType = clientType === 'internal' || externalSubtype
+    if (!hasValidClientType) return []
     return services.filter(service => {
       const name = service.service_name || ''
       const desc = service.description || ''
@@ -166,6 +168,33 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
     try {
       // Determine the final client type to send
       let finalClientType = clientType === 'internal' ? 'internal' : externalSubtype
+
+      // Fetch linked form info for this service to determine formId
+      let formId = null
+      let formTitle = null
+      try {
+        const serviceDetailRes = await fetch(`/api/services/${service.service_id}`)
+        if (serviceDetailRes.ok) {
+          const serviceDetail = await serviceDetailRes.json()
+          if (serviceDetail.success && serviceDetail.data?.linked_forms?.length > 0) {
+            // Get the primary linked form (lowest form_order)
+            const primaryForm = [...serviceDetail.data.linked_forms].sort((a, b) => (a.form_order || 1) - (b.form_order || 1))[0]
+            formId = primaryForm.form_id
+
+            // Fetch form title
+            const formRes = await fetch(`/api/forms/${formId}`)
+            if (formRes.ok) {
+              const formData = await formRes.json()
+              if (formData.success) {
+                formTitle = formData.data.form_title
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Could not fetch form info for service:', e)
+      }
+
       const serviceData = {
         service_id: service.service_id,
         service_name: service.service_name,
@@ -173,11 +202,13 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
         unit_name: service.unit_name,
         service_type_id: service.service_type_id,
         service_type_name: service.service_type_name,
-        clientType: finalClientType
-      };
-      await new Promise(resolve => setTimeout(resolve, 150));
-      onServiceSelect(serviceData);  
-      onClose();
+        clientType: finalClientType,
+        formId: formId,
+        formTitle: formTitle
+      }
+      await new Promise(resolve => setTimeout(resolve, 150))
+      onServiceSelect(serviceData)
+      onClose()
     } finally {
       setIsLoading(false)
     }
@@ -244,65 +275,75 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                 )}
               </div>
             </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.005, y: -2 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ duration: 0.1 }}
-              className={`group p-6 sm:p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative overflow-hidden
-                ${clientType === 'external' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-500'}`}
-              onClick={() => handleClientTypeSelect('external')}
-            >
-              <div className="absolute inset-0 rounded-2xl pointer-events-none bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative flex flex-col items-center">
-                <div className="p-4 rounded-full bg-blue-50 group-hover:bg-blue-100 transition-colors mb-4">
-                  <Users className="h-10 w-10 text-blue-500" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">External Client</h3>
-                <p className="text-sm text-gray-500 text-center">Public/Client</p>
-                {clientType === 'external' && (
-                  <div className="mt-4 text-blue-500">
-                    <ChevronRight className="h-5 w-5" />
+            <div className="space-y-4">
+              <motion.button
+                whileHover={{ scale: 1.005, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ duration: 0.1 }}
+                className={`group p-6 sm:p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative overflow-hidden
+                  ${clientType === 'citizen' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-500'}`}
+                onClick={() => handleExternalSubtypeSelect('citizen')}
+              >
+                <div className="absolute inset-0 rounded-2xl pointer-events-none bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative flex flex-col items-center">
+                  <div className="p-4 rounded-full bg-blue-50 group-hover:bg-blue-100 transition-colors mb-4">
+                    <User className="h-10 w-10 text-blue-500" />
                   </div>
-                )}
-              </div>
-            </motion.button>
-          </div>
-          {/* Inline external subtypes if external is selected */}
-          {clientType === 'external' && (
-            <div className="pt-6">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
-                {[
-                  { id: 'citizen', icon: User, title: 'Citizen', description: 'Individual member of the public' },
-                  { id: 'business', icon: Briefcase, title: 'Business', description: 'Private company or organization' },
-                  { id: 'government', icon: Landmark, title: 'Government', description: 'Government agency or institution' }
-                ].map(({ id, icon: Icon, title, description }) => (
-                  <motion.button
-                    key={id}
-                    whileHover={{ scale: 1.005, y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    transition={{ duration: 0.1 }}
-                    className={`group p-6 sm:p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative overflow-hidden
-                      ${externalSubtype === id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-500'}`}
-                    onClick={() => handleExternalSubtypeSelect(id)}
-                  >
-                    <div className="absolute inset-0 rounded-2xl pointer-events-none bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <div className="relative flex flex-col items-center">
-                      <div className="p-4 rounded-full bg-blue-50 group-hover:bg-blue-100 transition-colors mb-4">
-                        <Icon className="h-10 w-10 text-blue-500" />
-                      </div>
-                      <h3 className="text-xl font-semibold text-gray-900 mb-2">{title}</h3>
-                      <p className="text-sm text-gray-500 text-center">{description}</p>
-                      {externalSubtype === id && (
-                        <div className="mt-4 text-blue-500">
-                          <ChevronRight className="h-5 w-5" />
-                        </div>
-                      )}
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Citizen</h3>
+                  <p className="text-sm text-gray-500 text-center">Individual member of the public</p>
+                  {clientType === 'citizen' && (
+                    <div className="mt-4 text-blue-500">
+                      <ChevronRight className="h-5 w-5" />
                     </div>
-                  </motion.button>
-                ))}
-              </div>
+                  )}
+                </div>
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.005, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ duration: 0.1 }}
+                className={`group p-6 sm:p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative overflow-hidden
+                  ${clientType === 'business' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-500'}`}
+                onClick={() => handleExternalSubtypeSelect('business')}
+              >
+                <div className="absolute inset-0 rounded-2xl pointer-events-none bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative flex flex-col items-center">
+                  <div className="p-4 rounded-full bg-blue-50 group-hover:bg-blue-100 transition-colors mb-4">
+                    <Briefcase className="h-10 w-10 text-blue-500" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Business</h3>
+                  <p className="text-sm text-gray-500 text-center">Private company or organization</p>
+                  {clientType === 'business' && (
+                    <div className="mt-4 text-blue-500">
+                      <ChevronRight className="h-5 w-5" />
+                    </div>
+                  )}
+                </div>
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.005, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ duration: 0.1 }}
+                className={`group p-6 sm:p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative overflow-hidden
+                  ${clientType === 'government' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-500'}`}
+                onClick={() => handleExternalSubtypeSelect('government')}
+              >
+                <div className="absolute inset-0 rounded-2xl pointer-events-none bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative flex flex-col items-center">
+                  <div className="p-4 rounded-full bg-blue-50 group-hover:bg-blue-100 transition-colors mb-4">
+                    <Landmark className="h-10 w-10 text-blue-500" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Government</h3>
+                  <p className="text-sm text-gray-500 text-center">Government agency or institution</p>
+                  {clientType === 'government' && (
+                    <div className="mt-4 text-blue-500">
+                      <ChevronRight className="h-5 w-5" />
+                    </div>
+                  )}
+                </div>
+              </motion.button>
             </div>
-          )}
+          </div>
         </motion.div>
       )
     } else if (step === 2) {
@@ -322,7 +363,7 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
               </div>
               <h3 className="font-semibold text-lg">Filters</h3>
             </div>
-            
+
             {/* Offices */}
             <div className="mb-6 sm:mb-8">
               <h4 className="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wider">Offices</h4>
@@ -331,8 +372,8 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                   whileHover={{ x: 2 }}
                   transition={{ duration: 0.1 }}
                   className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all flex items-center gap-2
-                    ${!selectedOffice 
-                      ? 'bg-blue-50 text-blue-600 font-medium' 
+                    ${!selectedOffice
+                      ? 'bg-blue-50 text-blue-600 font-medium'
                       : 'hover:bg-gray-50 text-gray-700'}`}
                   onClick={() => {
                     setSelectedOffice(null)
@@ -348,8 +389,8 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                     whileHover={{ x: 2 }}
                     transition={{ duration: 0.1 }}
                     className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all flex items-center gap-2
-                      ${selectedOffice === office 
-                        ? 'bg-blue-50 text-blue-600 font-medium' 
+                      ${selectedOffice === office
+                        ? 'bg-blue-50 text-blue-600 font-medium'
                         : 'hover:bg-gray-50 text-gray-700'}`}
                     onClick={() => {
                       setSelectedOffice(office)
@@ -372,8 +413,8 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                     whileHover={{ x: 2 }}
                     transition={{ duration: 0.1 }}
                     className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all flex items-center gap-2
-                      ${!selectedUnit 
-                        ? 'bg-blue-50 text-blue-600 font-medium' 
+                      ${!selectedUnit
+                        ? 'bg-blue-50 text-blue-600 font-medium'
                         : 'hover:bg-gray-50 text-gray-700'}`}
                     onClick={() => setSelectedUnit(null)}
                   >
@@ -386,8 +427,8 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                       whileHover={{ x: 2 }}
                       transition={{ duration: 0.1 }}
                       className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all flex items-center gap-2
-                        ${selectedUnit === unit 
-                          ? 'bg-blue-50 text-blue-600 font-medium' 
+                        ${selectedUnit === unit
+                          ? 'bg-blue-50 text-blue-600 font-medium'
                           : 'hover:bg-gray-50 text-gray-700'}`}
                       onClick={() => setSelectedUnit(unit)}
                     >
@@ -411,7 +452,7 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            
+
             <div className="space-y-3 sm:space-y-4">
               {getFilteredServices().map((service) => (
                 <motion.button
@@ -472,24 +513,23 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
           <DialogHeader className="mb-4">
             <div className="flex justify-between items-center">
               <DialogTitle className="text-2xl font-bold text-gray-900">
-                {step === 1 && 'Select Client Type'}
-                {step === 2 && 'Select Service'}
+                {step === 1 ? 'Select Client Type' : 'Select Service'}
               </DialogTitle>
             </div>
           </DialogHeader>
-          
-          <Breadcrumb 
-            steps={getSteps()} 
-            currentStep={step} 
+
+          <Breadcrumb
+            steps={getSteps()}
+            currentStep={step}
             onStepClick={handleStepClick}
           />
-          
+
           <div className="flex-1 overflow-y-auto px-1 py-1 sm:px-2">
             <AnimatePresence mode="wait">
               {renderStepContent()}
             </AnimatePresence>
           </div>
-          
+
           <div className="flex justify-between mt-4">
             {step > 1 && (
               <Button
@@ -517,4 +557,4 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
       />
     </>
   )
-} 
+}

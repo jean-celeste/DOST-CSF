@@ -17,12 +17,12 @@ export async function GET() {
   let overallJoins = '';
   let overallValues = [];
   if (role === 'Division Administrator' && division_id) {
-    overallJoins += ' JOIN services s ON r.service_id = s.service_id JOIN unit u ON s.unit_id = u.unit_id';
+    overallJoins += ` JOIN services s ON r.service_id = s.service_id JOIN offices u ON s.office_id = u.office_id AND u.office_category = 'unit'`;
     overallWhere += ' AND u.division_id = $1';
     overallValues.push(division_id);
-  } else if (role === 'PSTO Administrator' && office_id) {
+   } else if (role === 'Office Administrator' && office_id) {
     overallJoins += ' JOIN services s ON r.service_id = s.service_id';
-    overallWhere += ' AND s.office_id = $1';
+    overallWhere += ` AND EXISTS (SELECT 1 FROM service_office so WHERE so.service_id = s.service_id AND so.office_id = $1)`;
     overallValues.push(office_id);
   }
   const overallSql = `
@@ -64,15 +64,14 @@ export async function GET() {
   const overallResult = await executeQuery(overallSql, overallValues);
 
   // 2. By office (with filtering)
-  let byOfficeJoins = ' JOIN services s ON r.service_id = s.service_id JOIN offices o ON s.office_id = o.office_id';
+  let byOfficeJoins = ` JOIN services s ON r.service_id = s.service_id JOIN offices o ON s.office_id = o.office_id AND o.office_category = 'unit'`;
   let byOfficeWhere = 'WHERE r.form_id = 2';
   let byOfficeValues = [];
   if (role === 'Division Administrator' && division_id) {
-    byOfficeJoins += ' JOIN unit u ON s.unit_id = u.unit_id';
-    byOfficeWhere += ' AND u.division_id = $1';
+    byOfficeWhere += ' AND o.division_id = $1';
     byOfficeValues.push(division_id);
-  } else if (role === 'PSTO Administrator' && office_id) {
-    byOfficeWhere += ' AND s.office_id = $1';
+   } else if (role === 'Office Administrator' && office_id) {
+    byOfficeWhere += ` AND EXISTS (SELECT 1 FROM service_office so WHERE so.service_id = s.service_id AND so.office_id = $1)`;
     byOfficeValues.push(office_id);
   }
   const byOfficeSql = `
@@ -116,15 +115,14 @@ export async function GET() {
   const byOfficeResult = await executeQuery(byOfficeSql, byOfficeValues);
 
   // 2b. By service under each office (with filtering)
-  let byServiceJoins = ' JOIN services s ON r.service_id = s.service_id JOIN offices o ON s.office_id = o.office_id';
+  let byServiceJoins = ` JOIN services s ON r.service_id = s.service_id JOIN offices o ON s.office_id = o.office_id AND o.office_category = 'unit'`;
   let byServiceWhere = 'WHERE r.form_id = 2';
   let byServiceValues = [];
   if (role === 'Division Administrator' && division_id) {
-    byServiceJoins += ' JOIN unit u ON s.unit_id = u.unit_id';
-    byServiceWhere += ' AND u.division_id = $1';
+    byServiceWhere += ' AND o.division_id = $1';
     byServiceValues.push(division_id);
-  } else if (role === 'PSTO Administrator' && office_id) {
-    byServiceWhere += ' AND s.office_id = $1';
+   } else if (role === 'Office Administrator' && office_id) {
+    byServiceWhere += ` AND EXISTS (SELECT 1 FROM service_office so WHERE so.service_id = s.service_id AND so.office_id = $1)`;
     byServiceValues.push(office_id);
   }
   const byServiceSql = `
@@ -174,18 +172,18 @@ export async function GET() {
   }));
 
   // 3. By process (unit) for Regional Office only (office_id = 1)
-  let byProcessJoins = ' JOIN services s ON r.service_id = s.service_id JOIN unit u ON s.unit_id = u.unit_id';
-  let byProcessWhere = 'WHERE r.form_id = 2 AND s.office_id = 1';
+  let byProcessJoins = ` JOIN services s ON r.service_id = s.service_id JOIN offices u ON s.office_id = u.office_id AND u.office_category = 'unit'`;
+  let byProcessWhere = `WHERE r.form_id = 2 AND u.parent_office_id = 1`;
   let byProcessValues = [];
   if (role === 'Division Administrator' && division_id) {
     byProcessWhere += ' AND u.division_id = $1';
     byProcessValues.push(division_id);
-  } else if (role === 'PSTO Administrator' && office_id) {
-    byProcessWhere += ' AND s.office_id = $1';
+   } else if (role === 'Office Administrator' && office_id) {
+    byProcessWhere += ` AND EXISTS (SELECT 1 FROM service_office so WHERE so.service_id = s.service_id AND so.office_id = $1)`;
     byProcessValues.push(office_id);
   }
   const byProcessSql = `
-    SELECT u.unit_id, u.unit_name,
+    SELECT u.office_id AS unit_id, u.office_name AS unit_name,
       COUNT(*) FILTER (WHERE ratings->>'18' = 'outstanding') AS overall_outstanding,
       COUNT(*) FILTER (WHERE ratings->>'18' = 'very-satisfactory') AS overall_very_satisfactory,
       COUNT(*) FILTER (WHERE ratings->>'18' = 'satisfactory') AS overall_satisfactory,
@@ -219,8 +217,8 @@ export async function GET() {
     FROM responses r${byProcessJoins}
     CROSS JOIN LATERAL (SELECT r.answers->'qmsRatings'->'ratings' AS ratings) AS sub
     ${byProcessWhere}
-    GROUP BY u.unit_id, u.unit_name
-    ORDER BY u.unit_id;
+    GROUP BY u.office_id, u.office_name
+    ORDER BY u.office_id;
   `;
   const byProcessResult = await executeQuery(byProcessSql, byProcessValues);
 

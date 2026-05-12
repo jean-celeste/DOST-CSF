@@ -27,12 +27,18 @@ export async function GET(request) {
         s.description,
         s.service_type_id,
         st.service_type_name,
-        o.office_name,
-        u.unit_name
+        proc.office_name AS office_name,
+        unit.office_name AS unit_name
       FROM services s
       LEFT JOIN services_types st ON s.service_type_id = st.service_type_id
-      LEFT JOIN offices o ON s.office_id = o.office_id
-      LEFT JOIN unit u ON s.unit_id = u.unit_id
+      LEFT JOIN offices unit ON s.office_id = unit.office_id AND unit.office_category = 'unit'
+      LEFT JOIN LATERAL (
+        SELECT o.office_name
+        FROM service_office so
+        JOIN offices o ON so.office_id = o.office_id
+        WHERE so.service_id = s.service_id AND so.is_process_owner = true
+        LIMIT 1
+      ) proc ON true
     `;
     if (clientTypeId) {
       query += ` INNER JOIN service_client_type sct ON s.service_id = sct.service_id WHERE sct.client_type_id = ${clientTypeId}`;

@@ -23,6 +23,8 @@ export default function AdminServicesPage() {
   const [error, setError] = useState(null);
   const [selectedType, setSelectedType] = useState('all');
   const [selectedOffice, setSelectedOffice] = useState('all');
+  const [selectedOfficeCategory, setSelectedOfficeCategory] = useState('all');
+  const [showOnlyProcessOwner, setShowOnlyProcessOwner] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
 
@@ -128,22 +130,40 @@ export default function AdminServicesPage() {
   const filteredServices = services.filter(service => {
     const name = service.service_name?.toLowerCase() || '';
     const desc = service.description?.toLowerCase() || '';
-    const officeName = service.office_name?.toLowerCase() || '';
     const unitName = service.unit_name?.toLowerCase() || '';
     const typeName = service.service_type_name?.toLowerCase() || '';
-    
+
     const searchTermLower = search.toLowerCase();
-    const matchesSearch = 
+    const matchesSearch =
       name.includes(searchTermLower) ||
       desc.includes(searchTermLower) ||
-      officeName.includes(searchTermLower) ||
       unitName.includes(searchTermLower) ||
-      typeName.includes(searchTermLower);
+      typeName.includes(searchTermLower) ||
+      // Also search in associated office names
+      (Array.isArray(service.office_associations) &&
+       service.office_associations.some(oa => oa.office_name?.toLowerCase().includes(searchTermLower)));
 
     const matchesType = selectedType === 'all' || service.service_type_name === selectedType;
-    const matchesOffice = selectedOffice === 'all' || service.office_name === selectedOffice;
 
-    return matchesSearch && matchesType && matchesOffice;
+    // Office filter
+    const matchesOffice =
+      selectedOffice === 'all' ||
+      (Array.isArray(service.office_associations) &&
+       service.office_associations.some(oa => oa.office_name === selectedOffice));
+
+    // Office category filter
+    const matchesCategory =
+      selectedOfficeCategory === 'all' ||
+      (Array.isArray(service.office_associations) &&
+       service.office_associations.some(oa => oa.office_category === selectedOfficeCategory));
+
+    // Process owner filter
+    const matchesProcessOwner =
+      !showOnlyProcessOwner ||
+      (Array.isArray(service.office_associations) &&
+       service.office_associations.some(oa => oa.is_process_owner === true));
+
+    return matchesSearch && matchesType && matchesOffice && matchesCategory && matchesProcessOwner;
   });
 
   // Pagination calculations
@@ -156,7 +176,7 @@ export default function AdminServicesPage() {
   // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, selectedType, selectedOffice]);
+  }, [search, selectedType, selectedOffice, selectedOfficeCategory]);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -164,7 +184,13 @@ export default function AdminServicesPage() {
 
   // Get unique offices and types for filters
   const uniqueTypes = [...new Set(services.map(service => service.service_type_name).filter(Boolean))];
-  const uniqueOffices = [...new Set(services.map(service => service.office_name).filter(Boolean))];
+  const uniqueOffices = [...new Set(
+    services.flatMap(service =>
+      (service.office_associations || [])
+        .map(oa => oa.office_name)
+        .filter(Boolean)
+    )
+  )];
   
   if (loading) return (
     <div className="p-6 max-w-[1400px] mx-auto">
@@ -217,28 +243,46 @@ export default function AdminServicesPage() {
               onChange={e => setSearch(e.target.value)}
             />
           </div>
-          <div className="flex gap-3 md:col-span-6 w-full">
-            <select
-              className="flex-1 h-10 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700"
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-            >
-              <option value="all">All Types</option>
-              {uniqueTypes.map(type => (
-                <option key={type} value={type}>{type}</option>
-              ))}
-            </select>
-            <select
-              className="flex-1 h-10 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700"
-              value={selectedOffice}
-              onChange={(e) => setSelectedOffice(e.target.value)}
-            >
-              <option value="all">All Offices</option>
-              {uniqueOffices.map(office => (
-                <option key={office} value={office}>{office}</option>
-              ))}
-            </select>
-          </div>
+<div className="flex gap-3 md:col-span-6 w-full flex-wrap">
+              <select
+                className="flex-1 min-w-[150px] h-10 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700"
+                value={selectedType}
+                onChange={(e) => setSelectedType(e.target.value)}
+              >
+                <option value="all">All Types</option>
+                {uniqueTypes.map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+              <select
+                className="flex-1 min-w-[150px] h-10 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700"
+                value={selectedOffice}
+                onChange={(e) => setSelectedOffice(e.target.value)}
+              >
+                <option value="all">All Offices</option>
+                {uniqueOffices.map(office => (
+                  <option key={office} value={office}>{office}</option>
+                ))}
+              </select>
+              <select
+                className="flex-1 min-w-[150px] h-10 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700"
+                value={selectedOfficeCategory}
+                onChange={(e) => setSelectedOfficeCategory(e.target.value)}
+              >
+                <option value="all">All Categories</option>
+                <option value="main">Main Office</option>
+                <option value="branch">Branch Office</option>
+              </select>
+              <label className="flex items-center gap-2 flex-1 min-w-[150px] h-10 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={showOnlyProcessOwner}
+                  onChange={(e) => setShowOnlyProcessOwner(e.target.checked)}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <span>Show only process owner services</span>
+              </label>
+            </div>
         </div>
       </div>
       {filteredServices.length === 0 ? (
