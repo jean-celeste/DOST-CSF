@@ -66,12 +66,16 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
   const [offices, setOffices] = useState([])
   const [units, setUnits] = useState([])
 
-  // Fetch services when modal opens
+  // Fetch services only after a client type is finalized
   useEffect(() => {
-    if (isOpen) {
-      fetchServices()
+    if (!isOpen) return
+    if (clientType === 'internal') {
+      fetchServices('internal')
     }
-  }, [isOpen, clientType])
+    if (clientType === 'external' && externalSubtype) {
+      fetchServices(externalSubtype)
+    }
+  }, [isOpen, clientType, externalSubtype])
 
   const fetchServices = async (overrideType) => {
     try {
@@ -125,12 +129,12 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
     }
   }, [isOpen])
 
-  // Set initial client type based on selected service (if needed, adjust logic)
+  // Set initial step when a selection already exists
   useEffect(() => {
-    if (selectedService?.name) {
-      setStep(2);
-    }
-  }, [selectedService]);
+    if (!selectedService?.service_name) return
+    if (clientType === 'internal') setStep(2)
+    if (clientType === 'external' && externalSubtype) setStep(3)
+  }, [selectedService, clientType, externalSubtype])
 
   // Keyboard navigation
   useEffect(() => {
@@ -151,16 +155,22 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
   const handleClientTypeSelect = async (type) => {
     setClientType(type)
     setExternalSubtype(null)
+    setSelectedOffice(null)
+    setSelectedUnit(null)
+    setSearchQuery('')
     if (type === 'internal') {
       setStep(2)
-      fetchServices('internal')
+      return
     }
+    setStep(2)
   }
 
   const handleExternalSubtypeSelect = async (subtype) => {
     setExternalSubtype(subtype)
-    setStep(2)
-    fetchServices(subtype)
+    setSelectedOffice(null)
+    setSelectedUnit(null)
+    setSearchQuery('')
+    setStep(3)
   }
 
   const handleServiceSelect = async (service) => {
@@ -221,6 +231,13 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
   }
 
   const getSteps = () => {
+    if (clientType === 'external') {
+      return [
+        { id: 1, label: 'Client Type' },
+        { id: 2, label: 'External Type' },
+        { id: 3, label: 'Select Service' }
+      ]
+    }
     return [
       { id: 1, label: 'Client Type' },
       { id: 2, label: 'Select Service' }
@@ -233,6 +250,163 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
     } else {
       onClose()
     }
+  }
+
+  const renderServiceSelection = () => {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
+        transition={{ duration: 0.2 }}
+        className="flex flex-col lg:flex-row gap-4 sm:gap-6 md:gap-8"
+      >
+        {/* Left Panel - Filters */}
+        <div className="w-full lg:w-1/3 border-r-0 lg:border-r pr-0 lg:pr-6">
+          <div className="flex items-center gap-2 mb-4 sm:mb-6">
+            <div className="p-2 rounded-lg bg-blue-50">
+              <Filter className="h-5 w-5 text-blue-500" />
+            </div>
+            <h3 className="font-semibold text-lg">Filters</h3>
+          </div>
+
+          {/* Offices */}
+          <div className="mb-6 sm:mb-8">
+            <h4 className="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wider">Offices</h4>
+            <div className="space-y-2">
+              <motion.button
+                whileHover={{ x: 2 }}
+                transition={{ duration: 0.1 }}
+                className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all flex items-center gap-2
+                  ${!selectedOffice
+                    ? 'bg-blue-50 text-blue-600 font-medium'
+                    : 'hover:bg-gray-50 text-gray-700'}`}
+                onClick={() => {
+                  setSelectedOffice(null)
+                  setSelectedUnit(null)
+                }}
+              >
+                <Building2 className="h-4 w-4" />
+                All Offices
+              </motion.button>
+              {offices.map((office) => (
+                <motion.button
+                  key={office}
+                  whileHover={{ x: 2 }}
+                  transition={{ duration: 0.1 }}
+                  className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all flex items-center gap-2
+                    ${selectedOffice === office
+                      ? 'bg-blue-50 text-blue-600 font-medium'
+                      : 'hover:bg-gray-50 text-gray-700'}`}
+                  onClick={() => {
+                    setSelectedOffice(office)
+                    setSelectedUnit(null)
+                  }}
+                >
+                  <Building2 className="h-4 w-4" />
+                  {office}
+                </motion.button>
+              ))}
+            </div>
+          </div>
+
+          {/* Units */}
+          {selectedOffice && (
+            <div className="mb-6 sm:mb-8">
+              <h4 className="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wider">Units</h4>
+              <div className="space-y-2">
+                <motion.button
+                  whileHover={{ x: 2 }}
+                  transition={{ duration: 0.1 }}
+                  className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all flex items-center gap-2
+                    ${!selectedUnit
+                      ? 'bg-blue-50 text-blue-600 font-medium'
+                      : 'hover:bg-gray-50 text-gray-700'}`}
+                  onClick={() => setSelectedUnit(null)}
+                >
+                  <Users className="h-4 w-4" />
+                  All Units
+                </motion.button>
+                {units.map((unit) => (
+                  <motion.button
+                    key={unit}
+                    whileHover={{ x: 2 }}
+                    transition={{ duration: 0.1 }}
+                    className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all flex items-center gap-2
+                      ${selectedUnit === unit
+                        ? 'bg-blue-50 text-blue-600 font-medium'
+                        : 'hover:bg-gray-50 text-gray-700'}`}
+                    onClick={() => setSelectedUnit(unit)}
+                  >
+                    <Users className="h-4 w-4" />
+                    {unit}
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right Panel - Services */}
+        <div className="w-full lg:w-2/3">
+          <div className="relative mb-4 sm:mb-6">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Input
+              placeholder="Search services..."
+              className="pl-12 h-12 text-base rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-3 sm:space-y-4">
+            {getFilteredServices().map((service) => (
+              <motion.button
+                key={service.service_id}
+                whileHover={{ scale: 1.001, y: -1 }}
+                whileTap={{ scale: 0.995 }}
+                transition={{ duration: 0.1 }}
+                className={`w-full p-3 sm:p-4 rounded-xl border-2 transition-all text-left group relative overflow-hidden
+                  ${selectedService?.service_id === service.service_id
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200 hover:border-blue-500 hover:shadow-md'
+                  }`}
+                onClick={() => handleServiceSelect(service)}
+              >
+                <div className="absolute inset-0 rounded-xl pointer-events-none bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 truncate">{service.service_name}</h3>
+                    <p className="text-sm text-gray-500 line-clamp-2">{service.description}</p>
+                    <div className="mt-2 flex items-center gap-2 text-sm text-gray-500 flex-wrap">
+                      <span className="flex items-center gap-1">
+                        <Building2 className="h-4 w-4 flex-shrink-0" />
+                        <span className="truncate">{service.office_name}</span>
+                      </span>
+                      {service.unit_name && (
+                        <span className="flex items-center gap-1">
+                          <Users className="h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">{service.unit_name}</span>
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1">
+                        <Briefcase className="h-4 w-4 flex-shrink-0" />
+                        <span className="truncate">{service.service_type_name}</span>
+                      </span>
+                    </div>
+                  </div>
+                  {selectedService?.service_id === service.service_id && (
+                    <div className="p-2 rounded-full bg-blue-100 text-blue-500 flex-shrink-0">
+                      <Check className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </div>
+                  )}
+                </div>
+              </motion.button>
+            ))}
+          </div>
+        </div>
+      </motion.div>
+    )
   }
 
   const renderStepContent = () => {
@@ -275,231 +449,113 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                 )}
               </div>
             </motion.button>
-            <div className="space-y-4">
-              <motion.button
-                whileHover={{ scale: 1.005, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ duration: 0.1 }}
-                className={`group p-6 sm:p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative overflow-hidden
-                  ${clientType === 'citizen' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-500'}`}
-                onClick={() => handleExternalSubtypeSelect('citizen')}
-              >
-                <div className="absolute inset-0 rounded-2xl pointer-events-none bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                <div className="relative flex flex-col items-center">
-                  <div className="p-4 rounded-full bg-blue-50 group-hover:bg-blue-100 transition-colors mb-4">
-                    <User className="h-10 w-10 text-blue-500" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Citizen</h3>
-                  <p className="text-sm text-gray-500 text-center">Individual member of the public</p>
-                  {clientType === 'citizen' && (
-                    <div className="mt-4 text-blue-500">
-                      <ChevronRight className="h-5 w-5" />
-                    </div>
-                  )}
+            <motion.button
+              whileHover={{ scale: 1.005, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ duration: 0.1 }}
+              className={`group p-6 sm:p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative overflow-hidden
+                ${clientType === 'external' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-500'}`}
+              onClick={() => handleClientTypeSelect('external')}
+            >
+              <div className="absolute inset-0 rounded-2xl pointer-events-none bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative flex flex-col items-center">
+                <div className="p-4 rounded-full bg-blue-50 group-hover:bg-blue-100 transition-colors mb-4">
+                  <User className="h-10 w-10 text-blue-500" />
                 </div>
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.005, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ duration: 0.1 }}
-                className={`group p-6 sm:p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative overflow-hidden
-                  ${clientType === 'business' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-500'}`}
-                onClick={() => handleExternalSubtypeSelect('business')}
-              >
-                <div className="absolute inset-0 rounded-2xl pointer-events-none bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                <div className="relative flex flex-col items-center">
-                  <div className="p-4 rounded-full bg-blue-50 group-hover:bg-blue-100 transition-colors mb-4">
-                    <Briefcase className="h-10 w-10 text-blue-500" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">External Client</h3>
+                <p className="text-sm text-gray-500 text-center">Public/Client</p>
+                {clientType === 'external' && (
+                  <div className="mt-4 text-blue-500">
+                    <ChevronRight className="h-5 w-5" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Business</h3>
-                  <p className="text-sm text-gray-500 text-center">Private company or organization</p>
-                  {clientType === 'business' && (
-                    <div className="mt-4 text-blue-500">
-                      <ChevronRight className="h-5 w-5" />
-                    </div>
-                  )}
-                </div>
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.005, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ duration: 0.1 }}
-                className={`group p-6 sm:p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative overflow-hidden
-                  ${clientType === 'government' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-500'}`}
-                onClick={() => handleExternalSubtypeSelect('government')}
-              >
-                <div className="absolute inset-0 rounded-2xl pointer-events-none bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                <div className="relative flex flex-col items-center">
-                  <div className="p-4 rounded-full bg-blue-50 group-hover:bg-blue-100 transition-colors mb-4">
-                    <Landmark className="h-10 w-10 text-blue-500" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Government</h3>
-                  <p className="text-sm text-gray-500 text-center">Government agency or institution</p>
-                  {clientType === 'government' && (
-                    <div className="mt-4 text-blue-500">
-                      <ChevronRight className="h-5 w-5" />
-                    </div>
-                  )}
-                </div>
-              </motion.button>
-            </div>
+                )}
+              </div>
+            </motion.button>
           </div>
         </motion.div>
       )
-    } else if (step === 2) {
+    } else if (step === 2 && clientType === 'external') {
       return (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
-          className="flex flex-col lg:flex-row gap-4 sm:gap-6 md:gap-8"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
         >
-          {/* Left Panel - Filters */}
-          <div className="w-full lg:w-1/3 border-r-0 lg:border-r pr-0 lg:pr-6">
-            <div className="flex items-center gap-2 mb-4 sm:mb-6">
-              <div className="p-2 rounded-lg bg-blue-50">
-                <Filter className="h-5 w-5 text-blue-500" />
+          <motion.button
+            whileHover={{ scale: 1.005, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ duration: 0.1 }}
+            className={`group p-6 sm:p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative overflow-hidden
+              ${externalSubtype === 'citizen' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-500'}`}
+            onClick={() => handleExternalSubtypeSelect('citizen')}
+          >
+            <div className="absolute inset-0 rounded-2xl pointer-events-none bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative flex flex-col items-center">
+              <div className="p-4 rounded-full bg-blue-50 group-hover:bg-blue-100 transition-colors mb-4">
+                <User className="h-10 w-10 text-blue-500" />
               </div>
-              <h3 className="font-semibold text-lg">Filters</h3>
-            </div>
-
-            {/* Offices */}
-            <div className="mb-6 sm:mb-8">
-              <h4 className="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wider">Offices</h4>
-              <div className="space-y-2">
-                <motion.button
-                  whileHover={{ x: 2 }}
-                  transition={{ duration: 0.1 }}
-                  className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all flex items-center gap-2
-                    ${!selectedOffice
-                      ? 'bg-blue-50 text-blue-600 font-medium'
-                      : 'hover:bg-gray-50 text-gray-700'}`}
-                  onClick={() => {
-                    setSelectedOffice(null)
-                    setSelectedUnit(null)
-                  }}
-                >
-                  <Building2 className="h-4 w-4" />
-                  All Offices
-                </motion.button>
-                {offices.map((office) => (
-                  <motion.button
-                    key={office}
-                    whileHover={{ x: 2 }}
-                    transition={{ duration: 0.1 }}
-                    className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all flex items-center gap-2
-                      ${selectedOffice === office
-                        ? 'bg-blue-50 text-blue-600 font-medium'
-                        : 'hover:bg-gray-50 text-gray-700'}`}
-                    onClick={() => {
-                      setSelectedOffice(office)
-                      setSelectedUnit(null)
-                    }}
-                  >
-                    <Building2 className="h-4 w-4" />
-                    {office}
-                  </motion.button>
-                ))}
-              </div>
-            </div>
-
-            {/* Units */}
-            {selectedOffice && (
-              <div className="mb-6 sm:mb-8">
-                <h4 className="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wider">Units</h4>
-                <div className="space-y-2">
-                  <motion.button
-                    whileHover={{ x: 2 }}
-                    transition={{ duration: 0.1 }}
-                    className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all flex items-center gap-2
-                      ${!selectedUnit
-                        ? 'bg-blue-50 text-blue-600 font-medium'
-                        : 'hover:bg-gray-50 text-gray-700'}`}
-                    onClick={() => setSelectedUnit(null)}
-                  >
-                    <Users className="h-4 w-4" />
-                    All Units
-                  </motion.button>
-                  {units.map((unit) => (
-                    <motion.button
-                      key={unit}
-                      whileHover={{ x: 2 }}
-                      transition={{ duration: 0.1 }}
-                      className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all flex items-center gap-2
-                        ${selectedUnit === unit
-                          ? 'bg-blue-50 text-blue-600 font-medium'
-                          : 'hover:bg-gray-50 text-gray-700'}`}
-                      onClick={() => setSelectedUnit(unit)}
-                    >
-                      <Users className="h-4 w-4" />
-                      {unit}
-                    </motion.button>
-                  ))}
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Citizen</h3>
+              <p className="text-sm text-gray-500 text-center">Individual member of the public</p>
+              {externalSubtype === 'citizen' && (
+                <div className="mt-4 text-blue-500">
+                  <ChevronRight className="h-5 w-5" />
                 </div>
+              )}
+            </div>
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.005, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ duration: 0.1 }}
+            className={`group p-6 sm:p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative overflow-hidden
+              ${externalSubtype === 'business' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-500'}`}
+            onClick={() => handleExternalSubtypeSelect('business')}
+          >
+            <div className="absolute inset-0 rounded-2xl pointer-events-none bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative flex flex-col items-center">
+              <div className="p-4 rounded-full bg-blue-50 group-hover:bg-blue-100 transition-colors mb-4">
+                <Briefcase className="h-10 w-10 text-blue-500" />
               </div>
-            )}
-          </div>
-
-          {/* Right Panel - Services */}
-          <div className="w-full lg:w-2/3">
-            <div className="relative mb-4 sm:mb-6">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <Input
-                placeholder="Search services..."
-                className="pl-12 h-12 text-base rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Business</h3>
+              <p className="text-sm text-gray-500 text-center">Private company or organization</p>
+              {externalSubtype === 'business' && (
+                <div className="mt-4 text-blue-500">
+                  <ChevronRight className="h-5 w-5" />
+                </div>
+              )}
             </div>
-
-            <div className="space-y-3 sm:space-y-4">
-              {getFilteredServices().map((service) => (
-                <motion.button
-                  key={service.service_id}
-                  whileHover={{ scale: 1.001, y: -1 }}
-                  whileTap={{ scale: 0.995 }}
-                  transition={{ duration: 0.1 }}
-                  className={`w-full p-3 sm:p-4 rounded-xl border-2 transition-all text-left group relative overflow-hidden
-                    ${selectedService?.service_id === service.service_id
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-blue-500 hover:shadow-md'
-                    }`}
-                  onClick={() => handleServiceSelect(service)}
-                >
-                  <div className="absolute inset-0 rounded-xl pointer-events-none bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="relative flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 truncate">{service.service_name}</h3>
-                      <p className="text-sm text-gray-500 line-clamp-2">{service.description}</p>
-                      <div className="mt-2 flex items-center gap-2 text-sm text-gray-500 flex-wrap">
-                        <span className="flex items-center gap-1">
-                          <Building2 className="h-4 w-4 flex-shrink-0" />
-                          <span className="truncate">{service.office_name}</span>
-                        </span>
-                        {service.unit_name && (
-                          <span className="flex items-center gap-1">
-                            <Users className="h-4 w-4 flex-shrink-0" />
-                            <span className="truncate">{service.unit_name}</span>
-                          </span>
-                        )}
-                        <span className="flex items-center gap-1">
-                          <Briefcase className="h-4 w-4 flex-shrink-0" />
-                          <span className="truncate">{service.service_type_name}</span>
-                        </span>
-                      </div>
-                    </div>
-                    {selectedService?.service_id === service.service_id && (
-                      <div className="p-2 rounded-full bg-blue-100 text-blue-500 flex-shrink-0">
-                        <Check className="h-4 w-4 sm:h-5 sm:w-5" />
-                      </div>
-                    )}
-                  </div>
-                </motion.button>
-              ))}
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.005, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ duration: 0.1 }}
+            className={`group p-6 sm:p-8 rounded-2xl border-2 transition-all bg-white hover:shadow-lg relative overflow-hidden
+              ${externalSubtype === 'government' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-500'}`}
+            onClick={() => handleExternalSubtypeSelect('government')}
+          >
+            <div className="absolute inset-0 rounded-2xl pointer-events-none bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative flex flex-col items-center">
+              <div className="p-4 rounded-full bg-blue-50 group-hover:bg-blue-100 transition-colors mb-4">
+                <Landmark className="h-10 w-10 text-blue-500" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Government</h3>
+              <p className="text-sm text-gray-500 text-center">Government agency or institution</p>
+              {externalSubtype === 'government' && (
+                <div className="mt-4 text-blue-500">
+                  <ChevronRight className="h-5 w-5" />
+                </div>
+              )}
             </div>
-          </div>
+          </motion.button>
         </motion.div>
+      )
+    } else if (step === 2 && clientType === 'internal') {
+      return renderServiceSelection()
+    } else if (step === 3 && clientType === 'external') {
+      return (
+        renderServiceSelection()
       )
     } else {
       return null
@@ -513,7 +569,11 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
           <DialogHeader className="mb-4">
             <div className="flex justify-between items-center">
               <DialogTitle className="text-2xl font-bold text-gray-900">
-                {step === 1 ? 'Select Client Type' : 'Select Service'}
+                {step === 1
+                  ? 'Select Client Type'
+                  : step === 2 && clientType === 'external'
+                    ? 'Select External Client Type'
+                    : 'Select Service'}
               </DialogTitle>
             </div>
           </DialogHeader>
