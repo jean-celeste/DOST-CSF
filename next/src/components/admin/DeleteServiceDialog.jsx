@@ -18,9 +18,9 @@ export default function DeleteServiceDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-full max-w-md rounded-xl border border-gray-200 p-0 shadow-xl">
         <DialogHeader className="border-b border-gray-100 px-6 py-4">
-          <DialogTitle className="text-xl font-semibold text-gray-900">Delete Service</DialogTitle>
+          <DialogTitle className="text-xl font-semibold text-gray-900">Archive Service</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete the service "<b>{serviceName}</b>"? This action cannot be undone.
+            Are you sure you want to archive the service "<b>{serviceName}</b>"? Existing responses will remain available.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="border-t border-gray-100 px-6 py-4">
@@ -30,7 +30,7 @@ export default function DeleteServiceDialog({
             </Button>
           </DialogClose>
           <Button variant="destructive" onClick={onConfirm} disabled={isLoading}>
-            {isLoading ? 'Deleting...' : 'Delete'}
+            {isLoading ? 'Archiving...' : 'Archive'}
           </Button>
         </DialogFooter>
       </DialogContent>

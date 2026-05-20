@@ -17,10 +17,13 @@ export async function GET(request) {
         s.service_name,
         s.description,
         s.service_type_id,
+        s.is_archived,
+        s.archived_at,
         st.service_type_name,
         s.office_id AS unit_id,
         u.office_name AS unit_name,
         u.division_id,
+        d.division_name,
         u.parent_office_id,
         COALESCE(
           (SELECT json_agg(
@@ -39,6 +42,7 @@ export async function GET(request) {
       FROM services s
       LEFT JOIN services_types st ON s.service_type_id = st.service_type_id
       LEFT JOIN offices u ON s.office_id = u.office_id AND u.office_category = 'unit'
+      LEFT JOIN division d ON u.division_id = d.division_id
     `;
     const values = [];
     const conditions = [];
@@ -90,7 +94,7 @@ export async function POST(request) {
       VALUES ($1, $2, $3, $4)
       RETURNING *
     `;
-    const values = [service_name, description, service_type_id, operationalOfficeId];
+    const values = [service_name, description || null, service_type_id, operationalOfficeId];
     const result = await executeQuery(insertQuery, values);
     const newService = result.rows[0];
     // Insert service_office associations

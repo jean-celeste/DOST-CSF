@@ -24,6 +24,7 @@ export default function AdminServicesPage() {
   const [selectedType, setSelectedType] = useState('all');
   const [selectedOffice, setSelectedOffice] = useState('all');
   const [selectedOfficeCategory, setSelectedOfficeCategory] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('all');
   const [showOnlyProcessOwner, setShowOnlyProcessOwner] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
@@ -132,6 +133,7 @@ export default function AdminServicesPage() {
     const desc = service.description?.toLowerCase() || '';
     const unitName = service.unit_name?.toLowerCase() || '';
     const typeName = service.service_type_name?.toLowerCase() || '';
+    const divisionName = service.division_name?.toLowerCase() || '';
 
     const searchTermLower = search.toLowerCase();
     const matchesSearch =
@@ -139,11 +141,17 @@ export default function AdminServicesPage() {
       desc.includes(searchTermLower) ||
       unitName.includes(searchTermLower) ||
       typeName.includes(searchTermLower) ||
+      divisionName.includes(searchTermLower) ||
       // Also search in associated office names
       (Array.isArray(service.office_associations) &&
        service.office_associations.some(oa => oa.office_name?.toLowerCase().includes(searchTermLower)));
 
     const matchesType = selectedType === 'all' || service.service_type_name === selectedType;
+
+    const isArchived = service.is_archived === true;
+    const matchesStatus =
+      selectedStatus === 'all' ||
+      (selectedStatus === 'active' ? !isArchived : isArchived);
 
     // Office filter
     const matchesOffice =
@@ -163,7 +171,7 @@ export default function AdminServicesPage() {
       (Array.isArray(service.office_associations) &&
        service.office_associations.some(oa => oa.is_process_owner === true));
 
-    return matchesSearch && matchesType && matchesOffice && matchesCategory && matchesProcessOwner;
+    return matchesSearch && matchesType && matchesOffice && matchesCategory && matchesProcessOwner && matchesStatus;
   });
 
   // Pagination calculations
@@ -176,7 +184,7 @@ export default function AdminServicesPage() {
   // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, selectedType, selectedOffice, selectedOfficeCategory]);
+  }, [search, selectedType, selectedOffice, selectedOfficeCategory, selectedStatus, showOnlyProcessOwner]);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -237,7 +245,7 @@ export default function AdminServicesPage() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <Input
               type="text"
-              placeholder="Search services by name, description, office, unit, type..."
+              placeholder="Search services by name, description, division, office, unit, type..."
               className="w-full h-10 pl-10 pr-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               value={search}
               onChange={e => setSearch(e.target.value)}
@@ -272,6 +280,15 @@ export default function AdminServicesPage() {
                 <option value="all">All Categories</option>
                 <option value="main">Main Office</option>
                 <option value="branch">Branch Office</option>
+              </select>
+              <select
+                className="flex-1 min-w-[150px] h-10 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700"
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+              >
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="archived">Archived</option>
               </select>
               <label className="flex items-center gap-2 flex-1 min-w-[150px] h-10 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700">
                 <input

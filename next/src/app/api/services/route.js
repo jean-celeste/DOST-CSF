@@ -28,10 +28,12 @@ export async function GET(request) {
         s.service_type_id,
         st.service_type_name,
         proc.office_name AS office_name,
-        unit.office_name AS unit_name
+        unit.office_name AS unit_name,
+        d.division_name
       FROM services s
       LEFT JOIN services_types st ON s.service_type_id = st.service_type_id
       LEFT JOIN offices unit ON s.office_id = unit.office_id AND unit.office_category = 'unit'
+      LEFT JOIN division d ON unit.division_id = d.division_id
       LEFT JOIN LATERAL (
         SELECT o.office_name
         FROM service_office so

@@ -18,9 +18,9 @@ export default function DeleteOfficeDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-full max-w-md rounded-xl border border-gray-200 p-0 shadow-xl">
         <DialogHeader className="border-b border-gray-100 px-6 py-4">
-          <DialogTitle className="text-xl font-semibold text-gray-900">Delete Office</DialogTitle>
+          <DialogTitle className="text-xl font-semibold text-gray-900">Archive Office</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete the office "<b>{officeName}</b>"? This action cannot be undone.
+            Are you sure you want to archive the office "<b>{officeName}</b>"? Existing services and responses will remain available.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="border-t border-gray-100 px-6 py-4">
@@ -30,7 +30,7 @@ export default function DeleteOfficeDialog({
             </Button>
           </DialogClose>
           <Button variant="destructive" onClick={onConfirm} disabled={isLoading}>
-            {isLoading ? 'Deleting...' : 'Delete'}
+            {isLoading ? 'Archiving...' : 'Archive'}
           </Button>
         </DialogFooter>
       </DialogContent>

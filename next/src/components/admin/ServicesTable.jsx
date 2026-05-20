@@ -35,10 +35,11 @@ export default function ServicesTable({ services, onEdit, onDelete }) {
           <thead className="bg-gray-50">
             <tr>
               <th className="w-[21%] px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Service</th>
-              <th className="w-[34%] px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Description</th>
+              <th className="w-[28%] px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Description</th>
+              <th className="w-[12%] px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Division</th>
               <th className="w-[12%] px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Type</th>
-              <th className="w-[21%] px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Offices</th>
-              <th className="w-[12%] px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+              <th className="w-[17%] px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Offices</th>
+              <th className="w-[10%] px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -53,6 +54,13 @@ export default function ServicesTable({ services, onEdit, onDelete }) {
                     <div className="text-sm font-semibold text-gray-800 leading-5 break-words">
                       {service.service_name || '-'}
                     </div>
+                    {service.is_archived && (
+                      <div className="mt-1">
+                        <Badge className="text-xs border bg-amber-100 text-amber-800 border-amber-200">
+                          Archived
+                        </Badge>
+                      </div>
+                    )}
                     {service.unit_name && (
                       <div className="mt-1 text-xs text-gray-500">Unit: {service.unit_name}</div>
                     )}
@@ -61,6 +69,11 @@ export default function ServicesTable({ services, onEdit, onDelete }) {
                     <p className="text-sm text-gray-600 leading-5 whitespace-normal break-words">
                       {service.description || '-'}
                     </p>
+                  </td>
+                  <td className="px-5 py-4 align-top">
+                    <span className="text-sm text-gray-600">
+                      {service.division_name || '-'}
+                    </span>
                   </td>
                   <td className="px-5 py-4 align-top">
                     <span className="inline-flex rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700">
@@ -91,9 +104,15 @@ export default function ServicesTable({ services, onEdit, onDelete }) {
                         <Pencil size={14} className="mr-1" />
                         Edit
                       </Button>
-                      <Button size="sm" variant="destructive" onClick={() => onDelete(service)} className="h-8 px-2.5">
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => onDelete(service)}
+                        className="h-8 px-2.5"
+                        disabled={service.is_archived}
+                      >
                         <Trash2 size={14} className="mr-1" />
-                        Delete
+                        {service.is_archived ? 'Archived' : 'Archive'}
                       </Button>
                     </div>
                   </td>

@@ -19,10 +19,13 @@ export async function GET(request, context) {
         s.service_name,
         s.description,
         s.service_type_id,
+        s.is_archived,
+        s.archived_at,
         st.service_type_name,
         s.office_id AS unit_id,
         u.office_name AS unit_name,
         u.division_id,
+        d.division_name,
         u.parent_office_id,
 COALESCE(
            (SELECT json_agg(
@@ -41,6 +44,7 @@ COALESCE(
       FROM services s
       LEFT JOIN services_types st ON s.service_type_id = st.service_type_id
       LEFT JOIN offices u ON s.office_id = u.office_id AND u.office_category = 'unit'
+      LEFT JOIN division d ON u.division_id = d.division_id
       WHERE s.service_id = $1
     `;
     const result = await executeQuery(query, [id]);
@@ -84,7 +88,7 @@ export async function PUT(request, context) {
       WHERE service_id = $5
       RETURNING *
     `;
-    const values = [service_name, description, service_type_id, operationalOfficeId, id];
+    const values = [service_name, description || null, service_type_id, operationalOfficeId, id];
     const result = await executeQuery(updateQuery, values);
     if (result.rows.length === 0) {
       return NextResponse.json({ success: false, error: 'Service not found' }, { status: 404 });
@@ -128,14 +132,20 @@ export async function DELETE(request, context) {
   }
   const { id } = await context.params;
   try {
-    const deleteQuery = 'DELETE FROM services WHERE service_id = $1 RETURNING *';
-    const result = await executeQuery(deleteQuery, [id]);
+    const archiveQuery = `
+      UPDATE services
+      SET is_archived = true,
+          archived_at = COALESCE(archived_at, NOW())
+      WHERE service_id = $1
+      RETURNING *
+    `;
+    const result = await executeQuery(archiveQuery, [id]);
     if (result.rows.length === 0) {
       return NextResponse.json({ success: false, error: 'Service not found' }, { status: 404 });
     }
     return NextResponse.json({ success: true, data: result.rows[0] });
   } catch (error) {
-    console.error('Error deleting service:', error);
-    return NextResponse.json({ success: false, error: 'Failed to delete service' }, { status: 500 });
+    console.error('Error archiving service:', error);
+    return NextResponse.json({ success: false, error: 'Failed to archive service' }, { status: 500 });
   }
 } 

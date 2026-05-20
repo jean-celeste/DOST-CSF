@@ -12,13 +12,13 @@ export default function ManageOfficeModal({
   onSubmit,
   officeToEdit,
   isFormSubmitting,
+  officeTypes,
 }) {
   const [internalLoading, setInternalLoading] = useState(false);
   const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
     office_name: '',
     office_type_id: '',
-    location: '',
     office_category: 'main',
   });
 
@@ -28,15 +28,13 @@ export default function ManageOfficeModal({
       if (officeToEdit) {
         setFormData({
           office_name: officeToEdit.office_name || '',
-          office_type_id: officeToEdit.office_type_id || '',
-          location: officeToEdit.location || '',
+          office_type_id: officeToEdit.office_type_id ? String(officeToEdit.office_type_id) : '',
           office_category: officeToEdit.office_category || 'main',
         });
       } else {
         setFormData({
           office_name: '',
           office_type_id: '',
-          location: '',
           office_category: 'main',
         });
       }
@@ -108,28 +106,19 @@ export default function ManageOfficeModal({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Office Type *
               </label>
-              <Input
-                type="text"
+              <select
                 name="office_type_id"
                 value={formData.office_type_id}
                 onChange={handleInputChange}
-                placeholder="e.g., Regional, Provincial"
-                className="w-full"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Location
-              </label>
-              <Input
-                type="text"
-                name="location"
-                value={formData.location}
-                onChange={handleInputChange}
-                placeholder="e.g., Makati, Metro Manila"
-                className="w-full"
-              />
+                className="w-full h-10 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              >
+                <option value="">Select office type</option>
+                {(officeTypes || []).map(type => (
+                  <option key={type.office_type_id} value={String(type.office_type_id)}>
+                    {type.type_name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>

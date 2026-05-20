@@ -22,8 +22,10 @@ export default function AdminOfficesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const [officeTypes, setOfficeTypes] = useState([]);
 
   // Modal states
   const [showManageModal, setShowManageModal] = useState(false);
@@ -42,13 +44,20 @@ export default function AdminOfficesPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/admin/offices');
-      const data = await response.json();
-      if (!data.success) throw new Error(data.error || 'Failed to fetch offices');
-      setOffices(data.data || []);
+      const [officesRes, officeTypesRes] = await Promise.all([
+        fetch('/api/admin/offices'),
+        fetch('/api/admin/office_types'),
+      ]);
+      const officesData = await officesRes.json();
+      const officeTypesData = await officeTypesRes.json();
+      if (!officesData.success) throw new Error(officesData.error || 'Failed to fetch offices');
+      if (!officeTypesData.success) throw new Error(officeTypesData.error || 'Failed to fetch office types');
+      setOffices(officesData.data || []);
+      setOfficeTypes(officeTypesData.data || []);
     } catch (err) {
       setError(err.message);
       setOffices([]);
+      setOfficeTypes([]);
     } finally {
       setLoading(false);
     }
@@ -67,6 +76,28 @@ export default function AdminOfficesPage() {
   const handleDeleteOffice = (office) => {
     setOfficeToDelete(office);
     setShowDeleteDialog(true);
+  };
+
+  const handleActivateOffice = async (office) => {
+    if (!office) return;
+    setIsDeleting(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/admin/offices/${office.office_id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ is_archived: false })
+      });
+      const data = await response.json();
+      if (!data.success) throw new Error(data.error || 'Failed to activate office');
+      fetchOffices();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleManageModalClose = () => {
@@ -126,18 +157,21 @@ export default function AdminOfficesPage() {
 
   const filteredOffices = offices.filter(office => {
     const name = office.office_name?.toLowerCase() || '';
-    const location = office.location?.toLowerCase() || '';
-    const officeType = (office.office_type_id || '')?.toString().toLowerCase() || '';
+    const officeType = (office.office_type_name || office.office_type_id || '')?.toString().toLowerCase() || '';
 
     const searchTermLower = search.toLowerCase();
     const matchesSearch =
       name.includes(searchTermLower) ||
-      location.includes(searchTermLower) ||
       officeType.includes(searchTermLower);
 
     const matchesCategory = selectedCategory === 'all' || office.office_category === selectedCategory;
 
-    return matchesSearch && matchesCategory;
+    const isArchived = office.is_archived === true;
+    const matchesStatus =
+      selectedStatus === 'all' ||
+      (selectedStatus === 'active' ? !isArchived : isArchived);
+
+    return matchesSearch && matchesCategory && matchesStatus;
   });
 
   // Pagination calculations
@@ -150,7 +184,7 @@ export default function AdminOfficesPage() {
   // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, selectedCategory]);
+  }, [search, selectedCategory, selectedStatus]);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -200,7 +234,7 @@ export default function AdminOfficesPage() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <Input
               type="text"
-              placeholder="Search offices by name, location, type..."
+              placeholder="Search offices by name, type..."
               className="w-full h-10 pl-10 pr-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               value={search}
               onChange={e => setSearch(e.target.value)}
@@ -216,6 +250,15 @@ export default function AdminOfficesPage() {
               <option value="main">Main Office</option>
               <option value="branch">Branch Office</option>
             </select>
+            <select
+              className="flex-1 min-w-[150px] h-10 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700"
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+            >
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="archived">Archived</option>
+            </select>
           </div>
         </div>
       </div>
@@ -228,10 +271,11 @@ export default function AdminOfficesPage() {
       ) : (
         <>
           <div className="bg-white rounded-lg shadow-sm border border-gray-100">
-            <OfficesTable 
-              offices={paginatedOffices} 
-              onEdit={handleEditOffice} 
-              onDelete={handleDeleteOffice} 
+            <OfficesTable
+              offices={paginatedOffices}
+              onEdit={handleEditOffice}
+              onDelete={handleDeleteOffice}
+              onActivate={handleActivateOffice}
             />
           </div>
 
@@ -267,13 +311,14 @@ export default function AdminOfficesPage() {
       )}
 
       {/* Modals */}
-      <ManageOfficeModal
-        isOpen={showManageModal}
-        onClose={handleManageModalClose}
-        onSubmit={handleFormSubmit}
-        officeToEdit={officeToEdit}
-        isFormSubmitting={isFormSubmitting}
-      />
+          <ManageOfficeModal
+            isOpen={showManageModal}
+            onClose={handleManageModalClose}
+            onSubmit={handleFormSubmit}
+            officeToEdit={officeToEdit}
+            isFormSubmitting={isFormSubmitting}
+            officeTypes={officeTypes}
+          />
 
       <DeleteOfficeDialog
         isOpen={showDeleteDialog}

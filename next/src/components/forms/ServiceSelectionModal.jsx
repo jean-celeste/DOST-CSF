@@ -377,22 +377,20 @@ export default function ServiceSelectionModal({ isOpen, onClose, onServiceSelect
                 <div className="relative flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 truncate">{service.service_name}</h3>
-                    <p className="text-sm text-gray-500 line-clamp-2">{service.description}</p>
+                    {service.description && (
+                      <p className="text-sm text-gray-500 line-clamp-2">{service.description}</p>
+                    )}
                     <div className="mt-2 flex items-center gap-2 text-sm text-gray-500 flex-wrap">
                       <span className="flex items-center gap-1">
                         <Building2 className="h-4 w-4 flex-shrink-0" />
                         <span className="truncate">{service.office_name}</span>
                       </span>
-                      {service.unit_name && (
+                      {service.division_name && (
                         <span className="flex items-center gap-1">
-                          <Users className="h-4 w-4 flex-shrink-0" />
-                          <span className="truncate">{service.unit_name}</span>
+                          <Briefcase className="h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">{service.division_name}</span>
                         </span>
                       )}
-                      <span className="flex items-center gap-1">
-                        <Briefcase className="h-4 w-4 flex-shrink-0" />
-                        <span className="truncate">{service.service_type_name}</span>
-                      </span>
                     </div>
                   </div>
                   {selectedService?.service_id === service.service_id && (
